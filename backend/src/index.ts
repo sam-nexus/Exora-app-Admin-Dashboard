@@ -18,6 +18,13 @@ app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.get('/', (_req, res) => {
+  res.json({
+    message: 'Exora Backend is running',
+    version: '1.0.0',
+    docs: '/api',
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
