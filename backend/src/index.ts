@@ -1,0 +1,23 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+dotenv.config();
+
+import authRoutes from './routes/auth';
+import userRoutes from './routes/users';
+import courseRoutes from './routes/courses';
+import questionRoutes from './routes/questions';
+import paymentRoutes from './routes/payments';
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/questions', questionRoutes);
+app.use('/api/payments', paymentRoutes);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
