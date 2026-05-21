@@ -12,9 +12,3 @@ export const supabaseAnon = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_ANON_KEY!
 );
-
-(async () => {
-  const { error } = await supabaseAdmin.auth.admin.listUsers();
-  if (error) console.error('❌ Supabase connection failed:', error.message);
-  else console.log('✅ Supabase connected successfully');
-})();
