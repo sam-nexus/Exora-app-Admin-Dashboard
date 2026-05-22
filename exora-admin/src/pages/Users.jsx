@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
-import { Trash2, Eye, Edit, Plus, Search, Lock } from 'lucide-react';
+import { Trash2, Eye, Edit, Plus, Search, Lock, Unlock, Loader2 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { motion } from 'framer-motion';
 
@@ -14,10 +14,20 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [lockAllConfirm, setLockAllConfirm] = useState(false);
+  const [userLockStatus, setUserLockStatus] = useState({}); // userId -> true/false
+  const [toggling, setToggling] = useState(null); // userId being toggled
 
   const fetchUsers = async () => {
-    const { data } = await api.get('/users');
-    setUsers(data);
+    try {
+      const { data } = await api.get('/users');
+      setUsers(data);
+      // Initialize lock status: assume all locked (true) for each user
+      const initialStatus = {};
+      data.forEach((u) => { initialStatus[u.id] = true; });
+      setUserLockStatus(initialStatus);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => { fetchUsers(); }, []);
@@ -60,22 +70,33 @@ const Users = () => {
     }
   };
 
-  // Lock all courses for a specific user
-  const handleLockUserCourses = async (userId) => {
+  // Toggle lock/unlock for a specific user
+  const handleToggleLock = async (userId) => {
+    if (toggling === userId) return; // prevent double click
+    setToggling(userId);
     try {
-      await api.post(`/courses/lock-all/${userId}`);
-      alert(`All courses locked for user ${userId}`);
-      fetchUsers(); // optional refresh
+      await api.post(`/courses/toggle-all/${userId}`);
+      // Flip the local status
+      setUserLockStatus(prev => ({
+        ...prev,
+        [userId]: !prev[userId],
+      }));
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to lock courses');
+      alert(err.response?.data?.error || 'Toggle failed');
+    } finally {
+      setToggling(null);
     }
   };
 
-  // Lock all courses for all users
+  // Lock all courses for all users (global)
   const handleLockAllUsersCourses = async () => {
     try {
       await api.post('/courses/lock-all-users');
       setLockAllConfirm(false);
+      // Set all users as locked
+      const allLocked = {};
+      users.forEach(u => { allLocked[u.id] = true; });
+      setUserLockStatus(allLocked);
       alert('All courses locked for all users');
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to lock all courses');
@@ -105,7 +126,7 @@ const Users = () => {
         </div>
       </motion.div>
 
-      {/* Count cards (unchanged) */}
+      {/* Count cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <p className="text-sm text-gray-500">Total Users</p>
@@ -121,7 +142,7 @@ const Users = () => {
         </div>
       </div>
 
-      {/* Search and filter bar (unchanged) */}
+      {/* Search and filter */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -140,7 +161,7 @@ const Users = () => {
         </select>
       </div>
 
-      {/* Users Table (add lock button per user) */}
+      {/* Users Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -162,7 +183,20 @@ const Users = () => {
                     <div className="flex justify-center gap-2">
                       <button onClick={() => { setSelectedUser(user); setViewModal(true); }} className="text-blue-600 hover:text-blue-800"><Eye size={20} /></button>
                       <button onClick={() => { setSelectedUser(user); setEditModal(true); }} className="text-green-600 hover:text-green-800"><Edit size={20} /></button>
-                      <button onClick={() => handleLockUserCourses(user.id)} className="text-orange-600 hover:text-orange-800" title="Lock all courses for this user"><Lock size={20} /></button>
+                      <button
+                        onClick={() => handleToggleLock(user.id)}
+                        disabled={toggling === user.id}
+                        className={`${userLockStatus[user.id] ? 'text-orange-600 hover:text-orange-800' : 'text-green-600 hover:text-green-800'} disabled:opacity-50`}
+                        title={userLockStatus[user.id] ? 'Click to unlock all courses' : 'Click to lock all courses'}
+                      >
+                        {toggling === user.id ? (
+                          <Loader2 size={20} className="animate-spin" />
+                        ) : userLockStatus[user.id] ? (
+                          <Lock size={20} />
+                        ) : (
+                          <Unlock size={20} />
+                        )}
+                      </button>
                       <button onClick={() => { setSelectedUser(user); setDeleteConfirm(true); }} className="text-red-600 hover:text-red-800"><Trash2 size={20} /></button>
                     </div>
                   </td>
@@ -173,7 +207,7 @@ const Users = () => {
         </div>
       </div>
 
-      {/* Modals (same as before: View, Edit, Delete, Add) */}
+      {/* View Modal */}
       {viewModal && (
         <Modal onClose={() => setViewModal(false)}>
           <h3 className="text-xl font-semibold mb-4">User Details</h3>
@@ -181,10 +215,12 @@ const Users = () => {
             <p><strong>Name:</strong> {selectedUser.full_name}</p>
             <p><strong>Email:</strong> {selectedUser.email}</p>
             <p><strong>ID:</strong> {selectedUser.id}</p>
+            <p><strong>Role:</strong> {selectedUser.role}</p>
           </div>
         </Modal>
       )}
 
+      {/* Edit Modal */}
       {editModal && (
         <Modal onClose={() => setEditModal(false)}>
           <h3 className="text-xl font-semibold mb-4">Edit User</h3>
@@ -207,6 +243,7 @@ const Users = () => {
         </Modal>
       )}
 
+      {/* Delete Confirm Modal */}
       {deleteConfirm && (
         <Modal onClose={() => setDeleteConfirm(false)}>
           <h3 className="text-xl font-semibold mb-4">Delete User</h3>
@@ -218,6 +255,7 @@ const Users = () => {
         </Modal>
       )}
 
+      {/* Add User Modal */}
       {addModal && (
         <Modal onClose={() => setAddModal(false)}>
           <h3 className="text-xl font-semibold mb-4">Add New User</h3>
@@ -233,6 +271,7 @@ const Users = () => {
         </Modal>
       )}
 
+      {/* Lock All Users Modal */}
       {lockAllConfirm && (
         <Modal onClose={() => setLockAllConfirm(false)}>
           <h3 className="text-xl font-semibold mb-4">Lock All Courses</h3>

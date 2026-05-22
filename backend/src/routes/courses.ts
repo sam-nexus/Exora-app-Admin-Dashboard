@@ -96,4 +96,36 @@ router.patch('/:userCourseId/toggle', authenticate, adminOnly, async (req: AuthR
   res.json({ message: 'Updated' });
 });
 
+// Toggle lock status for all courses of a specific user
+router.post('/toggle-all/:userId', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    // Check current lock status: if any course is unlocked, we lock all;
+    // if all are locked, we unlock all.
+    const { data: userCourses, error: fetchError } = await supabaseAdmin
+      .from('user_courses')
+      .select('is_locked')
+      .eq('user_id', userId);
+
+    if (fetchError) throw fetchError;
+
+    // Determine new lock state
+    const anyUnlocked = userCourses?.some(uc => uc.is_locked === false);
+    const newLockState = !anyUnlocked; // if any unlocked, lock them (true); if all locked, unlock (false)
+
+    // Update all user_courses for that user
+    const { error: updateError } = await supabaseAdmin
+      .from('user_courses')
+      .update({ is_locked: newLockState })
+      .eq('user_id', userId);
+
+    if (updateError) throw updateError;
+
+    res.json({ message: `All courses ${newLockState ? 'locked' : 'unlocked'} for user ${userId}` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
