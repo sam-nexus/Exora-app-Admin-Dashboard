@@ -4,50 +4,6 @@ import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-// Lock all courses for a specific user
-router.post('/lock-all/:userId', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
-  const { userId } = req.params;
-  try {
-    // Set is_locked = true for all user_courses of this user
-    const { error } = await supabaseAdmin
-      .from('user_courses')
-      .update({ is_locked: true })
-      .eq('user_id', userId);
-
-    if (error) throw error;
-    res.json({ message: `All courses locked for user ${userId}` });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Lock all courses for every user
-router.post('/lock-all-users', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
-  try {
-    // First, get all user IDs from profiles
-    const { data: users, error: usersError } = await supabaseAdmin
-      .from('profiles')
-      .select('id');
-    if (usersError) throw usersError;
-
-    const userIds = users?.map(u => u.id) || [];
-    if (userIds.length === 0) {
-      return res.json({ message: 'No users found' });
-    }
-
-    // Update all user_courses rows for those users
-    const { error } = await supabaseAdmin
-      .from('user_courses')
-      .update({ is_locked: true })
-      .in('user_id', userIds);
-
-    if (error) throw error;
-    res.json({ message: `Locked courses for ${userIds.length} users` });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Get courses (optionally filtered by department_id)
 router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   let query = supabaseAdmin.from('courses').select('*, departments(name)');
@@ -66,6 +22,19 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
   res.status(201).json({ message: 'Course added' });
 });
 
+// Edit a course
+router.put('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { name, department_id } = req.body;
+  const updates: any = {};
+  if (name !== undefined) updates.name = name;
+  if (department_id !== undefined) updates.department_id = department_id;
+
+  const { error } = await supabaseAdmin.from('courses').update(updates).eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: 'Course updated' });
+});
+
 // Delete a course
 router.delete('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { error } = await supabaseAdmin.from('courses').delete().eq('id', req.params.id);
@@ -73,6 +42,7 @@ router.delete('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Res
   res.json({ message: 'Course deleted' });
 });
 
+// Get user‑specific courses (lock status)
 router.get('/user/:userId', authenticate, async (req: AuthRequest, res: Response) => {
   const { userId } = req.params;
   if (req.userId !== userId && req.role !== 'admin')
@@ -87,39 +57,82 @@ router.get('/user/:userId', authenticate, async (req: AuthRequest, res: Response
   res.json(data);
 });
 
+// Toggle lock for a specific user/course
 router.patch('/:userCourseId/toggle', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { userCourseId } = req.params;
-  const { data: current } = await supabaseAdmin.from('user_courses').select('is_locked').eq('id', userCourseId).single();
+  const { data: current } = await supabaseAdmin
+    .from('user_courses')
+    .select('is_locked')
+    .eq('id', userCourseId)
+    .single();
+
   if (!current) return res.status(404).json({ error: 'Not found' });
-  const { error } = await supabaseAdmin.from('user_courses').update({ is_locked: !current.is_locked }).eq('id', userCourseId);
+
+  const { error } = await supabaseAdmin
+    .from('user_courses')
+    .update({ is_locked: !current.is_locked })
+    .eq('id', userCourseId);
+
   if (error) return res.status(500).json({ error: error.message });
   res.json({ message: 'Updated' });
+});
+
+// Lock all courses for a specific user
+router.post('/lock-all/:userId', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { userId } = req.params;
+  try {
+    const { error } = await supabaseAdmin
+      .from('user_courses')
+      .update({ is_locked: true })
+      .eq('user_id', userId);
+    if (error) throw error;
+    res.json({ message: `All courses locked for user ${userId}` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Lock all courses for all users
+router.post('/lock-all-users', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  try {
+    const { data: users, error: usersError } = await supabaseAdmin
+      .from('profiles')
+      .select('id');
+    if (usersError) throw usersError;
+
+    const userIds = users?.map(u => u.id) || [];
+    if (userIds.length === 0) {
+      return res.json({ message: 'No users found' });
+    }
+
+    const { error } = await supabaseAdmin
+      .from('user_courses')
+      .update({ is_locked: true })
+      .in('user_id', userIds);
+    if (error) throw error;
+    res.json({ message: `Locked courses for ${userIds.length} users` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Toggle lock status for all courses of a specific user
 router.post('/toggle-all/:userId', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { userId } = req.params;
-
   try {
-    // Check current lock status: if any course is unlocked, we lock all;
-    // if all are locked, we unlock all.
     const { data: userCourses, error: fetchError } = await supabaseAdmin
       .from('user_courses')
       .select('is_locked')
       .eq('user_id', userId);
-
     if (fetchError) throw fetchError;
 
-    // Determine new lock state
     const anyUnlocked = userCourses?.some(uc => uc.is_locked === false);
-    const newLockState = !anyUnlocked; // if any unlocked, lock them (true); if all locked, unlock (false)
+    const newLockState = !anyUnlocked; // lock if any unlocked, else unlock
 
-    // Update all user_courses for that user
     const { error: updateError } = await supabaseAdmin
       .from('user_courses')
       .update({ is_locked: newLockState })
       .eq('user_id', userId);
-
     if (updateError) throw updateError;
 
     res.json({ message: `All courses ${newLockState ? 'locked' : 'unlocked'} for user ${userId}` });

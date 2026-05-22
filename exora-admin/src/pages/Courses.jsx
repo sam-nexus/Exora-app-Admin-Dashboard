@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
-import { Trash2, Edit, Plus, Search, Eye } from 'lucide-react';
+import { Trash2, Edit, Plus, Search, Eye, Loader2 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { motion } from 'framer-motion';
 
@@ -9,25 +9,32 @@ const Courses = () => {
   const [courses, setCourses] = useState([]);
   const [selectedDept, setSelectedDept] = useState(null);
   const [deptCourses, setDeptCourses] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [filterDept, setFilterDept] = useState('');
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
-
-  // Counts
   const [totalCourses, setTotalCourses] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false); // for add/edit/delete
 
   const fetchDepartments = async () => {
-    const { data } = await api.get('/departments');
-    setDepartments(data);
+    try {
+      const { data } = await api.get('/departments');
+      setDepartments(data);
+    } catch (err) {
+      console.error('Fetch departments error:', err);
+    }
   };
 
   const fetchAllCourses = async () => {
-    const { data } = await api.get('/courses');
-    setCourses(data);
-    setTotalCourses(data.length);
+    try {
+      const { data } = await api.get('/courses');
+      setCourses(data);
+      setTotalCourses(data.length);
+    } catch (err) {
+      console.error('Fetch courses error:', err);
+    }
   };
 
   useEffect(() => {
@@ -37,36 +44,73 @@ const Courses = () => {
 
   const handleViewDept = async (dept) => {
     setSelectedDept(dept);
-    const { data } = await api.get(`/courses?department_id=${dept.id}`);
-    setDeptCourses(data);
+    setLoading(true);
+    try {
+      const { data } = await api.get(`/courses?department_id=${dept.id}`);
+      setDeptCourses(data);
+    } catch (err) {
+      console.error('Fetch department courses error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAdd = async (e) => {
     e.preventDefault();
     const form = e.target;
-    await api.post('/courses', {
-      department_id: selectedDept.id,
-      name: form.name.value,
-    });
-    setAddModal(false);
-    handleViewDept(selectedDept); // refresh
-    fetchAllCourses(); // update global list
+    const name = form.name.value.trim();
+    if (!name) return;
+
+    setActionLoading(true);
+    try {
+      await api.post('/courses', {
+        department_id: selectedDept.id,
+        name,
+      });
+      setAddModal(false);
+      form.reset();
+      handleViewDept(selectedDept); // refresh
+      fetchAllCourses(); // update global list
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to add course');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleEdit = async (e) => {
     e.preventDefault();
     const form = e.target;
-    await api.put(`/courses/${selectedCourse.id}`, { name: form.name.value });
-    setEditModal(false);
-    handleViewDept(selectedDept);
-    fetchAllCourses();
+    const name = form.name.value.trim();
+    if (!name) return;
+
+    setActionLoading(true);
+    try {
+      await api.put(`/courses/${selectedCourse.id}`, { name });
+      setEditModal(false);
+      setSelectedCourse(null);
+      handleViewDept(selectedDept);
+      fetchAllCourses();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to update course');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleDelete = async () => {
-    await api.delete(`/courses/${selectedCourse.id}`);
-    setDeleteConfirm(false);
-    handleViewDept(selectedDept);
-    fetchAllCourses();
+    setActionLoading(true);
+    try {
+      await api.delete(`/courses/${selectedCourse.id}`);
+      setDeleteConfirm(false);
+      setSelectedCourse(null);
+      handleViewDept(selectedDept);
+      fetchAllCourses();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete course');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const filteredDepts = useMemo(() => {
@@ -118,7 +162,9 @@ const Courses = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ scale: 1.02 }}
-            className={`bg-white p-6 rounded-xl shadow-sm border cursor-pointer transition-colors ${selectedDept?.id === dept.id ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-100 hover:border-indigo-200'}`}
+            className={`bg-white p-6 rounded-xl shadow-sm border cursor-pointer transition-colors ${
+              selectedDept?.id === dept.id ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-100 hover:border-indigo-200'
+            }`}
           >
             <div className="text-4xl mb-3">{dept.icon || '📁'}</div>
             <h3 className="text-lg font-semibold text-gray-800">{dept.name}</h3>
@@ -144,7 +190,12 @@ const Courses = () => {
               <Plus size={16} /> Add Course
             </button>
           </div>
-          {deptCourses.length === 0 ? (
+
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 size={32} className="animate-spin text-indigo-600" />
+            </div>
+          ) : deptCourses.length === 0 ? (
             <p className="text-gray-500">No courses yet.</p>
           ) : (
             <div className="space-y-3">
@@ -180,7 +231,9 @@ const Courses = () => {
             <input name="name" placeholder="Course name" className="w-full p-2 border rounded mb-4" required />
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setAddModal(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Create</button>
+              <button type="submit" disabled={actionLoading} className="px-4 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-50 flex items-center gap-1">
+                {actionLoading && <Loader2 size={16} className="animate-spin" />} Create
+              </button>
             </div>
           </form>
         </Modal>
@@ -188,13 +241,15 @@ const Courses = () => {
 
       {/* Edit Course Modal */}
       {editModal && selectedCourse && (
-        <Modal onClose={() => setEditModal(false)}>
+        <Modal onClose={() => { setEditModal(false); setSelectedCourse(null); }}>
           <h3 className="text-xl font-semibold mb-4">Edit Course</h3>
           <form onSubmit={handleEdit}>
             <input name="name" defaultValue={selectedCourse.name} className="w-full p-2 border rounded mb-4" required />
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setEditModal(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Save</button>
+              <button type="submit" disabled={actionLoading} className="px-4 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-50 flex items-center gap-1">
+                {actionLoading && <Loader2 size={16} className="animate-spin" />} Save
+              </button>
             </div>
           </form>
         </Modal>
@@ -202,12 +257,14 @@ const Courses = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && selectedCourse && (
-        <Modal onClose={() => setDeleteConfirm(false)}>
+        <Modal onClose={() => { setDeleteConfirm(false); setSelectedCourse(null); }}>
           <h3 className="text-xl font-semibold mb-4">Delete Course</h3>
           <p>Are you sure you want to delete <strong>{selectedCourse.name}</strong>?</p>
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setDeleteConfirm(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
-            <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg">Delete</button>
+            <button onClick={handleDelete} disabled={actionLoading} className="px-4 py-2 bg-red-600 text-white rounded-lg disabled:opacity-50 flex items-center gap-1">
+              {actionLoading && <Loader2 size={16} className="animate-spin" />} Delete
+            </button>
           </div>
         </Modal>
       )}
