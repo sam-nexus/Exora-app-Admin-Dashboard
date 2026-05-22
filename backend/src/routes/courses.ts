@@ -4,6 +4,50 @@ import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
+// Lock all courses for a specific user
+router.post('/lock-all/:userId', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { userId } = req.params;
+  try {
+    // Set is_locked = true for all user_courses of this user
+    const { error } = await supabaseAdmin
+      .from('user_courses')
+      .update({ is_locked: true })
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    res.json({ message: `All courses locked for user ${userId}` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Lock all courses for every user
+router.post('/lock-all-users', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  try {
+    // First, get all user IDs from profiles
+    const { data: users, error: usersError } = await supabaseAdmin
+      .from('profiles')
+      .select('id');
+    if (usersError) throw usersError;
+
+    const userIds = users?.map(u => u.id) || [];
+    if (userIds.length === 0) {
+      return res.json({ message: 'No users found' });
+    }
+
+    // Update all user_courses rows for those users
+    const { error } = await supabaseAdmin
+      .from('user_courses')
+      .update({ is_locked: true })
+      .in('user_id', userIds);
+
+    if (error) throw error;
+    res.json({ message: `Locked courses for ${userIds.length} users` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get courses (optionally filtered by department_id)
 router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   let query = supabaseAdmin.from('courses').select('*, departments(name)');

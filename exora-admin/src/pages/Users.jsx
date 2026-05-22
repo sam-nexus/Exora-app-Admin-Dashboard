@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
-import { Trash2, Eye, Edit, Plus, Search } from 'lucide-react';
+import { Trash2, Eye, Edit, Plus, Search, Lock } from 'lucide-react';
 import Modal from '../components/Modal';
 import { motion } from 'framer-motion';
 
@@ -12,7 +12,8 @@ const Users = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all'); // not used yet but placeholder
+  const [filterRole, setFilterRole] = useState('all');
+  const [lockAllConfirm, setLockAllConfirm] = useState(false);
 
   const fetchUsers = async () => {
     const { data } = await api.get('/users');
@@ -21,7 +22,6 @@ const Users = () => {
 
   useEffect(() => { fetchUsers(); }, []);
 
-  // Derived counts
   const totalUsers = users.length;
   const newToday = users.filter(u => {
     const today = new Date().toISOString().split('T')[0];
@@ -60,6 +60,28 @@ const Users = () => {
     }
   };
 
+  // Lock all courses for a specific user
+  const handleLockUserCourses = async (userId) => {
+    try {
+      await api.post(`/courses/lock-all/${userId}`);
+      alert(`All courses locked for user ${userId}`);
+      fetchUsers(); // optional refresh
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to lock courses');
+    }
+  };
+
+  // Lock all courses for all users
+  const handleLockAllUsersCourses = async () => {
+    try {
+      await api.post('/courses/lock-all-users');
+      setLockAllConfirm(false);
+      alert('All courses locked for all users');
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to lock all courses');
+    }
+  };
+
   const filteredUsers = useMemo(() => {
     if (!searchTerm.trim()) return users;
     const term = searchTerm.toLowerCase();
@@ -70,12 +92,20 @@ const Users = () => {
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-800">Users</h2>
-        <button onClick={() => setAddModal(true)} className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
-          <Plus size={20} /> Add User
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setLockAllConfirm(true)}
+            className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+          >
+            <Lock size={20} /> Lock All Courses
+          </button>
+          <button onClick={() => setAddModal(true)} className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+            <Plus size={20} /> Add User
+          </button>
+        </div>
       </motion.div>
 
-      {/* Count cards */}
+      {/* Count cards (unchanged) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <p className="text-sm text-gray-500">Total Users</p>
@@ -87,11 +117,11 @@ const Users = () => {
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <p className="text-sm text-gray-500">Pending Payments</p>
-          <p className="text-2xl font-bold text-gray-800">{0 /* placeholder */}</p>
+          <p className="text-2xl font-bold text-gray-800">{0}</p>
         </div>
       </div>
 
-      {/* Search and filter bar */}
+      {/* Search and filter bar (unchanged) */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -110,7 +140,7 @@ const Users = () => {
         </select>
       </div>
 
-      {/* Users Table */}
+      {/* Users Table (add lock button per user) */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -128,10 +158,13 @@ const Users = () => {
                   <td className="p-4">{user.full_name}</td>
                   <td className="p-4">{user.email}</td>
                   <td className="p-4">{new Date(user.created_at).toLocaleDateString()}</td>
-                  <td className="p-4 flex justify-center gap-2">
-                    <button onClick={() => { setSelectedUser(user); setViewModal(true); }} className="text-blue-600 hover:text-blue-800"><Eye size={20} /></button>
-                    <button onClick={() => { setSelectedUser(user); setEditModal(true); }} className="text-green-600 hover:text-green-800"><Edit size={20} /></button>
-                    <button onClick={() => { setSelectedUser(user); setDeleteConfirm(true); }} className="text-red-600 hover:text-red-800"><Trash2 size={20} /></button>
+                  <td className="p-4">
+                    <div className="flex justify-center gap-2">
+                      <button onClick={() => { setSelectedUser(user); setViewModal(true); }} className="text-blue-600 hover:text-blue-800"><Eye size={20} /></button>
+                      <button onClick={() => { setSelectedUser(user); setEditModal(true); }} className="text-green-600 hover:text-green-800"><Edit size={20} /></button>
+                      <button onClick={() => handleLockUserCourses(user.id)} className="text-orange-600 hover:text-orange-800" title="Lock all courses for this user"><Lock size={20} /></button>
+                      <button onClick={() => { setSelectedUser(user); setDeleteConfirm(true); }} className="text-red-600 hover:text-red-800"><Trash2 size={20} /></button>
+                    </div>
                   </td>
                 </motion.tr>
               ))}
@@ -140,7 +173,7 @@ const Users = () => {
         </div>
       </div>
 
-      {/* View Modal */}
+      {/* Modals (same as before: View, Edit, Delete, Add) */}
       {viewModal && (
         <Modal onClose={() => setViewModal(false)}>
           <h3 className="text-xl font-semibold mb-4">User Details</h3>
@@ -152,7 +185,6 @@ const Users = () => {
         </Modal>
       )}
 
-      {/* Edit Modal */}
       {editModal && (
         <Modal onClose={() => setEditModal(false)}>
           <h3 className="text-xl font-semibold mb-4">Edit User</h3>
@@ -175,7 +207,6 @@ const Users = () => {
         </Modal>
       )}
 
-      {/* Delete Confirm Modal */}
       {deleteConfirm && (
         <Modal onClose={() => setDeleteConfirm(false)}>
           <h3 className="text-xl font-semibold mb-4">Delete User</h3>
@@ -187,7 +218,6 @@ const Users = () => {
         </Modal>
       )}
 
-      {/* Add User Modal */}
       {addModal && (
         <Modal onClose={() => setAddModal(false)}>
           <h3 className="text-xl font-semibold mb-4">Add New User</h3>
@@ -202,7 +232,19 @@ const Users = () => {
           </form>
         </Modal>
       )}
+
+      {lockAllConfirm && (
+        <Modal onClose={() => setLockAllConfirm(false)}>
+          <h3 className="text-xl font-semibold mb-4">Lock All Courses</h3>
+          <p>Are you sure you want to lock <strong>all</strong> courses for <strong>all</strong> users?</p>
+          <div className="flex justify-end gap-2 mt-4">
+            <button onClick={() => setLockAllConfirm(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
+            <button onClick={handleLockAllUsersCourses} className="px-4 py-2 bg-orange-600 text-white rounded-lg">Lock All</button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
+
 export default Users;

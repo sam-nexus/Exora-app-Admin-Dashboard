@@ -65,4 +65,24 @@ router.delete('/course/:courseId', authenticate, adminOnly, async (req: AuthRequ
   res.json({ message: 'All questions for course deleted' });
 });
 
+// Update a question
+router.put('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { question_text, options, correct_index, explanation } = req.body;
+
+  const updates: any = {};
+  if (question_text !== undefined) updates.question_text = question_text;
+  if (options !== undefined) updates.options = options;
+  if (correct_index !== undefined) updates.correct_index = correct_index;
+  if (explanation !== undefined) updates.explanation = explanation;
+
+  const { error } = await supabaseAdmin
+    .from('questions')
+    .update(updates)
+    .eq('id', id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: 'Question updated' });
+});
+
 export default router;
