@@ -1,13 +1,17 @@
-const StatCard = ({ icon, title, value }) => (
-  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4">
-    <div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-full text-indigo-600 dark:text-indigo-300">
-      {icon}
-    </div>
-    <div>
-      <p className="text-gray-500 dark:text-gray-400">{title}</p>
-      <p className="text-2xl font-bold text-gray-800 dark:text-white">{value}</p>
-    </div>
-  </div>
-);
+import { motion } from 'framer-motion';
 
+const StatCard = ({ icon, title, value, color }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4"
+  >
+    <div className={`p-3 rounded-full ${color}`}>{icon}</div>
+    <div>
+      <p className="text-sm text-gray-500">{title}</p>
+      <p className="text-2xl font-bold text-gray-800">{value}</p>
+    </div>
+  </motion.div>
+);
 export default StatCard;

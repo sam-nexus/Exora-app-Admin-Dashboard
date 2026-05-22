@@ -4,6 +4,31 @@ import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
+// Get courses (optionally filtered by department_id)
+router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  let query = supabaseAdmin.from('courses').select('*, departments(name)');
+  const { department_id } = req.query;
+  if (department_id) query = query.eq('department_id', department_id);
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// Add a new course
+router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { department_id, name } = req.body;
+  const { error } = await supabaseAdmin.from('courses').insert({ department_id, name });
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json({ message: 'Course added' });
+});
+
+// Delete a course
+router.delete('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { error } = await supabaseAdmin.from('courses').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: 'Course deleted' });
+});
+
 router.get('/user/:userId', authenticate, async (req: AuthRequest, res: Response) => {
   const { userId } = req.params;
   if (req.userId !== userId && req.role !== 'admin')

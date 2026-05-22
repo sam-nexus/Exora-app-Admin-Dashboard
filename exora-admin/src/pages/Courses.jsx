@@ -1,57 +1,73 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
+import { Trash2 } from 'lucide-react';
 
 const Courses = () => {
-  const [userId, setUserId] = useState('');
-  const [userCourses, setUserCourses] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [selectedDept, setSelectedDept] = useState('');
+  const [courses, setCourses] = useState([]);
+  const [newCourseName, setNewCourseName] = useState('');
 
-  const fetchUserCourses = async () => {
-    if (!userId) return;
-    const { data } = await api.get(`/courses/user/${userId}`);
-    setUserCourses(data);
+  useEffect(() => {
+    api.get('/departments').then(res => setDepartments(res.data));
+  }, []);
+
+  const fetchCourses = async () => {
+    if (!selectedDept) return;
+    const res = await api.get(`/courses?department_id=${selectedDept}`);
+    setCourses(res.data);
   };
 
-  const toggleLock = async (userCourseId) => {
-    await api.patch(`/courses/${userCourseId}/toggle`);
-    fetchUserCourses();
+  useEffect(() => { fetchCourses(); }, [selectedDept]);
+
+  const addCourse = async () => {
+    if (!newCourseName.trim()) return;
+    await api.post('/courses', { department_id: selectedDept, name: newCourseName });
+    setNewCourseName('');
+    fetchCourses();
+  };
+
+  const deleteCourse = async (id) => {
+    await api.delete(`/courses/${id}`);
+    fetchCourses();
   };
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">Manage User Courses</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Courses</h2>
       <div className="flex gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Enter user ID"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          className="p-3 border rounded-lg flex-1"
-        />
-        <button onClick={fetchUserCourses} className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">
-          Load
-        </button>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        {userCourses.length === 0 ? (
-          <p className="text-gray-500">No courses loaded.</p>
-        ) : (
-          userCourses.map((uc) => (
-            <div key={uc.id} className="flex justify-between items-center p-3 border-b dark:border-gray-700">
-              <span>{uc.courses.name} ({uc.courses.departments.name})</span>
-              <button
-                onClick={() => toggleLock(uc.id)}
-                className={`px-4 py-2 rounded-lg font-semibold ${
-                  uc.is_locked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                }`}
-              >
-                {uc.is_locked ? 'Locked' : 'Unlocked'}
-              </button>
-            </div>
-          ))
+        <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="p-3 border rounded-lg">
+          <option value="">Select Department</option>
+          {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+        {selectedDept && (
+          <div className="flex gap-2">
+            <input
+              value={newCourseName}
+              onChange={(e) => setNewCourseName(e.target.value)}
+              placeholder="New course name"
+              className="p-3 border rounded-lg"
+            />
+            <button onClick={addCourse} className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">Add Course</button>
+          </div>
         )}
       </div>
+
+      {selectedDept && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          {courses.length === 0 ? (
+            <p className="text-gray-500">No courses in this department.</p>
+          ) : (
+            courses.map(c => (
+              <div key={c.id} className="flex justify-between items-center py-3 border-b last:border-0">
+                <span>{c.name}</span>
+                <button onClick={() => deleteCourse(c.id)} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 };
-
 export default Courses;

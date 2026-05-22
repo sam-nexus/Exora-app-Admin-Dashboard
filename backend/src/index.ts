@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import statsRoutes from './routes/stats';
+import departmentRoutes from './routes/departments';
 dotenv.config();
 
 import authRoutes from './routes/auth';
@@ -18,6 +20,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/departments', departmentRoutes);
 app.get('/', (_req, res) => {
   res.json({
     message: 'Exora Backend is running',

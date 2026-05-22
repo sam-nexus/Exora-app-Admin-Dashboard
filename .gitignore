@@ -1,16 +1,33 @@
-# Node
+# Dependencies
 node_modules/
-dist/
-.env
 
-# React / Vite
+# Build outputs
+backend/dist/
 exora-admin/dist/
-exora-admin/node_modules/
+dist/
 
-# OS
+# Environment variables (contains sensitive keys)
+.env
+backend/.env
+exora-admin/.env
+
+# Uploaded files (from multer)
+uploads/
+backend/uploads/
+
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE / editors
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# React / Vite specific
+exora-admin/node_modules/
