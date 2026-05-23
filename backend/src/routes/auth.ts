@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { supabaseAdmin, supabaseAnon } from '../supabase';
+import { authenticate, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
@@ -54,11 +55,12 @@ router.post('/login', async (req, res) => {
 
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('role')
+      .select('full_name, role')
       .eq('id', data.user.id)
       .single();
 
     const role = profile?.role || 'user';
+    const fullName = profile?.full_name || '';
 
     const token = jwt.sign(
       { sub: data.user.id, role },
@@ -68,7 +70,8 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      user: { id: data.user.id, email, role },
+      user: { id: data.user.id, email, role, full_name: fullName, },
+
     });
   } catch (err: any) {
     res.status(401).json({ error: err.message });
@@ -107,6 +110,31 @@ router.post('/admin/login', async (req, res) => {
     });
   } catch (err: any) {
     res.status(401).json({ error: err.message });
+  }
+});
+
+// Change password (authenticated)
+router.put('/change-password', authenticate, async (req: AuthRequest, res: Response) => {
+  const { oldPassword, newPassword } = req.body;
+  const userId = req.userId!;
+
+  try {
+    // Re‑authenticate to verify old password
+    const { error: signInError } = await supabaseAnon.auth.signInWithPassword({
+      email: req.body.email,   // we need the user's email – send it along
+      password: oldPassword,
+    });
+    if (signInError) throw new Error('Current password is incorrect');
+
+    // Update the password
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+      password: newPassword,
+    });
+    if (error) throw error;
+
+    res.json({ message: 'Password updated' });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
 });
 
