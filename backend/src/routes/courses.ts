@@ -116,7 +116,6 @@ router.post('/lock-all-users', authenticate, adminOnly, async (req: AuthRequest,
   }
 });
 
-// Toggle lock status for all courses of a specific user
 router.post('/toggle-all/:userId', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { userId } = req.params;
   try {
@@ -127,7 +126,7 @@ router.post('/toggle-all/:userId', authenticate, adminOnly, async (req: AuthRequ
     if (fetchError) throw fetchError;
 
     const anyUnlocked = userCourses?.some(uc => uc.is_locked === false);
-    const newLockState = !anyUnlocked; // lock if any unlocked, else unlock
+    const newLockState = anyUnlocked; // toggle correctly
 
     const { error: updateError } = await supabaseAdmin
       .from('user_courses')
