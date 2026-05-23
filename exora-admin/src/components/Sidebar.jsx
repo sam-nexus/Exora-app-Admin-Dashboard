@@ -26,6 +26,9 @@ const Sidebar = () => {
         <NavLink to="/questions" className={({ isActive }) => `flex items-center gap-3 p-3 rounded-lg transition-colors ${isActive ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}>
           <FileQuestion size={20} /> Questions
         </NavLink>
+        <NavLink to="/payments" className={({ isActive }) => `flex items-center gap-3 p-3 rounded-lg transition-colors ${isActive ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}>
+          <DollarSign size={20} /> Payments
+        </NavLink>
       </nav>
       <button onClick={handleLogout} className="flex items-center gap-3 p-3 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 mt-auto transition-colors">
         <LogOut size={20} /> Logout
