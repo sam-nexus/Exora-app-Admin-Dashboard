@@ -4,8 +4,8 @@ import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-// Get courses (optionally filtered by department_id)
-router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+// GET – list courses (any authenticated user)
+router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   let query = supabaseAdmin.from('courses').select('*, departments(name)');
   const { department_id } = req.query;
   if (department_id) query = query.eq('department_id', department_id);

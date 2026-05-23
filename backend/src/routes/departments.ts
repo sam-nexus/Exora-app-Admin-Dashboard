@@ -4,8 +4,8 @@ import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-// GET – list all departments
-router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+// GET – list all departments (any authenticated user)
+router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   const { data, error } = await supabaseAdmin.from('departments').select('*');
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
