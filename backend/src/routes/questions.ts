@@ -8,8 +8,8 @@ import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 const upload = multer({ dest: 'uploads/' });
 const router = Router();
 
-// List questions with optional filters (unchanged)
-router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+// GET – list questions (any authenticated user)
+router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   let query = supabaseAdmin.from('questions').select('*, courses!inner(department_id)');
   const { course_id, department_id } = req.query;
   if (course_id) query = query.eq('course_id', course_id);
