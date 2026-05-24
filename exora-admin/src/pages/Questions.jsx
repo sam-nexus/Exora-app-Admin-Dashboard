@@ -1,28 +1,27 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../api/axios';
-import { Eye, Trash2, Edit, Plus, Upload, Search } from 'lucide-react';
+import { Eye, Trash2, Edit, Plus, Upload, Search, Loader2 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { motion } from 'framer-motion';
 
 const Questions = () => {
+  // Department and course state
   const [departments, setDepartments] = useState([]);
-  const [courses, setCourses] = useState([]); // will be used later for filter
   const [selectedDept, setSelectedDept] = useState(null);
   const [deptCourses, setDeptCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDept, setFilterDept] = useState('');
-  const [filterCourse, setFilterCourse] = useState('');
 
-  // Modals state
+  // Modals
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [bulkModal, setBulkModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
 
-  // Form state for single add/edit
+  // Form for single add/edit
   const [form, setForm] = useState({
     question_text: '',
     optionA: '',
@@ -33,29 +32,32 @@ const Questions = () => {
     explanation: '',
   });
 
-  // Bulk file
+  // Bulk file & loading state
   const [bulkFile, setBulkFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
 
   // Counts
   const [totalQuestions, setTotalQuestions] = useState(0);
 
+  // Fetch departments
   const fetchDepartments = async () => {
-    const { data } = await api.get('/departments');
-    setDepartments(data);
+    try {
+      const { data } = await api.get('/departments');
+      setDepartments(data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const fetchQuestionsForCourse = async (courseId) => {
-    const { data } = await api.get(`/questions?course_id=${courseId}`);
-    setQuestions(data);
-  };
-
+  // Fetch total questions count (via stats endpoint if available, else set 0)
   const fetchTotalStats = async () => {
-    // Use stats endpoint to get total questions count
     try {
       const { data } = await api.get('/stats');
       setTotalQuestions(data.questions || 0);
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      // ignore
+    }
   };
 
   useEffect(() => {
@@ -63,22 +65,34 @@ const Questions = () => {
     fetchTotalStats();
   }, []);
 
+  // When a department card is clicked
   const handleViewDept = (dept) => {
     setSelectedDept(dept);
     setSelectedCourse(null);
     setQuestions([]);
-    // Fetch courses for this department
     api.get(`/courses?department_id=${dept.id}`).then(res => setDeptCourses(res.data));
   };
 
+  // When a course is selected
   const handleViewCourse = (course) => {
     setSelectedCourse(course);
     fetchQuestionsForCourse(course.id);
   };
 
+  const fetchQuestionsForCourse = async (courseId) => {
+    try {
+      const { data } = await api.get(`/questions?course_id=${courseId}`);
+      setQuestions(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ---------- Single question add ----------
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     if (!selectedCourse) return;
+
     const options = [form.optionA, form.optionB, form.optionC, form.optionD];
     const payload = {
       course_id: selectedCourse.id,
@@ -87,54 +101,103 @@ const Questions = () => {
       correct_index: form.correct_answer,
       explanation: form.explanation,
     };
-    await api.post('/questions', payload);
-    setAddModal(false);
-    fetchQuestionsForCourse(selectedCourse.id);
-    setMessage('Question added!');
-    setTimeout(() => setMessage(''), 3000);
-    // Reset form
-    setForm({ question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', correct_answer: 0, explanation: '' });
+
+    try {
+      await api.post('/questions', payload);
+      setAddModal(false);
+      setForm({
+        question_text: '',
+        optionA: '',
+        optionB: '',
+        optionC: '',
+        optionD: '',
+        correct_answer: 0,
+        explanation: '',
+      });
+      fetchQuestionsForCourse(selectedCourse.id);
+      setMessage('Question added!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Failed to add question');
+    }
   };
 
+  // ---------- Edit question ----------
   const handleEditQuestion = async (e) => {
     e.preventDefault();
     const options = [form.optionA, form.optionB, form.optionC, form.optionD];
-    await api.put(`/questions/${selectedQuestion.id}`, {
-      question_text: form.question_text,
-      options,
-      correct_index: form.correct_answer,
-      explanation: form.explanation,
-    });
-    setEditModal(false);
-    fetchQuestionsForCourse(selectedCourse.id);
-    setMessage('Question updated!');
-    setTimeout(() => setMessage(''), 3000);
+    try {
+      await api.put(`/questions/${selectedQuestion.id}`, {
+        question_text: form.question_text,
+        options,
+        correct_index: form.correct_answer,
+        explanation: form.explanation,
+      });
+      setEditModal(false);
+      fetchQuestionsForCourse(selectedCourse.id);
+      setMessage('Question updated!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Failed to update question');
+    }
   };
 
+  // ---------- Delete question ----------
   const handleDeleteQuestion = async (id) => {
-    await api.delete(`/questions/${id}`);
-    fetchQuestionsForCourse(selectedCourse.id);
-    setMessage('Question deleted.');
-    setTimeout(() => setMessage(''), 3000);
+    try {
+      await api.delete(`/questions/${id}`);
+      fetchQuestionsForCourse(selectedCourse.id);
+      setMessage('Question deleted.');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Failed to delete question');
+    }
   };
 
+  // ---------- Delete all questions for course ----------
+  const handleDeleteAllQuestions = async () => {
+    if (!window.confirm('Delete ALL questions for this course?')) return;
+    try {
+      await api.delete(`/questions/course/${selectedCourse.id}`);
+      fetchQuestionsForCourse(selectedCourse.id);
+      setMessage('All questions deleted.');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Failed to delete questions');
+    }
+  };
+
+  // ---------- Bulk upload ----------
   const handleBulkUpload = async () => {
     if (!bulkFile || !selectedCourse) return;
-    const formData = new FormData();
-    formData.append('file', bulkFile);
-    await api.post('/questions/bulk', formData);
-    setBulkModal(false);
-    setBulkFile(null);
-    fetchQuestionsForCourse(selectedCourse.id);
-    setMessage('Questions uploaded successfully!');
-    setTimeout(() => setMessage(''), 3000);
+
+    setUploading(true);
+    setMessage('');
+    try {
+      const formData = new FormData();
+      formData.append('file', bulkFile);
+      formData.append('course_id', selectedCourse.id);
+
+      const res = await api.post('/questions/bulk', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      setBulkModal(false);
+      setBulkFile(null);
+      fetchQuestionsForCourse(selectedCourse.id);
+      setMessage(res.data.message || 'Questions uploaded successfully!');
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Upload failed');
+    } finally {
+      setUploading(false);
+      setTimeout(() => setMessage(''), 5000);
+    }
   };
 
-  // Filter departments
-  const filteredDepts = useMemo(() => {
-    if (!filterDept) return departments;
-    return departments.filter(d => d.name.toLowerCase().includes(filterDept.toLowerCase()));
-  }, [departments, filterDept]);
+  // Filter departments by search
+  const filteredDepts = departments.filter(d =>
+    d.name?.toLowerCase().includes(filterDept.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -154,12 +217,12 @@ const Questions = () => {
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <p className="text-sm text-gray-500">Active Courses</p>
-          <p className="text-2xl font-bold text-gray-800">{courses.length}</p>
+          <p className="text-2xl font-bold text-gray-800">{deptCourses.length}</p>
         </div>
       </div>
 
       {/* Search / Filter Bar */}
-      <div className="flex items-center gap-4 flex-wrap">
+      <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -180,7 +243,9 @@ const Questions = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ scale: 1.02 }}
-            className={`bg-white p-6 rounded-xl shadow-sm border cursor-pointer transition-colors ${selectedDept?.id === dept.id ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-100 hover:border-indigo-200'}`}
+            className={`bg-white p-6 rounded-xl shadow-sm border cursor-pointer transition-colors ${
+              selectedDept?.id === dept.id ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-100 hover:border-indigo-200'
+            }`}
             onClick={() => handleViewDept(dept)}
           >
             <div className="text-4xl mb-3">{dept.icon || '📁'}</div>
@@ -199,7 +264,9 @@ const Questions = () => {
               <motion.div
                 key={course.id}
                 whileHover={{ scale: 1.02 }}
-                className={`p-4 rounded-lg border cursor-pointer transition-colors ${selectedCourse?.id === course.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'}`}
+                className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                  selectedCourse?.id === course.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'
+                }`}
                 onClick={() => handleViewCourse(course)}
               >
                 <h4 className="font-medium text-gray-800">{course.name}</h4>
@@ -224,9 +291,12 @@ const Questions = () => {
               <button onClick={() => setBulkModal(true)} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
                 <Upload size={16} /> Bulk
               </button>
+              <button onClick={handleDeleteAllQuestions} className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
+                <Trash2 size={16} /> Delete All
+              </button>
             </div>
           </div>
-          {message && <div className="mb-3 text-green-600 bg-green-50 p-2 rounded">{message}</div>}
+          {message && <div className={`mb-3 p-2 rounded ${message.includes('success') || message.includes('uploaded') ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>{message}</div>}
           {questions.length === 0 ? (
             <p className="text-gray-500">No questions yet.</p>
           ) : (
@@ -293,50 +363,17 @@ const Questions = () => {
               className="w-full p-2 border rounded"
               required
             />
-            <input
-              placeholder="Choice A"
-              value={form.optionA}
-              onChange={e => setForm({...form, optionA: e.target.value})}
-              className="w-full p-2 border rounded"
-              required
-            />
-            <input
-              placeholder="Choice B"
-              value={form.optionB}
-              onChange={e => setForm({...form, optionB: e.target.value})}
-              className="w-full p-2 border rounded"
-              required
-            />
-            <input
-              placeholder="Choice C"
-              value={form.optionC}
-              onChange={e => setForm({...form, optionC: e.target.value})}
-              className="w-full p-2 border rounded"
-              required
-            />
-            <input
-              placeholder="Choice D"
-              value={form.optionD}
-              onChange={e => setForm({...form, optionD: e.target.value})}
-              className="w-full p-2 border rounded"
-              required
-            />
-            <select
-              value={form.correct_answer}
-              onChange={e => setForm({...form, correct_answer: Number(e.target.value)})}
-              className="w-full p-2 border rounded"
-            >
+            <input placeholder="Choice A" value={form.optionA} onChange={e => setForm({...form, optionA: e.target.value})} className="w-full p-2 border rounded" required />
+            <input placeholder="Choice B" value={form.optionB} onChange={e => setForm({...form, optionB: e.target.value})} className="w-full p-2 border rounded" required />
+            <input placeholder="Choice C" value={form.optionC} onChange={e => setForm({...form, optionC: e.target.value})} className="w-full p-2 border rounded" required />
+            <input placeholder="Choice D" value={form.optionD} onChange={e => setForm({...form, optionD: e.target.value})} className="w-full p-2 border rounded" required />
+            <select value={form.correct_answer} onChange={e => setForm({...form, correct_answer: Number(e.target.value)})} className="w-full p-2 border rounded">
               <option value={0}>Correct Answer: A</option>
               <option value={1}>Correct Answer: B</option>
               <option value={2}>Correct Answer: C</option>
               <option value={3}>Correct Answer: D</option>
             </select>
-            <input
-              placeholder="Explanation (optional)"
-              value={form.explanation}
-              onChange={e => setForm({...form, explanation: e.target.value})}
-              className="w-full p-2 border rounded"
-            />
+            <input placeholder="Explanation (optional)" value={form.explanation} onChange={e => setForm({...form, explanation: e.target.value})} className="w-full p-2 border rounded" />
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setAddModal(false)} className="px-4 py-2 border rounded">Cancel</button>
               <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded">Add</button>
@@ -350,12 +387,7 @@ const Questions = () => {
         <Modal onClose={() => setEditModal(false)}>
           <h3 className="text-xl font-semibold mb-4">Edit Question</h3>
           <form onSubmit={handleEditQuestion} className="space-y-3">
-            <textarea
-              value={form.question_text}
-              onChange={e => setForm({...form, question_text: e.target.value})}
-              className="w-full p-2 border rounded"
-              required
-            />
+            <textarea value={form.question_text} onChange={e => setForm({...form, question_text: e.target.value})} className="w-full p-2 border rounded" required />
             <input value={form.optionA} onChange={e => setForm({...form, optionA: e.target.value})} className="w-full p-2 border rounded" required />
             <input value={form.optionB} onChange={e => setForm({...form, optionB: e.target.value})} className="w-full p-2 border rounded" required />
             <input value={form.optionC} onChange={e => setForm({...form, optionC: e.target.value})} className="w-full p-2 border rounded" required />
@@ -379,10 +411,29 @@ const Questions = () => {
       {bulkModal && (
         <Modal onClose={() => setBulkModal(false)}>
           <h3 className="text-xl font-semibold mb-4">Bulk Upload (CSV)</h3>
-          <input type="file" accept=".csv" onChange={e => setBulkFile(e.target.files[0])} className="mb-4" />
+          <input
+            type="file"
+            accept=".csv"
+            onChange={(e) => setBulkFile(e.target.files[0])}
+            className="mb-4"
+          />
           <div className="flex justify-end gap-2">
             <button onClick={() => setBulkModal(false)} className="px-4 py-2 border rounded">Cancel</button>
-            <button onClick={handleBulkUpload} className="px-4 py-2 bg-green-600 text-white rounded" disabled={!bulkFile}>Upload</button>
+            <button
+              onClick={handleBulkUpload}
+              disabled={uploading || !bulkFile}
+              className={`px-4 py-2 rounded text-white flex items-center gap-2 ${
+                uploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+              }`}
+            >
+              {uploading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Uploading...
+                </>
+              ) : (
+                'Upload CSV'
+              )}
+            </button>
           </div>
         </Modal>
       )}

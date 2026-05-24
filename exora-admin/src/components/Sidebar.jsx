@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Building2, BookOpen, FileQuestion, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, BookOpen, FileQuestion, LogOut, DollarSign } from 'lucide-react';
 
 const Sidebar = () => {
   const handleLogout = () => {
