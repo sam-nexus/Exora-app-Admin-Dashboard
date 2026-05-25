@@ -138,4 +138,18 @@ router.put('/change-password', authenticate, async (req: AuthRequest, res: Respo
   }
 });
 
+
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  try {
+    const { error } = await supabaseAnon.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://exora-app-admin-dashboard.onrender.com/api/auth/password-reset', // will just show a success message
+    });
+    if (error) throw error;
+    res.json({ message: 'Password reset link sent. Please check your email.' });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 export default router;
