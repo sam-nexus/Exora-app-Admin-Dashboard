@@ -139,14 +139,29 @@ router.put('/change-password', authenticate, async (req: AuthRequest, res: Respo
 });
 
 
-router.post('/forgot-password', async (req, res) => {
+router.post('/admin/forgot-password', async (req, res) => {
   const { email } = req.body;
+
   try {
+    // Check if email belongs to an admin
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('email', email)
+      .single();
+
+    if (profileError || !profile || profile.role !== 'admin') {
+      // Do NOT reveal whether the email exists – just say no admin found
+      return res.status(404).json({ error: 'No admin account found with that email.' });
+    }
+
+    // Send password reset email with redirect to admin frontend's reset page
     const { error } = await supabaseAnon.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://exora-app-admin-dashboard.onrender.com/api/auth/password-reset', // will just show a success message
+      redirectTo: 'https://exora-admin.netlify.app/reset-password', // your Netlify admin URL
     });
     if (error) throw error;
-    res.json({ message: 'Password reset link sent. Please check your email.' });
+
+    res.json({ message: 'Reset link sent. Please check your email.' });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

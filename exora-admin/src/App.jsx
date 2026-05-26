@@ -8,12 +8,16 @@ import Questions from './pages/Questions';
 import Layout from './components/Layout';
 import PrivateRoute from './components/PrivateRoute';
 import Payments from './pages/Payments';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<PrivateRoute />}>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
@@ -22,6 +26,7 @@ function App() {
             <Route path="/courses" element={<Courses />} />
             <Route path="/questions" element={<Questions />} />
             <Route path="/payments" element={<Payments />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
         </Route>
       </Routes>
