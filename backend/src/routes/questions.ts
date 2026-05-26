@@ -1,6 +1,5 @@
 import { Router, Response } from 'express';
 import multer from 'multer';
-import csv from 'csv-parser';
 import fs from 'fs';
 import { supabaseAdmin } from '../supabase';
 import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
@@ -30,52 +29,56 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
 });
 
 // Bulk upload – **THIS IS THE UPDATED PART**
+// Bulk upload – JSON format
 router.post('/bulk', authenticate, adminOnly, upload.single('file'), async (req: AuthRequest, res: Response) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
   const courseId = req.body.course_id; // sent by frontend
   if (!courseId) return res.status(400).json({ error: 'Course ID is required' });
 
-  const results: any[] = [];
-  fs.createReadStream(req.file.path)
-    .pipe(csv())
-    .on('data', (data) => results.push(data))
-    .on('end', async () => {
-      try {
-        const questions = results.map(row => {
-          // Build options array from the four choice columns
-          const options = [
-            row['Choice A'] || row['choice a'] || '',
-            row['Choice B'] || row['choice b'] || '',
-            row['Choice C'] || row['choice c'] || '',
-            row['Choice D'] || row['choice d'] || '',
-          ];
+  try {
+    // Read the uploaded file
+    const fileContent = fs.readFileSync(req.file.path, 'utf-8');
+    let questionsArray: any[];
 
-          // Convert answer letter (A-D) to 0-based index
-          const answerLetter = (row['Answer'] || row['answer'] || '').trim().toUpperCase();
-          const correctIndex = answerLetter && answerLetter >= 'A' && answerLetter <= 'D'
-            ? answerLetter.charCodeAt(0) - 'A'.charCodeAt(0)
-            : 0;
+    // Parse the JSON content
+    try {
+      questionsArray = JSON.parse(fileContent);
+    } catch (parseErr) {
+      return res.status(400).json({ error: 'Invalid JSON file. Please check the format.' });
+    }
 
-          return {
-            course_id: courseId,
-            question_text: row['Question'] || row['question'] || '',
-            options: options,          // array, not JSON string – Supabase JSONB will accept it
-            correct_index: correctIndex,
-            explanation: row['Explanation'] || row['explanation'] || '',
-          };
-        });
+    // Validate that it's an array
+    if (!Array.isArray(questionsArray)) {
+      return res.status(400).json({ error: 'JSON file must contain an array of questions.' });
+    }
 
-        const { error } = await supabaseAdmin.from('questions').insert(questions);
-        fs.unlinkSync(req.file!.path); // clean up
+    // Transform each item to match the database schema
+    const questionsToInsert = questionsArray.map((item: any) => {
+      const questionText = item.question || item.question_text || '';
+      const options = item.options || [item.choice_a, item.choice_b, item.choice_c, item.choice_d].filter(Boolean);
+      const correctIndex = item.correct_index ?? item.correctIndex ?? 0;
+      const explanation = item.explanation || '';
 
-        if (error) throw error;
-        res.json({ message: `${questions.length} questions uploaded` });
-      } catch (err: any) {
-        console.error('Bulk upload error:', err);
-        res.status(500).json({ error: err.message });
-      }
+      return {
+        course_id: courseId,
+        question_text: questionText,
+        options: options,
+        correct_index: correctIndex,
+        explanation: explanation,
+      };
     });
+
+    // Insert all questions into the database
+    const { error } = await supabaseAdmin.from('questions').insert(questionsToInsert);
+    fs.unlinkSync(req.file.path); // clean up
+
+    if (error) throw error;
+    res.json({ message: `${questionsToInsert.length} questions uploaded` });
+  } catch (err: any) {
+    console.error('Bulk upload error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Update a question (unchanged)

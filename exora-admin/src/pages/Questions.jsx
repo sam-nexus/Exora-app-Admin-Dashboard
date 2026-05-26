@@ -5,7 +5,6 @@ import Modal from '../components/Modal';
 import { motion } from 'framer-motion';
 
 const Questions = () => {
-  // Department and course state
   const [departments, setDepartments] = useState([]);
   const [selectedDept, setSelectedDept] = useState(null);
   const [deptCourses, setDeptCourses] = useState([]);
@@ -14,14 +13,12 @@ const Questions = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDept, setFilterDept] = useState('');
 
-  // Modals
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [bulkModal, setBulkModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
 
-  // Form for single add/edit
   const [form, setForm] = useState({
     question_text: '',
     optionA: '',
@@ -32,15 +29,12 @@ const Questions = () => {
     explanation: '',
   });
 
-  // Bulk file & loading state
   const [bulkFile, setBulkFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Counts
   const [totalQuestions, setTotalQuestions] = useState(0);
 
-  // Fetch departments
   const fetchDepartments = async () => {
     try {
       const { data } = await api.get('/departments');
@@ -50,14 +44,11 @@ const Questions = () => {
     }
   };
 
-  // Fetch total questions count (via stats endpoint if available, else set 0)
   const fetchTotalStats = async () => {
     try {
       const { data } = await api.get('/stats');
       setTotalQuestions(data.questions || 0);
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -65,7 +56,6 @@ const Questions = () => {
     fetchTotalStats();
   }, []);
 
-  // When a department card is clicked
   const handleViewDept = (dept) => {
     setSelectedDept(dept);
     setSelectedCourse(null);
@@ -73,7 +63,6 @@ const Questions = () => {
     api.get(`/courses?department_id=${dept.id}`).then(res => setDeptCourses(res.data));
   };
 
-  // When a course is selected
   const handleViewCourse = (course) => {
     setSelectedCourse(course);
     fetchQuestionsForCourse(course.id);
@@ -88,11 +77,9 @@ const Questions = () => {
     }
   };
 
-  // ---------- Single question add ----------
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     if (!selectedCourse) return;
-
     const options = [form.optionA, form.optionB, form.optionC, form.optionD];
     const payload = {
       course_id: selectedCourse.id,
@@ -101,19 +88,10 @@ const Questions = () => {
       correct_index: form.correct_answer,
       explanation: form.explanation,
     };
-
     try {
       await api.post('/questions', payload);
       setAddModal(false);
-      setForm({
-        question_text: '',
-        optionA: '',
-        optionB: '',
-        optionC: '',
-        optionD: '',
-        correct_answer: 0,
-        explanation: '',
-      });
+      setForm({ question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', correct_answer: 0, explanation: '' });
       fetchQuestionsForCourse(selectedCourse.id);
       setMessage('Question added!');
       setTimeout(() => setMessage(''), 3000);
@@ -122,7 +100,6 @@ const Questions = () => {
     }
   };
 
-  // ---------- Edit question ----------
   const handleEditQuestion = async (e) => {
     e.preventDefault();
     const options = [form.optionA, form.optionB, form.optionC, form.optionD];
@@ -142,7 +119,6 @@ const Questions = () => {
     }
   };
 
-  // ---------- Delete question ----------
   const handleDeleteQuestion = async (id) => {
     try {
       await api.delete(`/questions/${id}`);
@@ -154,7 +130,6 @@ const Questions = () => {
     }
   };
 
-  // ---------- Delete all questions for course ----------
   const handleDeleteAllQuestions = async () => {
     if (!window.confirm('Delete ALL questions for this course?')) return;
     try {
@@ -167,34 +142,30 @@ const Questions = () => {
     }
   };
 
-  // ---------- Bulk upload ----------
   const handleBulkUpload = async () => {
     if (!bulkFile || !selectedCourse) return;
-
     setUploading(true);
     setMessage('');
     try {
       const formData = new FormData();
       formData.append('file', bulkFile);
       formData.append('course_id', selectedCourse.id);
-
       const res = await api.post('/questions/bulk', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
       setBulkModal(false);
       setBulkFile(null);
       fetchQuestionsForCourse(selectedCourse.id);
       setMessage(res.data.message || 'Questions uploaded successfully!');
     } catch (err) {
-      setMessage(err.response?.data?.error || 'Upload failed');
+      const errorMsg = err.response?.data?.error || err.message || 'Upload failed';
+      setMessage(`❌ ${errorMsg}`);
     } finally {
       setUploading(false);
-      setTimeout(() => setMessage(''), 5000);
+      setTimeout(() => setMessage(''), 8000);
     }
   };
 
-  // Filter departments by search
   const filteredDepts = departments.filter(d =>
     d.name?.toLowerCase().includes(filterDept.toLowerCase())
   );
@@ -205,7 +176,6 @@ const Questions = () => {
         <h2 className="text-3xl font-bold text-gray-800">Questions Management</h2>
       </motion.div>
 
-      {/* Count Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <p className="text-sm text-gray-500">Total Questions</p>
@@ -221,7 +191,6 @@ const Questions = () => {
         </div>
       </div>
 
-      {/* Search / Filter Bar */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -235,7 +204,6 @@ const Questions = () => {
         </div>
       </div>
 
-      {/* Department Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredDepts.map((dept) => (
           <motion.div
@@ -243,9 +211,7 @@ const Questions = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ scale: 1.02 }}
-            className={`bg-white p-6 rounded-xl shadow-sm border cursor-pointer transition-colors ${
-              selectedDept?.id === dept.id ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-100 hover:border-indigo-200'
-            }`}
+            className={`bg-white p-6 rounded-xl shadow-sm border cursor-pointer transition-colors ${selectedDept?.id === dept.id ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-100 hover:border-indigo-200'}`}
             onClick={() => handleViewDept(dept)}
           >
             <div className="text-4xl mb-3">{dept.icon || '📁'}</div>
@@ -255,7 +221,6 @@ const Questions = () => {
         ))}
       </div>
 
-      {/* Courses Grid for selected department */}
       {selectedDept && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 className="text-xl font-semibold mb-4">Courses in {selectedDept.name}</h3>
@@ -264,9 +229,7 @@ const Questions = () => {
               <motion.div
                 key={course.id}
                 whileHover={{ scale: 1.02 }}
-                className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                  selectedCourse?.id === course.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'
-                }`}
+                className={`p-4 rounded-lg border cursor-pointer transition-colors ${selectedCourse?.id === course.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'}`}
                 onClick={() => handleViewCourse(course)}
               >
                 <h4 className="font-medium text-gray-800">{course.name}</h4>
@@ -279,7 +242,6 @@ const Questions = () => {
         </motion.div>
       )}
 
-      {/* Questions Management for selected course */}
       {selectedCourse && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-4">
@@ -296,7 +258,7 @@ const Questions = () => {
               </button>
             </div>
           </div>
-          {message && <div className={`mb-3 p-2 rounded ${message.includes('success') || message.includes('uploaded') ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>{message}</div>}
+          {message && <div className={`mb-3 p-2 rounded ${message.includes('❌') ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>{message}</div>}
           {questions.length === 0 ? (
             <p className="text-gray-500">No questions yet.</p>
           ) : (
@@ -318,28 +280,22 @@ const Questions = () => {
                       )}
                     </div>
                     <div className="flex gap-2 ml-4">
-                      <button
-                        onClick={() => {
-                          setSelectedQuestion(q);
-                          setForm({
-                            question_text: q.question_text,
-                            optionA: q.options[0] || '',
-                            optionB: q.options[1] || '',
-                            optionC: q.options[2] || '',
-                            optionD: q.options[3] || '',
-                            correct_answer: q.correct_index,
-                            explanation: q.explanation || '',
-                          });
-                          setEditModal(true);
-                        }}
-                        className="text-green-600 hover:text-green-800"
-                      >
+                      <button onClick={() => {
+                        setSelectedQuestion(q);
+                        setForm({
+                          question_text: q.question_text,
+                          optionA: q.options[0] || '',
+                          optionB: q.options[1] || '',
+                          optionC: q.options[2] || '',
+                          optionD: q.options[3] || '',
+                          correct_answer: q.correct_index,
+                          explanation: q.explanation || '',
+                        });
+                        setEditModal(true);
+                      }} className="text-green-600 hover:text-green-800">
                         <Edit size={18} />
                       </button>
-                      <button
-                        onClick={() => handleDeleteQuestion(q.id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
+                      <button onClick={() => handleDeleteQuestion(q.id)} className="text-red-600 hover:text-red-800">
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -351,18 +307,11 @@ const Questions = () => {
         </motion.div>
       )}
 
-      {/* Add Question Modal */}
       {addModal && (
         <Modal onClose={() => setAddModal(false)}>
           <h3 className="text-xl font-semibold mb-4">Add Question</h3>
           <form onSubmit={handleAddQuestion} className="space-y-3">
-            <textarea
-              placeholder="Question text"
-              value={form.question_text}
-              onChange={e => setForm({...form, question_text: e.target.value})}
-              className="w-full p-2 border rounded"
-              required
-            />
+            <textarea placeholder="Question text" value={form.question_text} onChange={e => setForm({...form, question_text: e.target.value})} className="w-full p-2 border rounded" required />
             <input placeholder="Choice A" value={form.optionA} onChange={e => setForm({...form, optionA: e.target.value})} className="w-full p-2 border rounded" required />
             <input placeholder="Choice B" value={form.optionB} onChange={e => setForm({...form, optionB: e.target.value})} className="w-full p-2 border rounded" required />
             <input placeholder="Choice C" value={form.optionC} onChange={e => setForm({...form, optionC: e.target.value})} className="w-full p-2 border rounded" required />
@@ -382,7 +331,6 @@ const Questions = () => {
         </Modal>
       )}
 
-      {/* Edit Question Modal */}
       {editModal && selectedQuestion && (
         <Modal onClose={() => setEditModal(false)}>
           <h3 className="text-xl font-semibold mb-4">Edit Question</h3>
@@ -407,13 +355,26 @@ const Questions = () => {
         </Modal>
       )}
 
-      {/* Bulk Upload Modal */}
+      {/* --- Updated Bulk Modal (JSON) --- */}
       {bulkModal && (
         <Modal onClose={() => setBulkModal(false)}>
-          <h3 className="text-xl font-semibold mb-4">Bulk Upload (CSV)</h3>
+          <h3 className="text-xl font-semibold mb-2">Bulk Upload (JSON)</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Upload a <code className="bg-gray-100 px-1 rounded">.json</code> file containing an array of questions.
+          </p>
+          <div className="bg-gray-50 p-3 rounded-lg text-xs text-gray-700 mb-4 font-mono overflow-auto max-h-32">
+            {`[
+  {
+    "question": "What is ...?",
+    "options": ["A", "B", "C", "D"],
+    "correct_index": 0,
+    "explanation": "Because ..."
+  }
+]`}
+          </div>
           <input
             type="file"
-            accept=".csv"
+            accept=".json"
             onChange={(e) => setBulkFile(e.target.files[0])}
             className="mb-4"
           />
@@ -431,7 +392,7 @@ const Questions = () => {
                   <Loader2 size={16} className="animate-spin" /> Uploading...
                 </>
               ) : (
-                'Upload CSV'
+                'Upload JSON'
               )}
             </button>
           </div>
