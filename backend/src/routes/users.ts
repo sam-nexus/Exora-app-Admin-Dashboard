@@ -19,14 +19,40 @@ router.get('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Respon
   res.json(data);
 });
 
-// Update user
-router.put('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+// Update user (self or admin)
+router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   const userId = req.params.id as string;
-  const { full_name, email } = req.body;
+  const { full_name, email, role } = req.body;
+
+  // ---------- Determine if the requester is the user themselves ----------
+  const isSelf = req.userId === userId;
+  const isAdmin = req.role === 'admin';
+
+  if (!isSelf && !isAdmin) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  // ---------- Build updates ----------
   const updates: any = {};
-  if (full_name !== undefined) updates.full_name = full_name;
-  if (email !== undefined) updates.email = email;
-  if (Object.keys(updates).length === 0) return res.status(400).json({ error: 'No valid fields' });
+
+  if (isAdmin) {
+    // Admin can change any field
+    if (full_name !== undefined) updates.full_name = full_name;
+    if (email !== undefined) updates.email = email;
+    if (role !== undefined) updates.role = role;
+  } else {
+    // Regular user can only change their own full_name
+    if (full_name !== undefined) updates.full_name = full_name;
+    // Explicitly forbid changing email / role
+    if (email !== undefined || role !== undefined) {
+      return res.status(403).json({ error: 'You can only change your name.' });
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: 'No valid fields' });
+  }
+
   const { error } = await supabaseAdmin.from('profiles').update(updates).eq('id', userId);
   if (error) return res.status(500).json({ error: error.message });
   res.json({ message: 'User updated' });
