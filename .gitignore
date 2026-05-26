@@ -10,9 +10,14 @@ exora-admin/dist/
 dist/
 
 # Environment variables (contains sensitive keys)
+*.env
 .env
 backend/.env
 exora-admin/.env
+env
+Admin/backend/.env
+/dist/.env
+dist/
 
 # Uploaded files (from multer)
 uploads/
