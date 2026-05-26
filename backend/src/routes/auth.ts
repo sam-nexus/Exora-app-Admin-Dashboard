@@ -183,10 +183,10 @@ router.post('/mobile/forgot-password', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// Step 2: Verify the code
 router.post('/mobile/verify-reset-code', async (req, res) => {
   const { email, code } = req.body;
+  console.log(`🔎 Verify request: email=${email}, code=${code}`);
+
   try {
     const { data, error } = await supabaseAdmin
       .from('password_reset_codes')
@@ -197,20 +197,33 @@ router.post('/mobile/verify-reset-code', async (req, res) => {
       .order('created_at', { ascending: false })
       .limit(1);
 
+    console.log('📦 DB response:', { data, error });
+
     if (error || !data || data.length === 0) {
+      // Fetch the latest code for this email to see what was stored (debug only)
+      const { data: latestCode } = await supabaseAdmin
+        .from('password_reset_codes')
+        .select('code')
+        .eq('email', email)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      console.log(`🔐 Latest stored code for ${email}:`, latestCode?.[0]?.code);
+
       return res.status(400).json({ error: 'Invalid or expired code.' });
     }
 
     const record = data[0];
+    console.log(`⏰ Code expires at: ${record.expires_at}, now: ${new Date().toISOString()}`);
+
     if (new Date(record.expires_at) < new Date()) {
       return res.status(400).json({ error: 'Code has expired. Please request a new one.' });
     }
 
-    // Mark code as used (will be fully deleted after password reset)
     await supabaseAdmin.from('password_reset_codes').update({ used: true }).eq('id', record.id);
-
+    console.log('✅ Code verified successfully');
     res.json({ message: 'Code verified. You can now reset your password.' });
   } catch (err: any) {
+    console.error('❌ Error in verify-reset-code:', err);
     res.status(500).json({ error: err.message });
   }
 });
