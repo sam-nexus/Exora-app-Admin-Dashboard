@@ -14,12 +14,46 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   res.json(data);
 });
 
-// Add a new course
+// Add a new course – also inserts locked rows for all existing users
 router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { department_id, name } = req.body;
-  const { error } = await supabaseAdmin.from('courses').insert({ department_id, name });
-  if (error) return res.status(500).json({ error: error.message });
-  res.status(201).json({ message: 'Course added' });
+
+  try {
+    // 1. Create the course
+    const { data: course, error: insertError } = await supabaseAdmin
+      .from('courses')
+      .insert({ department_id, name })
+      .select('id')
+      .single();
+
+    if (insertError || !course) {
+      throw insertError || new Error('Failed to create course');
+    }
+
+    // 2. Fetch all user IDs from profiles
+    const { data: users, error: usersError } = await supabaseAdmin
+      .from('profiles')
+      .select('id');
+
+    if (usersError) throw usersError;
+
+    // 3. Insert a locked row for every user (skip if no users)
+    if (users && users.length > 0) {
+      const locks = users.map(u => ({
+        user_id: u.id,
+        course_id: course.id,
+        is_locked: true,
+      }));
+      const { error: lockError } = await supabaseAdmin
+        .from('user_courses')
+        .insert(locks);
+      if (lockError) throw lockError;
+    }
+
+    res.status(201).json({ message: 'Course added', courseId: course.id });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Edit a course
