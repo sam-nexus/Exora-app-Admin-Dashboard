@@ -22,11 +22,18 @@ dist/
 # Uploaded files (from multer)
 uploads/
 backend/uploads/
+backend/.node_modules
+backend/.env
 
 # OS generated files
 .DS_Store
 Thumbs.db
 
+backend\
+/db/migrations
+firebase.json
+*.bak
+.env.bak
 # IDE / editors
 .vscode/
 .idea/
@@ -39,3 +46,4 @@ npm-debug.log*
 
 # React / Vite specific
 exora-admin/node_modules/
+backend/db/migrations/001_notifications

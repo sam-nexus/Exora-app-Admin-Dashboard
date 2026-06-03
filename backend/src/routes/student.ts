@@ -65,7 +65,7 @@ router.post('/courses/:courseId/mock-exam/start', authenticate, async (req: Auth
 router.post('/mock-exam/submit', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { courseId, answers } = req.body;
-    const userId = req.user?.id;
+    const userId = req.userId;
 
     if (!courseId || !answers) {
       return res.status(400).json({ error: 'courseId and answers are required' });
@@ -155,7 +155,7 @@ router.post('/courses/:courseId/exit-exam/start', authenticate, async (req: Auth
 router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { courseId, answers } = req.body;
-    const userId = req.user?.id;
+    const userId = req.userId;
 
     if (!courseId || !answers) {
       return res.status(400).json({ error: 'courseId and answers are required' });

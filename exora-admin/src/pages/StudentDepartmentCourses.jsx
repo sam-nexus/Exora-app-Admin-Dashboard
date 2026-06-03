@@ -205,30 +205,36 @@ const StudentDepartmentCourses = () => {
         <span>Back to Departments</span>
       </button>
 
-      {/* Department Header - Gradient */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 mb-8 text-white">
+      {/* Department Header - Enhanced Gradient */}
+      <div className="bg-linear-to-r from-indigo-600 via-purple-600 to-indigo-600 rounded-2xl p-8 mb-8 text-white shadow-lg">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <GraduationCap size={24} />
-              <span className="text-indigo-100 text-sm">Department</span>
+              <GraduationCap size={24} className="text-indigo-200" />
+              <span className="text-indigo-100 text-sm font-semibold tracking-wide">DEPARTMENT</span>
             </div>
-            <h1 className="text-3xl lg:text-4xl font-bold mb-2">
+            <h1 className="text-4xl lg:text-5xl font-bold mb-2">
               {department?.name}
             </h1>
-            <p className="text-indigo-100">
-              {courses.length} Courses • {completedCount} Completed
+            <p className="text-indigo-100 flex gap-4">
+              <span>📚 {courses.length} Courses</span>
+              <span>✅ {completedCount} Completed</span>
+              <span>🎯 {courses.length - completedCount} Remaining</span>
             </p>
           </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center min-w-[180px]">
-            <p className="text-indigo-100 text-sm mb-1">Overall Progress</p>
-            <p className="text-4xl font-bold">{totalProgress}%</p>
-            <div className="mt-3 w-full bg-white/30 rounded-full h-2">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center min-w-[200px] border border-white/20 shadow-xl">
+            <p className="text-indigo-100 text-sm mb-2 font-semibold uppercase">Overall Progress</p>
+            <div className="flex items-baseline justify-center gap-1">
+              <p className="text-5xl font-bold">{totalProgress}</p>
+              <p className="text-2xl text-indigo-200">%</p>
+            </div>
+            <div className="mt-4 w-full bg-white/20 rounded-full h-2.5 border border-white/30">
               <div
-                className="bg-white h-2 rounded-full transition-all"
+                className="bg-linear-to-r from-yellow-300 to-yellow-200 h-2.5 rounded-full transition-all duration-500"
                 style={{ width: `${totalProgress}%` }}
               />
             </div>
+            <p className="text-xs text-indigo-100 mt-2">{totalProgress === 100 ? '🎉 Mastered!' : 'Keep going!'}</p>
           </div>
         </div>
       </div>
@@ -256,19 +262,25 @@ const StudentDepartmentCourses = () => {
       </div>
 
       {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between text-sm text-gray-600 mb-2">
-          <span>Department Progress</span>
-          <span className="font-semibold text-indigo-600">
+      <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <div className="flex justify-between text-sm text-gray-700 mb-3">
+          <span className="font-semibold flex items-center gap-2">
+            <BarChart3 size={16} className="text-indigo-600" />
+            Department Progress
+          </span>
+          <span className="font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
             {totalProgress}% Complete
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
           <div
-            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all"
+            className="bg-linear-to-r from-indigo-500 via-purple-500 to-indigo-600 h-3 rounded-full transition-all duration-500 shadow-lg"
             style={{ width: `${totalProgress}%` }}
           />
         </div>
+        <p className="text-xs text-gray-500 mt-2">
+          💡 {totalProgress === 100 ? 'Perfect! You\'ve completed all courses!' : `${100 - totalProgress}% to go - Keep practicing!`}
+        </p>
       </div>
 
       {/* Exit Exam Tab Content */}
@@ -328,37 +340,53 @@ const StudentDepartmentCourses = () => {
         <>
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-              <p className="text-2xl font-bold text-indigo-600">
+            <div className="bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-5 hover:shadow-md transition">
+              <div className="flex items-center justify-between mb-2">
+                <BookOpen size={20} className="text-blue-600" />
+                <p className="text-sm text-blue-600 font-semibold">Total</p>
+              </div>
+              <p className="text-3xl font-bold text-blue-700">
                 {visibleItems.length}
               </p>
-              <p className="text-sm text-gray-500">
-                Total {activeTab === "mock" ? "Exams" : "Courses"}
+              <p className="text-xs text-blue-600 mt-1">
+                {activeTab === "mock" ? "Mock Exams" : "Courses"}
               </p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-              <p className="text-2xl font-bold text-orange-600">
+
+            <div className="bg-linear-to-br from-orange-50 to-amber-50 rounded-xl shadow-sm border border-orange-200 p-5 hover:shadow-md transition">
+              <div className="flex items-center justify-between mb-2">
+                <TrendingUp size={20} className="text-orange-600" />
+                <p className="text-sm text-orange-600 font-semibold">Active</p>
+              </div>
+              <p className="text-3xl font-bold text-orange-700">
                 {
-                  visibleItems.filter((c) => c.progress > 0 && c.progress < 100)
+                  visibleItems.filter((c) => Number(c.progress ?? 0) > 0 && Number(c.progress ?? 0) < 100)
                     .length
                 }
               </p>
-              <p className="text-sm text-gray-500">In Progress</p>
+              <p className="text-xs text-orange-600 mt-1">In Progress</p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-              <p className="text-2xl font-bold text-green-600">
-                {visibleItems.filter((c) => c.progress === 100).length}
-              </p>
-              <p className="text-sm text-gray-500">Completed</p>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-              <div className="flex items-center gap-1">
-                <BarChart3 size={18} className="text-gray-400" />
-                <p className="text-2xl font-bold text-gray-700">
-                  {activeTab === 'mock' ? (visibleItems.length > 0 ? Math.round(visibleItems.reduce((sum, c) => sum + Number(c.progress ?? 0), 0) / visibleItems.length) : 0) : totalProgress}%
-                </p>
+
+            <div className="bg-linear-to-br from-green-50 to-emerald-50 rounded-xl shadow-sm border border-green-200 p-5 hover:shadow-md transition">
+              <div className="flex items-center justify-between mb-2">
+                <CheckCircle size={20} className="text-green-600" />
+                <p className="text-sm text-green-600 font-semibold">Done</p>
               </div>
-              <p className="text-sm text-gray-500">Avg Progress</p>
+              <p className="text-3xl font-bold text-green-700">
+                {visibleItems.filter((c) => Number(c.progress ?? 0) === 100).length}
+              </p>
+              <p className="text-xs text-green-600 mt-1">Completed</p>
+            </div>
+
+            <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-xl shadow-sm border border-purple-200 p-5 hover:shadow-md transition">
+              <div className="flex items-center justify-between mb-2">
+                <BarChart3 size={20} className="text-purple-600" />
+                <p className="text-sm text-purple-600 font-semibold">Avg</p>
+              </div>
+              <p className="text-3xl font-bold text-purple-700">
+                {activeTab === 'mock' ? (visibleItems.length > 0 ? Math.round(visibleItems.reduce((sum, c) => sum + Number(c.progress ?? 0), 0) / visibleItems.length) : 0) : totalProgress}%
+              </p>
+              <p className="text-xs text-purple-600 mt-1">Progress</p>
             </div>
           </div>
 
@@ -415,34 +443,52 @@ const StudentDepartmentCourses = () => {
               {filteredCourses.map((course, index) => (
                 <div
                   key={course.id}
-                  className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
                 >
                   {/* Top Progress Bar */}
                   <div className="h-1 bg-gray-100">
                     <div
-                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all"
+                      className="h-full bg-linear-to-r from-indigo-500 to-purple-500 transition-all"
                       style={{ width: `${course.progress ?? 0}%` }}
                     />
                   </div>
 
                   <div className="p-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-3">
+                    {/* Header with Badge */}
+                    <div className="flex justify-between items-start mb-3 gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
-                          <span className="text-indigo-600 font-bold text-sm">
+                        <div className="w-8 h-8 bg-linear-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shadow-sm">
+                          <span className="text-white font-bold text-sm">
                             {index + 1}
                           </span>
                         </div>
-                        <span className="text-xs text-gray-400">
-                          of {filteredCourses.length}
+                        <span className="text-xs text-gray-400 font-medium">
+                          {index + 1} of {filteredCourses.length}
                         </span>
                       </div>
-                      {getStatusBadge(course.progress)}
+                      <div className="flex gap-2">
+                        {/* Type Badge */}
+                        {course.type === 'mock' && (
+                          <span className="inline-flex items-center gap-1 text-purple-700 text-xs font-bold bg-purple-100 px-2.5 py-1 rounded-full border border-purple-200">
+                            📝 Mock
+                          </span>
+                        )}
+                        {course.type === 'exit' && (
+                          <span className="inline-flex items-center gap-1 text-green-700 text-xs font-bold bg-green-100 px-2.5 py-1 rounded-full border border-green-200">
+                            🎓 Exit
+                          </span>
+                        )}
+                        {(!course.type || course.type === 'regular') && (
+                          <span className="inline-flex items-center gap-1 text-blue-700 text-xs font-bold bg-blue-100 px-2.5 py-1 rounded-full border border-blue-200">
+                            📚 Regular
+                          </span>
+                        )}
+                        {getStatusBadge(course.progress)}
+                      </div>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition line-clamp-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition line-clamp-2">
                       {course.title || course.name || course.courses?.name}
                     </h3>
 
@@ -454,16 +500,16 @@ const StudentDepartmentCourses = () => {
                     </p>
 
                     {/* Progress Details */}
-                    <div className="mb-4">
+                    <div className="mb-5 bg-gray-50 rounded-lg p-3">
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-indigo-600">
+                        <span className="text-gray-600 font-medium">Progress</span>
+                        <span className="font-bold text-indigo-600 text-base">
                           {course.progress ?? 0}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                         <div
-                          className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-500"
+                          className="bg-linear-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
                           style={{ width: `${course.progress ?? 0}%` }}
                         />
                       </div>
@@ -474,22 +520,22 @@ const StudentDepartmentCourses = () => {
                       {activeTab === "courses" ? (
                         <Link
                           to={`/student/departments/${id}/courses/${course.id}/practice`}
-                          className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-xl font-medium hover:shadow-lg hover:shadow-indigo-200 transition-all group/btn"
+                          className="flex-1 flex items-center justify-center gap-2 bg-linear-to-r from-indigo-600 to-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-indigo-300 hover:scale-105 transition-all group/btn"
                         >
                           <PlayCircle
                             size={16}
-                            className="group-hover/btn:scale-110 transition"
+                            className="group-hover/btn:scale-125 transition"
                           />
                           Practice
                         </Link>
                       ) : (
                         <Link
                           to={`/student/departments/${id}/courses/${course.id}/mock-exam`}
-                          className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-xl font-medium hover:shadow-lg hover:shadow-indigo-200 transition-all group/btn"
+                          className="flex-1 flex items-center justify-center gap-2 bg-linear-to-r from-purple-600 to-purple-600 text-white py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-300 hover:scale-105 transition-all group/btn"
                         >
                           <Sparkles
                             size={16}
-                            className="group-hover/btn:scale-110 transition"
+                            className="group-hover/btn:scale-125 transition"
                           />
                           Mock Exam
                         </Link>

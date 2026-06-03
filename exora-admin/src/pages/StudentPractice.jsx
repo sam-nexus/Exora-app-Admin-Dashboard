@@ -75,6 +75,21 @@ const StudentPractice = () => {
     setFeedback({ isCorrect, correctAnswer });
   };
 
+  // Auto-submit when answer is selected
+  const handleSelectAnswer = (option) => {
+    setSelectedAnswer(option);
+    
+    if (!currentQuestion) return;
+    const correctAnswer = currentQuestion.correct_answer ?? currentQuestion.answer ?? '';
+    const isCorrect = option === correctAnswer;
+
+    setAnswers((prev) => ({
+      ...prev,
+      [currentQuestion.id]: isCorrect,
+    }));
+    setFeedback({ isCorrect, correctAnswer });
+  };
+
   const goNextQuestion = () => {
     setSelectedAnswer('');
     setFeedback(null);
@@ -184,7 +199,7 @@ const StudentPractice = () => {
                       <button
                         key={index}
                         type="button"
-                        onClick={() => setSelectedAnswer(option)}
+                        onClick={() => handleSelectAnswer(option)}
                         className={`w-full rounded-3xl border p-4 text-left transition ${isSelected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                       >
                         <div className="flex items-center justify-between">
@@ -197,13 +212,56 @@ const StudentPractice = () => {
                 </div>
 
                 {feedback && (
-                  <div className={`rounded-3xl p-4 ${feedback.isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'}`}>
-                    <div className="flex items-center gap-2 font-semibold">
-                      <CircleCheck size={18} /> {feedback.isCorrect ? 'Correct answer!' : 'Incorrect answer.'}
+                  <div className={`rounded-2xl p-5 border-2 ${feedback.isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
+                    {/* Result Status */}
+                    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          feedback.isCorrect
+                            ? "bg-emerald-100"
+                            : "bg-rose-100"
+                        }`}
+                      >
+                        {feedback.isCorrect ? (
+                          <CircleCheck size={20} className="text-emerald-600" />
+                        ) : (
+                          <CircleCheck size={20} className="text-rose-600" />
+                        )}
+                      </div>
+                      <h3
+                        className={`font-bold text-lg ${
+                          feedback.isCorrect
+                            ? "text-emerald-700"
+                            : "text-rose-700"
+                        }`}
+                      >
+                        {feedback.isCorrect ? "🎉 Correct!" : "❌ Incorrect"}
+                      </h3>
                     </div>
-                    {!feedback.isCorrect && (
-                      <p className="mt-2 text-sm">Correct answer: <span className="font-semibold">{feedback.correctAnswer}</span></p>
-                    )}
+
+                    {/* Correct Answer */}
+                    <div className="bg-white bg-opacity-60 rounded-lg p-3 mb-3">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
+                        ✓ Correct Answer
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <div className="bg-emerald-100 rounded-lg px-3 py-1 min-w-fit">
+                          <span className="font-bold text-emerald-700">
+                            {feedback.correctAnswer}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score Display */}
+                    <div className="bg-white bg-opacity-60 rounded-lg p-3">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
+                        Score Progress
+                      </p>
+                      <p className="text-sm text-slate-700">
+                        You've scored <span className="font-bold text-indigo-600">{score}</span> out of <span className="font-bold">{questions.length}</span> correct answers
+                      </p>
+                    </div>
                   </div>
                 )}
 
@@ -217,20 +275,12 @@ const StudentPractice = () => {
                     >
                       Previous
                     </button>
-                    <button
-                      type="button"
-                      onClick={submitAnswer}
-                      disabled={!selectedAnswer || feedback !== null}
-                      className="rounded-3xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Submit Answer
-                    </button>
                   </div>
 
                   <button
                     type="button"
                     onClick={goNextQuestion}
-                    disabled={currentQuestionIndex === questions.length - 1}
+                    disabled={currentQuestionIndex === questions.length - 1 || !feedback}
                     className="inline-flex items-center justify-center gap-2 rounded-3xl border border-indigo-500 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Next Question
