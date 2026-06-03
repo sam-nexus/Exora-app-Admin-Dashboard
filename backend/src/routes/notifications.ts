@@ -24,6 +24,21 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
     const { data, error } = await query;
 
     if (error) throw error;
+
+    // Sync unread count to Firebase
+    if (unread === 'true' && admin.apps.length > 0) {
+      try {
+        const unreadCount = Array.isArray(data) ? data.length : 0;
+        const database = admin.database();
+        
+        await database
+          .ref(`notifications/${userId}/unread_count`)
+          .set(unreadCount);
+      } catch (firebaseError) {
+        console.error('Firebase sync error:', firebaseError);
+      }
+    }
+
     res.json(data || []);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -82,6 +97,36 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
     if (error) throw error;
 
     const recipientIds = notifications.map((notification) => notification.recipient_id);
+    
+    // Update Firebase Realtime Database with unread count for each recipient
+    if (admin.apps.length > 0) {
+      const database = admin.database();
+      
+      for (const recipientId of recipientIds) {
+        try {
+          // Get current unread count from Firebase
+          const snapshot = await database
+            .ref(`notifications/${recipientId}/unread_count`)
+            .get();
+          
+          const currentCount = snapshot.val() || 0;
+          const newCount = currentCount + 1;
+          
+          // Update unread count in Firebase
+          await database
+            .ref(`notifications/${recipientId}/unread_count`)
+            .set(newCount);
+          
+          // Also trigger a timestamp update to force listener updates
+          await database
+            .ref(`notifications/${recipientId}/last_updated`)
+            .set(new Date().toISOString());
+        } catch (firebaseError) {
+          console.error('Firebase update error:', firebaseError);
+        }
+      }
+    }
+
     const { data: recipientProfiles, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('device_tokens')
@@ -149,6 +194,33 @@ router.patch('/:id/read', authenticate, async (req: AuthRequest, res: Response) 
       .eq('id', notificationId);
 
     if (updateError) throw updateError;
+
+    // Update Firebase Realtime Database - decrement unread count
+    if (admin.apps.length > 0) {
+      try {
+        const database = admin.database();
+        
+        // Get current unread count
+        const snapshot = await database
+          .ref(`notifications/${userId}/unread_count`)
+          .get();
+        
+        const currentCount = snapshot.val() || 0;
+        const newCount = Math.max(0, currentCount - 1);
+        
+        // Update unread count in Firebase
+        await database
+          .ref(`notifications/${userId}/unread_count`)
+          .set(newCount);
+        
+        // Update timestamp to force listener updates
+        await database
+          .ref(`notifications/${userId}/last_updated`)
+          .set(new Date().toISOString());
+      } catch (firebaseError) {
+        console.error('Firebase update error:', firebaseError);
+      }
+    }
 
     res.json({ message: 'Notification marked as read.' });
   } catch (err: any) {

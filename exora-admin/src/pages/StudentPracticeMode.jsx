@@ -222,22 +222,25 @@ const StudentPracticeMode = () => {
   const handleAnswerSelect = (answer) => {
     if (showResult) return;
     setSelectedAnswer(answer);
+    
+    // Auto-check answer when selected
+    if (currentQuestion) {
+      const isCorrect = answer === currentQuestion.correctAnswer;
+      const nextAnswerStatus = {
+        ...answerStatus,
+        [currentQuestion.id]: { selectedAnswer: answer, isCorrect },
+      };
+      setAnswerStatus(nextAnswerStatus);
+      setShowResult(true);
+      saveCurrentProgress({
+        answerStatus: nextAnswerStatus,
+        showResult: true,
+        selectedAnswer: answer,
+      });
+    }
   };
 
-  const handleCheckAnswer = () => {
-    if (!selectedAnswer || !currentQuestion) return;
-    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
-    const nextAnswerStatus = {
-      ...answerStatus,
-      [currentQuestion.id]: { selectedAnswer, isCorrect },
-    };
-    setAnswerStatus(nextAnswerStatus);
-    setShowResult(true);
-    saveCurrentProgress({
-      answerStatus: nextAnswerStatus,
-      showResult: true,
-    });
-  };
+
 
   const saveCurrentProgress = useCallback(
     (overrides = {}) => {
@@ -448,7 +451,7 @@ const StudentPracticeMode = () => {
 
       {/* Title */}
       <div>
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
           Practice Mode
         </h1>
         <p className="text-gray-500 text-sm mt-0.5">
@@ -610,48 +613,96 @@ const StudentPracticeMode = () => {
               {/* Feedback */}
               {showResult && (
                 <div
-                  className={`p-3 rounded-xl mb-5 ${selectedAnswer === currentQuestion?.correctAnswer ? "bg-green-50 border border-green-100" : "bg-red-50 border border-red-100"}`}
+                  className={`p-5 rounded-xl mb-5 border-2 ${selectedAnswer === currentQuestion?.correctAnswer ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    {selectedAnswer === currentQuestion?.correctAnswer ? (
-                      <Check size={16} className="text-green-600" />
-                    ) : (
-                      <X size={16} className="text-red-600" />
-                    )}
-                    <span
-                      className={`font-medium text-sm ${selectedAnswer === currentQuestion?.correctAnswer ? "text-green-700" : "text-red-700"}`}
+                  {/* Result Status */}
+                  <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        selectedAnswer === currentQuestion?.correctAnswer
+                          ? "bg-green-100"
+                          : "bg-red-100"
+                      }`}
                     >
-                      {selectedAnswer === currentQuestion?.correctAnswer
-                        ? "Correct!"
-                        : "Incorrect"}
-                    </span>
+                      {selectedAnswer === currentQuestion?.correctAnswer ? (
+                        <Check size={20} className="text-green-600" />
+                      ) : (
+                        <X size={20} className="text-red-600" />
+                      )}
+                    </div>
+                    <div>
+                      <h3
+                        className={`font-bold text-lg ${
+                          selectedAnswer === currentQuestion?.correctAnswer
+                            ? "text-green-700"
+                            : "text-red-700"
+                        }`}
+                      >
+                        {selectedAnswer === currentQuestion?.correctAnswer
+                          ? "🎉 Correct!"
+                          : "❌ Incorrect"}
+                      </h3>
+                    </div>
                   </div>
-                  <p className="text-gray-600 text-sm">
-                    {currentQuestion?.explanation}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Correct:{" "}
-                    <span className="font-medium">
-                      {currentQuestion?.correctAnswer}
-                    </span>
-                  </p>
+
+                  {/* Explanation Section */}
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                      📖 Explanation
+                    </p>
+                    <p className="text-gray-700 text-sm leading-relaxed bg-white bg-opacity-50 p-3 rounded-lg">
+                      {currentQuestion?.explanation || "No explanation provided."}
+                    </p>
+                  </div>
+
+                  {/* Correct Answer */}
+                  <div className="bg-white bg-opacity-60 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                      ✓ Correct Answer
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-green-100 rounded-lg px-3 py-2 min-w-fit">
+                        <span className="font-bold text-green-700 text-lg">
+                          {currentQuestion?.correctAnswer}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700">
+                        {currentQuestion?.options?.[
+                          currentQuestion?.correctAnswer?.charCodeAt(0) - 65
+                        ] || ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Your Answer */}
+                  {selectedAnswer !== currentQuestion?.correctAnswer && (
+                    <div className="mt-3 bg-white bg-opacity-60 rounded-lg p-3">
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                        ✗ Your Answer
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <div className="bg-red-100 rounded-lg px-3 py-2 min-w-fit">
+                          <span className="font-bold text-red-700 text-lg">
+                            {selectedAnswer}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">
+                          {currentQuestion?.options?.[
+                            selectedAnswer?.charCodeAt(0) - 65
+                          ] || ""}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Buttons */}
               <div className="flex gap-3">
                 {!showResult ? (
-                  <button
-                    onClick={handleCheckAnswer}
-                    disabled={!selectedAnswer}
-                    className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition ${
-                      selectedAnswer
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    Check Answer
-                  </button>
+                  <div className="text-center w-full py-3 text-indigo-600 font-medium">
+                    👆 Click an answer to see result
+                  </div>
                 ) : (
                   <>
                     <button
@@ -796,9 +847,9 @@ const StudentPracticeMode = () => {
 
           {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200 shadow-2xl w-full max-w-lg pointer-events-auto animate-in fade-in zoom-in duration-200">
+            <div className="bg-linear-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200 shadow-2xl w-full max-w-lg pointer-events-auto animate-in fade-in zoom-in duration-200">
               {/* Header */}
-              <div className="flex items-center justify-between p-5 border-b border-purple-200 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-t-2xl">
+              <div className="flex items-center justify-between p-5 border-b border-purple-200 bg-linear-to-r from-purple-500 to-indigo-500 rounded-t-2xl">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
                     <Sparkles size={16} className="text-white" />
@@ -871,7 +922,7 @@ const StudentPracticeMode = () => {
                   <button
                     onClick={handleAskAI}
                     disabled={aiLoading || !aiQuestion.trim()}
-                    className="px-4 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl text-sm font-medium hover:shadow-lg transition disabled:opacity-50"
+                    className="px-4 py-2.5 bg-linear-to-r from-purple-500 to-indigo-500 text-white rounded-xl text-sm font-medium hover:shadow-lg transition disabled:opacity-50"
                   >
                     {aiLoading ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -903,9 +954,9 @@ const StudentPracticeMode = () => {
                 )}
 
                 {aiResponse && !aiLoading && (
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+                  <div className="bg-linear-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 bg-linear-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center shrink-0">
                         <Bot size={14} className="text-white" />
                       </div>
                       <div className="flex-1">
