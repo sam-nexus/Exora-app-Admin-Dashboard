@@ -35,6 +35,22 @@ router.post('/', authenticate, upload.single('receipt'), async (req: AuthRequest
 
     if (insertError) throw insertError;
 
+    const { data: admins, error: adminFetchError } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('role', 'admin');
+
+    if (!adminFetchError && admins && admins.length > 0) {
+      const adminNotifications = admins.map((admin: any) => ({
+        recipient_id: admin.id,
+        title: 'New payment receipt received',
+        message: `A new payment receipt has been uploaded by ${userId}. Please review and approve.`,
+        link: '/payments',
+        is_read: false,
+      }));
+      await supabaseAdmin.from('notifications').insert(adminNotifications);
+    }
+
     res.status(201).json({ message: 'Receipt uploaded, waiting for verification' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -91,6 +107,14 @@ router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, r
       .eq('user_id', receipt.user_id);
     if (unlockError) throw unlockError;
 
+    await supabaseAdmin.from('notifications').insert({
+      recipient_id: receipt.user_id,
+      title: 'Payment approved',
+      message: 'Your payment was approved and your courses are now unlocked.',
+      link: '/student/payments',
+      is_read: false,
+    });
+
     res.json({ message: 'Payment approved, courses unlocked' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -104,7 +128,7 @@ router.patch('/:id/decline', authenticate, adminOnly, async (req: AuthRequest, r
 
     const { data: receipt, error: fetchError } = await supabaseAdmin
       .from('payment_receipts')
-      .select('status')
+      .select('user_id, status')
       .eq('id', receiptId)
       .single();
 
@@ -116,6 +140,14 @@ router.patch('/:id/decline', authenticate, adminOnly, async (req: AuthRequest, r
       .update({ status: 'declined' })
       .eq('id', receiptId);
     if (updateError) throw updateError;
+
+    await supabaseAdmin.from('notifications').insert({
+      recipient_id: receipt.user_id,
+      title: 'Payment declined',
+      message: 'Your payment receipt was declined. Please upload a new receipt or contact support.',
+      link: '/student/payments',
+      is_read: false,
+    });
 
     res.json({ message: 'Payment declined' });
   } catch (err: any) {

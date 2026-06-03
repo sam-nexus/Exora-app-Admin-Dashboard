@@ -14,9 +14,9 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 // POST – create a new department
 router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { name, icon } = req.body;
-  const { error } = await supabaseAdmin.from('departments').insert({ name, icon });
+  const { data, error } = await supabaseAdmin.from('departments').insert({ name, icon }).select();
   if (error) return res.status(500).json({ error: error.message });
-  res.status(201).json({ message: 'Department created' });
+  res.status(201).json({ message: 'Department created', data: data?.[0] });
 });
 
 // PUT – update a department

@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 const api = axios.create({
-  baseURL: 'https://exora-app-admin-dashboard.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://exora-app-admin-dashboard.onrender.com/api',
 });
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');

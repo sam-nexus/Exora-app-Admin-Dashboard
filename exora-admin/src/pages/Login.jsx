@@ -18,9 +18,18 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/admin/login', { email, password });
+      const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
-      navigate('/');
+      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('email', email);
+      localStorage.setItem('fullName', data.user.full_name || '');
+
+      if (data.user.role === 'admin') {
+        navigate('/');
+      } else {
+        navigate('/student');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {
@@ -53,8 +62,8 @@ const Login = () => {
                 />
               </svg>
             </div>
-            <h2 className="text-3xl font-bold text-gray-800">Admin Login</h2>
-            <p className="text-gray-500 mt-2">Exora Admin Dashboard</p>
+            <h2 className="text-3xl font-bold text-gray-800">Exora Login</h2>
+            <p className="text-gray-500 mt-2">Sign in to your Exora account</p>
           </div>
 
           {/* Error message */}
