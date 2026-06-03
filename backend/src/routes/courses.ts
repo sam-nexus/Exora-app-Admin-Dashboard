@@ -7,8 +7,9 @@ const router = Router();
 // GET – list courses (any authenticated user)
 router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   let query = supabaseAdmin.from('courses').select('*, departments(name)');
-  const { department_id } = req.query;
+  const { department_id, type } = req.query;
   if (department_id) query = query.eq('department_id', department_id);
+  if (type) query = query.eq('type', type);
   const { data, error } = await query;
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
@@ -16,13 +17,18 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 
 // Add a new course – also inserts locked rows for all existing users
 router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
-  const { department_id, name } = req.body;
+  const { department_id, name, type = 'regular' } = req.body;
+
+  // Validate type
+  if (!['regular', 'mock', 'exit'].includes(type)) {
+    return res.status(400).json({ error: 'Invalid course type. Must be: regular, mock, or exit' });
+  }
 
   try {
     // 1. Create the course
     const { data: course, error: insertError } = await supabaseAdmin
       .from('courses')
-      .insert({ department_id, name })
+      .insert({ department_id, name, type })
       .select('id')
       .single();
 
@@ -42,7 +48,7 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
       const locks = users.map(u => ({
         user_id: u.id,
         course_id: course.id,
-        is_locked: true,
+        is_locked: type === 'regular' ? true : false,
       }));
       const { error: lockError } = await supabaseAdmin
         .from('user_courses')
@@ -50,7 +56,7 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
       if (lockError) throw lockError;
     }
 
-    res.status(201).json({ message: 'Course added', courseId: course.id });
+    res.status(201).json({ message: 'Course added', courseId: course.id, type });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -59,10 +65,16 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
 // Edit a course
 router.put('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const { name, department_id } = req.body;
+  const { name, department_id, type } = req.body;
   const updates: any = {};
   if (name !== undefined) updates.name = name;
   if (department_id !== undefined) updates.department_id = department_id;
+  if (type !== undefined) {
+    if (!['regular', 'mock', 'exit'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid course type. Must be: regular, mock, or exit' });
+    }
+    updates.type = type;
+  }
 
   const { error } = await supabaseAdmin.from('courses').update(updates).eq('id', id);
   if (error) return res.status(500).json({ error: error.message });

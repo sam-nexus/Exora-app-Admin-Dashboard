@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import statsRoutes from './routes/stats';
 import departmentRoutes from './routes/departments';
 dotenv.config();
@@ -10,6 +10,8 @@ import userRoutes from './routes/users';
 import courseRoutes from './routes/courses';
 import questionRoutes from './routes/questions';
 import paymentRoutes from './routes/payments';
+import notificationRoutes from './routes/notifications';
+import deviceRoutes from './routes/devices';
 
 const app = express();
 app.use(cors());
@@ -22,6 +24,8 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/departments', departmentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/devices', deviceRoutes);
 app.get('/', (_req, res) => {
   res.json({
     message: 'Exora Backend is running',
