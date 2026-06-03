@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "455487033561",
+    "project_id": "avian-brand-474607-g8",
+    "storage_bucket": "avian-brand-474607-g8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455487033561:android:888428b91d607998f82ec8",
+        "android_client_info": {
+          "package_name": "com.example.firebase_notification_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAn8wRpEYyNoLqG1xTxv5O2DtBm4EFHYA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455487033561:android:8128058553f55625f82ec8",
+        "android_client_info": {
+          "package_name": "com.exora.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAn8wRpEYyNoLqG1xTxv5O2DtBm4EFHYA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455487033561:android:71239dc5da4e969af82ec8",
+        "android_client_info": {
+          "package_name": "exora.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAn8wRpEYyNoLqG1xTxv5O2DtBm4EFHYA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
