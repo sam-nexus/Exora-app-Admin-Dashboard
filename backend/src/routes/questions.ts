@@ -10,9 +10,10 @@ const router = Router();
 // List questions with optional filters (unchanged)
 router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   let query = supabaseAdmin.from('questions').select('*, courses!inner(department_id)');
-  const { course_id, department_id } = req.query;
+  const { course_id, department_id, question_type } = req.query;
   if (course_id) query = query.eq('course_id', course_id);
   if (department_id) query = query.eq('courses.department_id', department_id);
+  if (question_type) query = query.eq('question_type', question_type);
   const { data, error } = await query;
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);

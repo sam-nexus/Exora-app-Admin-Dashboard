@@ -2,9 +2,12 @@ import { Router, Response } from 'express';
 import { supabaseAdmin } from '../supabase';
 import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
+import multer from 'multer';
+const materialUpload = multer({ storage: multer.memoryStorage() });
+
 const router = Router();
 
-// GET – list courses (any authenticated user)
+// Get courses (optionally filtered by department_id and type)
 router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   let query = supabaseAdmin.from('courses').select('*, departments(name)');
   const { department_id, type } = req.query;
@@ -15,40 +18,31 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   res.json(data);
 });
 
-// Add a new course – also inserts locked rows for all existing users
+// Add a new course
 router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
-  const { department_id, name, type = 'regular' } = req.body;
-
-  // Validate type
-  if (!['regular', 'mock', 'exit'].includes(type)) {
-    return res.status(400).json({ error: 'Invalid course type. Must be: regular, mock, or exit' });
-  }
+  const { department_id, name, type } = req.body;
+  const courseType = type || 'regular';
 
   try {
-    // 1. Create the course
     const { data: course, error: insertError } = await supabaseAdmin
       .from('courses')
-      .insert({ department_id, name, type })
+      .insert({ department_id, name, type: courseType })
       .select('id')
       .single();
 
-    if (insertError || !course) {
-      throw insertError || new Error('Failed to create course');
-    }
+    if (insertError || !course) throw insertError || new Error('Failed to create course');
 
-    // 2. Fetch all user IDs from profiles
+    // Insert locked rows for all existing users
     const { data: users, error: usersError } = await supabaseAdmin
       .from('profiles')
       .select('id');
-
     if (usersError) throw usersError;
 
-    // 3. Insert a locked row for every user (skip if no users)
     if (users && users.length > 0) {
       const locks = users.map(u => ({
         user_id: u.id,
         course_id: course.id,
-        is_locked: type === 'regular' ? true : false,
+        is_locked: true,
       }));
       const { error: lockError } = await supabaseAdmin
         .from('user_courses')
@@ -56,7 +50,7 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
       if (lockError) throw lockError;
     }
 
-    res.status(201).json({ message: 'Course added', courseId: course.id, type });
+    res.status(201).json({ message: 'Course added', courseId: course.id });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -69,12 +63,7 @@ router.put('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Respon
   const updates: any = {};
   if (name !== undefined) updates.name = name;
   if (department_id !== undefined) updates.department_id = department_id;
-  if (type !== undefined) {
-    if (!['regular', 'mock', 'exit'].includes(type)) {
-      return res.status(400).json({ error: 'Invalid course type. Must be: regular, mock, or exit' });
-    }
-    updates.type = type;
-  }
+  if (type !== undefined) updates.type = type;
 
   const { error } = await supabaseAdmin.from('courses').update(updates).eq('id', id);
   if (error) return res.status(500).json({ error: error.message });
@@ -86,6 +75,84 @@ router.delete('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Res
   const { error } = await supabaseAdmin.from('courses').delete().eq('id', req.params.id);
   if (error) return res.status(500).json({ error: error.message });
   res.json({ message: 'Course deleted' });
+});
+
+// Get course materials
+router.get('/:courseId/materials', authenticate, async (req: AuthRequest, res: Response) => {
+  const { courseId } = req.params;
+  const { data, error } = await supabaseAdmin
+    .from('course_materials')
+    .select('*')
+    .eq('course_id', courseId)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// Add course material (admin only)
+router.post('/:courseId/materials', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { courseId } = req.params;
+  const { title, file_url } = req.body;
+  const { error } = await supabaseAdmin
+    .from('course_materials')
+    .insert({ course_id: courseId, title, file_url });
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json({ message: 'Material added' });
+});
+
+// Delete course material (admin only)
+router.delete('/materials/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { error } = await supabaseAdmin
+    .from('course_materials')
+    .delete()
+    .eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: 'Material deleted' });
+});
+
+
+// Upload course material with file (admin only)
+router.post('/:courseId/materials/upload', authenticate, adminOnly, materialUpload.single('file'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { courseId } = req.params;
+    const title = req.body.title || 'Untitled Material';
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Upload to Supabase Storage
+    const filePath = `materials/${courseId}/${Date.now()}-${req.file.originalname}`;
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('course-materials') // or create a new bucket 'course-materials'
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Get signed URL (valid for 1 year)
+    const { data: signedData, error: signedError } = await supabaseAdmin.storage
+      .from('course-materials')
+      .createSignedUrl(filePath, 31536000);
+
+    if (signedError) throw signedError;
+
+    // Insert record into course_materials table
+    const { error: insertError } = await supabaseAdmin
+      .from('course_materials')
+      .insert({
+        course_id: courseId,
+        title: title,
+        file_url: signedData.signedUrl,
+      });
+
+    if (insertError) throw insertError;
+
+    res.status(201).json({ message: 'Material uploaded successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Get user‑specific courses (lock status)
