@@ -53,6 +53,7 @@ function App() {
             <Route path="departments/:id/courses" element={<StudentDepartmentCourses />} />
             <Route path="departments/:deptId/courses/:courseId/practice" element={<StudentPracticeMode />} />
             <Route path="departments/:deptId/courses/:courseId/mock-exam" element={<StudentMockExam />} />
+            <Route path="departments/:deptId/courses/:courseId/exit-exam" element={<StudentExitExam />} />
             <Route path="departments/:deptId/exit-exam" element={<StudentExitExam />} />
             <Route path="payments" element={<StudentPayments />} />
             <Route path="notifications" element={<Notifications />} />

@@ -65,7 +65,7 @@ const CourseCard = ({ course, index, deptId, tab }) => {
 
   const practiceLink = `/student/departments/${deptId}/courses/${course.id}/practice`;
   const mockLink     = `/student/departments/${deptId}/courses/${course.id}/mock-exam`;
-  const exitLink     = `/student/departments/${deptId}/exit-exam`;
+  const exitLink     = `/student/departments/${deptId}/courses/${course.id}/exit-exam`;
   const href         = tab === "mock" ? mockLink : tab === "exit" ? exitLink : practiceLink;
 
   return (

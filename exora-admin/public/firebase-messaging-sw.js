@@ -1,6 +1,8 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
+// Firebase config is hardcoded here because service workers
+// cannot access Vite env vars (import.meta.env is not available in SW scope)
 firebase.initializeApp({
   apiKey: 'AIzaSyBsGVkP4xOGVmQzX1Y2Z3A4B5C6D7E8F9G0',
   authDomain: 'avian-brand-47460-g8.firebaseapp.com',
@@ -10,9 +12,10 @@ firebase.initializeApp({
   appId: '1:523456789012:web:a1b2c3d4e5f6g7h8i9j0',
 });
 
-const messaging = firebase.getMessaging();
+// Use compat API — NOT firebase.getMessaging(), that's the modular API
+const messaging = firebase.messaging();
 
-firebase.messaging().onBackgroundMessage((payload) => {
+messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || 'New notification';
   const options = {
     body: payload.notification?.body || '',
