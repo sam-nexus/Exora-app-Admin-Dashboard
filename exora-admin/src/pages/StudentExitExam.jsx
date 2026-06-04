@@ -1,60 +1,57 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Award, Clock, AlertTriangle, CheckCircle, XCircle,
-  ArrowLeft, ChevronLeft, ChevronRight, Trophy, Brain,
-  BarChart3, TrendingUp, RotateCcw, Grid3x3, X, Target,
-  Search, Flag, GraduationCap, BookOpen, Layers, Timer,
-  Zap,
+  Clock, AlertCircle, CheckCircle, XCircle, ArrowLeft,
+  Award, ChevronLeft, ChevronRight, Flag, BookOpen,
+  GraduationCap, Grid3x3, X, Search, Timer, BarChart3,
+  Target, Zap, Brain, TrendingUp, Trophy, RotateCcw,
 } from 'lucide-react';
 import api from '../api/axios';
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// ─── helpers ─────────────────────────────────────────────────────────────────
 const pad = (n) => String(n).padStart(2, '0');
-const fmtTime = (s) => `${pad(Math.floor(s/3600))}:${pad(Math.floor((s%3600)/60))}:${pad(s%60)}`;
-const optLetter = (i) => String.fromCharCode(65 + i);
-const timerCls = (left, total) => {
-  if (!total) return 'text-white';
-  const p = left / total;
-  return p > 0.4 ? 'text-white' : p > 0.15 ? 'text-yellow-300' : 'text-red-300 animate-pulse';
+
+const formatTime = (seconds, unlimited) => {
+  if (unlimited) return '∞';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 };
 
-// ─── Option button (test mode) ─────────────────────────────────────────────────
-const TestOption = ({ opt, text, selected, onChange }) => (
-  <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all
-    ${selected ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/30'}`}>
-    <input type="radio" value={opt} checked={selected} onChange={onChange}
-      className="mt-0.5 accent-indigo-600 w-4 h-4 shrink-0" />
-    <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold border shrink-0
-      ${selected ? 'bg-indigo-500 border-indigo-500 text-white' : 'bg-white border-gray-300 text-gray-500'}`}>
-      {opt}
-    </span>
-    <span className="text-sm text-gray-700 leading-relaxed">{text}</span>
-  </label>
-);
+const optionLabel = (idx) => String.fromCharCode(65 + idx);
 
-// ─── Option button (practice mode — with states) ───────────────────────────────
-const PracticeOption = ({ opt, text, state, onClick, disabled }) => {
+const timerColor = (left, total) => {
+  if (!total) return 'text-white';
+  const pct = left / total;
+  if (pct > 0.4)  return 'text-white';
+  if (pct > 0.15) return 'text-yellow-300';
+  return 'text-red-300 animate-pulse';
+};
+
+// ─── Option Button ────────────────────────────────────────────────────────────
+const OptionButton = ({ opt, optText, state, onClick, disabled }) => {
+  const base = 'w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-start gap-3 group';
   const styles = {
     idle:     'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/40 cursor-pointer',
-    selected: 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200',
+    selected: 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200 cursor-pointer',
     correct:  'border-emerald-500 bg-emerald-50',
     wrong:    'border-red-400 bg-red-50',
   };
   return (
-    <button onClick={onClick} disabled={disabled}
-      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-start gap-3 group ${styles[state]}`}>
+    <button onClick={onClick} disabled={disabled} className={`${base} ${styles[state]}`}>
       <span className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold border
-        ${state==='correct' ? 'bg-emerald-500 border-emerald-500 text-white'
-        : state==='wrong'   ? 'bg-red-400 border-red-400 text-white'
-        : state==='selected'? 'bg-indigo-500 border-indigo-500 text-white'
-        :                     'bg-white border-gray-300 text-gray-500 group-hover:border-indigo-400 group-hover:text-indigo-600'}`}>
+        ${state === 'correct'  ? 'bg-emerald-500 border-emerald-500 text-white'
+        : state === 'wrong'    ? 'bg-red-400 border-red-400 text-white'
+        : state === 'selected' ? 'bg-indigo-500 border-indigo-500 text-white'
+        :                        'bg-white border-gray-300 text-gray-500 group-hover:border-indigo-400 group-hover:text-indigo-600'}`}>
         {opt}
       </span>
       <span className={`flex-1 text-sm leading-relaxed
-        ${state==='correct' ? 'text-emerald-800 font-medium'
-        : state==='wrong'   ? 'text-red-700' : 'text-gray-700'}`}>
-        {text}
+        ${state === 'correct' ? 'text-emerald-800 font-medium'
+        : state === 'wrong'   ? 'text-red-700'
+        : 'text-gray-700'}`}>
+        {optText}
       </span>
       {state === 'correct' && <CheckCircle size={18} className="text-emerald-500 shrink-0 mt-0.5" />}
       {state === 'wrong'   && <XCircle    size={18} className="text-red-400 shrink-0 mt-0.5" />}
@@ -62,7 +59,7 @@ const PracticeOption = ({ opt, text, state, onClick, disabled }) => {
   );
 };
 
-// ─── Explanation box (same as MockExam) ───────────────────────────────────────
+// ─── Explanation Box ──────────────────────────────────────────────────────────
 const ExplanationBox = ({ isCorrect, correctLetter, correctText, userLetter, userText, explanation }) => (
   <div className={`p-5 rounded-xl mb-2 border-2 animate-in slide-in-from-bottom-2 duration-200
     ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
@@ -77,7 +74,7 @@ const ExplanationBox = ({ isCorrect, correctLetter, correctText, userLetter, use
     <div className="mb-4">
       <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">📖 Explanation</p>
       <p className="text-gray-700 text-sm leading-relaxed bg-white/50 p-3 rounded-lg">
-        {explanation || 'No explanation provided.'}
+        {explanation || 'No explanation provided for this question.'}
       </p>
     </div>
     <div className="bg-white/60 rounded-lg p-3">
@@ -103,14 +100,17 @@ const ExplanationBox = ({ isCorrect, correctLetter, correctText, userLetter, use
   </div>
 );
 
-// ─── Question Map ──────────────────────────────────────────────────────────────
-const QuestionMap = ({ sections, currentSection, currentQIdx, answers, marked, onGo, onClose }) => {
+// ─── Question Navigator Modal ─────────────────────────────────────────────────
+const QuestionMap = ({ questions, answers, marked, current, onGo, onClose }) => {
   const [search, setSearch] = useState('');
+  const filtered = questions.filter((_, i) => search === '' || String(i + 1).includes(search));
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:rounded-2xl sm:max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
         <div className="flex items-center justify-between px-5 py-4 border-b">
-          <h3 className="font-bold text-gray-800 flex items-center gap-2"><Grid3x3 size={18} className="text-indigo-600" /> Question Map</h3>
+          <h3 className="font-bold text-gray-800 flex items-center gap-2">
+            <Grid3x3 size={18} className="text-indigo-600" /> Question Map
+          </h3>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition"><X size={18} /></button>
         </div>
         <div className="px-5 py-3 border-b">
@@ -120,32 +120,22 @@ const QuestionMap = ({ sections, currentSection, currentQIdx, answers, marked, o
               className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
           </div>
         </div>
-        <div className="overflow-y-auto p-5 space-y-5">
-          {sections.map((sec, sIdx) => (
-            <div key={sIdx}>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
-                Section {sIdx + 1} — {sec.courseName}
-              </p>
-              <div className="grid grid-cols-8 gap-1.5">
-                {sec.questions.map((q, qIdx) => {
-                  if (search && !String(qIdx + 1).includes(search)) return null;
-                  const answered = !!answers[q.id];
-                  const flagged  = !!marked[q.id];
-                  const isCur    = sIdx === currentSection && qIdx === currentQIdx;
-                  return (
-                    <button key={q.id} onClick={() => onGo(sIdx, qIdx)}
-                      className={`h-9 rounded-xl text-xs font-bold transition-all
-                        ${isCur ? 'bg-indigo-600 text-white ring-2 ring-indigo-300 ring-offset-1'
-                        : answered ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                        : flagged  ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                        :            'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {qIdx + 1}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        <div className="overflow-y-auto p-5 grid grid-cols-8 gap-1.5">
+          {filtered.map((q, idx) => {
+            const answered   = !!answers[q.id];
+            const flagged    = !!marked[q.id];
+            const isCurrent  = idx === current;
+            return (
+              <button key={q.id} onClick={() => onGo(idx)}
+                className={`h-9 rounded-xl text-xs font-bold transition-all
+                  ${isCurrent  ? 'bg-indigo-600 text-white ring-2 ring-indigo-300 ring-offset-1'
+                  : answered   ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                  : flagged    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                  :              'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {idx + 1}
+              </button>
+            );
+          })}
         </div>
         <div className="px-5 py-3 border-t bg-gray-50 flex flex-wrap gap-4 text-xs text-gray-500">
           {[['bg-indigo-600','Current'],['bg-emerald-400','Answered'],['bg-yellow-400','Flagged'],['bg-gray-300','Unanswered']].map(([c,l]) => (
@@ -157,27 +147,84 @@ const QuestionMap = ({ sections, currentSection, currentQIdx, answers, marked, o
   );
 };
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
-const StudentExitExam = () => {
-  const { deptId } = useParams();
-  const navigate   = useNavigate();
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+const Sidebar = ({ questions, answers, marked, totalQs, answeredCount, flaggedCount, currentIdx, goTo, onSubmit }) => (
+  <div className="space-y-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+        <BarChart3 size={14} className="text-indigo-500" /> Progress
+      </p>
+      <div className="space-y-3">
+        {[
+          { label: 'Answered',   val: answeredCount,           color: 'bg-indigo-500' },
+          { label: 'Unanswered', val: totalQs - answeredCount, color: 'bg-gray-200'   },
+          { label: 'Flagged',    val: flaggedCount,            color: 'bg-yellow-400' },
+        ].map(({ label, val, color }) => (
+          <div key={label}>
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
+              <span>{label}</span><span className="font-bold text-gray-700">{val}</span>
+            </div>
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className={`h-full ${color} rounded-full transition-all`}
+                style={{ width: `${totalQs ? (val / totalQs) * 100 : 0}%` }} />
+              </div>
+          </div>
+        ))}
+      </div>
+    </div>
 
-  const [screen, setScreen]         = useState('select'); // 'select'|'practice'|'test'|'result'
-  const [mode, setMode]             = useState(null);
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Quick Nav</p>
+      <div className="grid grid-cols-5 gap-1.5 max-h-60 overflow-y-auto">
+        {questions.slice(0, 50).map((q, i) => {
+          const answered = !!answers[q.id];
+          const flagged  = !!marked[q.id];
+          const isCur    = i === currentIdx;
+          return (
+            <button key={q.id} onClick={() => goTo(i)}
+              className={`h-8 rounded-lg text-[11px] font-bold transition-all
+                ${isCur    ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
+                : answered ? 'bg-emerald-100 text-emerald-700'
+                : flagged  ? 'bg-yellow-100 text-yellow-700'
+                :            'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+              {i + 1}
+            </button>
+          );
+        })}
+      </div>
+      {totalQs > 50 && (
+        <p className="text-xs text-gray-400 text-center mt-2">+{totalQs - 50} more — use Question Map</p>
+      )}
+    </div>
+
+    <button onClick={onSubmit}
+      className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center gap-2">
+      <Trophy size={16} /> Submit Exam
+    </button>
+  </div>
+);
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+const StudentExitExam = () => {
+  const { deptId, courseId } = useParams(); // Route: /student/departments/:deptId/courses/:courseId/exit-exam
+  const navigate = useNavigate();
+
   const [loading, setLoading]       = useState(true);
   const [department, setDepartment] = useState(null);
-  const [sections, setSections]     = useState([]);
+  const [course, setCourse]         = useState(null);
+  const [questions, setQuestions]   = useState([]);
 
-  // navigation
-  const [currentSection, setCurrentSection] = useState(0);
-  const [currentQIdx, setCurrentQIdx]       = useState(0);
+  const [screen, setScreen]         = useState('select');
+  const [mode, setMode]             = useState(null);
+  const [isStarting, setIsStarting] = useState(false);
 
-  // answers & state
   const [answers, setAnswers]   = useState({});
-  const [revealed, setRevealed] = useState({}); // practice mode
+  const [revealed, setRevealed] = useState({});
   const [marked, setMarked]     = useState({});
 
-  // timer
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [showMap, setShowMap]       = useState(false);
+
   const [enableTimer, setEnableTimer]   = useState(true);
   const [selectedMins, setSelectedMins] = useState(180);
   const [timeLeft, setTimeLeft]         = useState(0);
@@ -185,165 +232,167 @@ const StudentExitExam = () => {
 
   const [result, setResult]               = useState(null);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
-  const [showMap, setShowMap]             = useState(false);
 
-  // fetch dept
+  // fetch department + course info for display
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get(`/student/departments/${deptId}`);
-        setDepartment(data);
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    })();
-  }, [deptId]);
+        // Fetch department info
+        const deptRes = await api.get(`/student/departments/${deptId}`);
+        setDepartment(deptRes.data);
 
-  // countdown (test mode only)
+        // Fetch course name if we have a courseId — use list endpoint with filter
+        if (courseId) {
+          try {
+            const coursesRes = await api.get('/courses', { params: { department_id: deptId } });
+            const found = (coursesRes.data || []).find((c) => c.id === courseId);
+            if (found) setCourse(found);
+          } catch (e) {
+            console.warn('Could not fetch course name:', e);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [deptId, courseId]);
+
+  // timer countdown
   useEffect(() => {
     if (screen !== 'test' || !enableTimer || timeLeft <= 0) return;
     const t = setInterval(() => {
-      setTimeLeft((p) => { if (p <= 1) { clearInterval(t); submitExam(); return 0; } return p - 1; });
+      setTimeLeft((p) => {
+        if (p <= 1) { clearInterval(t); submitExam(); return 0; }
+        return p - 1;
+      });
     }, 1000);
     return () => clearInterval(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, enableTimer, timeLeft]);
 
-  // ── derived ─────────────────────────────────────────────────────────────────
-  const currentSec    = sections[currentSection] || {};
-  const sectionQs     = currentSec.questions     || [];
-  const currentQ      = sectionQs[currentQIdx];
-  const totalSections = sections.length;
-  const totalQs       = sections.reduce((s, sec) => s + sec.questions.length, 0);
-  const answeredTotal = Object.keys(answers).length;
-  const flaggedTotal  = Object.values(marked).filter(Boolean).length;
-  const isFirst = currentSection === 0 && currentQIdx === 0;
-  const isLast  = currentSection === totalSections - 1 && currentQIdx === sectionQs.length - 1;
+  // derived
+  const currentQ      = questions[currentIdx];
+  const totalQs       = questions.length;
+  const answeredCount = Object.keys(answers).length;
+  const flaggedCount  = Object.values(marked).filter(Boolean).length;
+  const isFirst = currentIdx === 0;
+  const isLast  = currentIdx === totalQs - 1;
 
-  // flat question index
-  let flatIdx = 0;
-  for (let s = 0; s < currentSection; s++) flatIdx += sections[s].questions.length;
-  flatIdx += currentQIdx;
-
-  // ── start exam (both modes share the same API call) ──────────────────────────
+  // ── start exam — load ONLY the selected course's questions ──
   const startMode = async (m) => {
+    setIsStarting(true);
     setLoading(true);
     try {
-      let secs = [];
+      let questionsData = [];
 
-      // Try the new endpoint first. If the deployed backend is old (404),
-      // fall back to building sections client-side from /courses + /questions.
-      try {
-        const { data } = await api.post(`/student/departments/${deptId}/exit-exam/start`, {});
-        secs = data.sections || [];
-      } catch (err) {
-        if (err?.response?.status === 404) {
-          console.warn('New exit-exam endpoint not deployed — building sections from /courses + /questions');
-
-          // 1. Fetch all exit-type courses for this department
-          const coursesRes = await api.get('/courses', { params: { department_id: deptId, type: 'exit' } });
-          const courses = coursesRes.data || [];
-
-          if (courses.length === 0) {
-            // No exit-type courses — fall back to ALL courses for this dept
-            const allCoursesRes = await api.get('/courses', { params: { department_id: deptId } });
-            const allCourses = allCoursesRes.data || [];
-            for (const course of allCourses) {
-              const qRes = await api.get('/questions', { params: { course_id: course.id } });
-              secs.push({
-                courseId:   course.id,
-                courseName: course.name,
-                questions:  (qRes.data || []).map((q) => ({
-                  id:            q.id,
-                  text:          q.question_text,
-                  question_text: q.question_text,
-                  options:       q.options,
-                  correct_index: q.correct_index,
-                  explanation:   q.explanation || '',
-                })),
+      if (courseId) {
+        // Specific exit exam course selected — load only its questions
+        const qRes = await api.get('/questions', { params: { course_id: courseId } });
+        questionsData = (qRes.data || []).map((q) => ({
+          id:            q.id,
+          text:          q.question_text,
+          question_text: q.question_text,
+          options:       q.options,
+          correct_index: q.correct_index,
+          explanation:   q.explanation || '',
+        }));
+      } else {
+        // No courseId — try department endpoint, then fallback to all exit courses
+        try {
+          const { data } = await api.post(`/student/departments/${deptId}/exit-exam/start`, {});
+          const sections = data.sections || [];
+          sections.forEach((sec) => {
+            (sec.questions || []).forEach((q) => {
+              questionsData.push({
+                id:            q.id,
+                text:          q.question_text || q.text,
+                question_text: q.question_text || q.text,
+                options:       q.options,
+                correct_index: q.correct_index,
+                explanation:   q.explanation || '',
               });
-            }
-          } else {
-            // 2. Fetch questions per exit course
-            for (const course of courses) {
-              const qRes = await api.get('/questions', { params: { course_id: course.id } });
-              secs.push({
-                courseId:   course.id,
-                courseName: course.name,
-                questions:  (qRes.data || []).map((q) => ({
-                  id:            q.id,
-                  text:          q.question_text,
-                  question_text: q.question_text,
-                  options:       q.options,
-                  correct_index: q.correct_index,
-                  explanation:   q.explanation || '',
-                })),
-              });
-            }
+            });
+          });
+          if (questionsData.length === 0 && data.questions?.length) {
+            questionsData = data.questions;
           }
-        } else {
-          throw err; // re-throw non-404 errors
+        } catch {
+          const coursesRes = await api.get('/courses', { params: { department_id: deptId, type: 'exit' } });
+          let courses = coursesRes.data || [];
+          if (courses.length === 0) {
+            const allRes = await api.get('/courses', { params: { department_id: deptId } });
+            courses = allRes.data || [];
+          }
+          for (const c of courses) {
+            const qRes = await api.get('/questions', { params: { course_id: c.id } });
+            (qRes.data || []).forEach((q) => {
+              questionsData.push({
+                id:            q.id,
+                text:          q.question_text,
+                question_text: q.question_text,
+                options:       q.options,
+                correct_index: q.correct_index,
+                explanation:   q.explanation || '',
+              });
+            });
+          }
         }
       }
 
-      // Enrich with correct_index + explanation if missing (old endpoint)
-      const firstQ = secs[0]?.questions[0];
-      if (firstQ && !('correct_index' in firstQ)) {
-        const qRes = await api.get('/questions', { params: { department_id: deptId } });
-        const qMap = {};
-        (qRes.data || []).forEach((q) => { qMap[q.id] = q; });
-        secs = secs.map((sec) => ({
-          ...sec,
-          questions: sec.questions.map((q) => ({
-            ...q,
-            correct_index: qMap[q.id]?.correct_index ?? 0,
-            explanation:   qMap[q.id]?.explanation   ?? '',
-          })),
-        }));
+      console.log(`Exit exam loaded: ${questionsData.length} questions`);
+
+      if (questionsData.length === 0) {
+        alert('No questions found for this exit exam. Please contact your administrator.');
+        setIsStarting(false);
+        setLoading(false);
+        return;
       }
 
-      console.log(`Exit exam loaded: ${secs.length} sections, ${secs.reduce((a, s) => a + s.questions.length, 0)} total questions`);
-
-      setSections(secs);
+      setQuestions(questionsData);
       setMode(m);
+      setCurrentIdx(0);
+      setAnswers({});
+      setRevealed({});
+      setMarked({});
+      setLoading(false);
+      setIsStarting(false);
+
       if (m === 'test') {
-        const totalSecs = enableTimer ? selectedMins * 60 : 0;
-        setTimeLeft(totalSecs); setTotalTime(totalSecs);
-        setScreen('test');
-      } else {
-        setScreen('practice');
+        const secs = enableTimer ? selectedMins * 60 : 0;
+        setTimeLeft(secs);
+        setTotalTime(secs);
       }
+      setScreen(m);
     } catch (e) {
-      console.error(e);
+      console.error('Error loading exit exam:', e);
       alert('Failed to start exit exam. Please try again.');
-    } finally { setLoading(false); }
-  };
-
-  // ── navigation ───────────────────────────────────────────────────────────────
-  const goTo = useCallback((sIdx, qIdx) => {
-    setCurrentSection(sIdx); setCurrentQIdx(qIdx); setShowMap(false);
-  }, []);
-
-  const goNext = () => {
-    if (currentQIdx < sectionQs.length - 1) { setCurrentQIdx((p) => p + 1); }
-    else if (currentSection < totalSections - 1) { setCurrentSection((p) => p + 1); setCurrentQIdx(0); }
-    else { setConfirmSubmit(true); }
-  };
-
-  const goPrev = () => {
-    if (currentQIdx > 0) { setCurrentQIdx((p) => p - 1); }
-    else if (currentSection > 0) {
-      const prevSec = sections[currentSection - 1];
-      setCurrentSection((p) => p - 1);
-      setCurrentQIdx(prevSec.questions.length - 1);
+      setLoading(false);
+      setIsStarting(false);
     }
   };
 
-  // ── practice select → instant reveal ────────────────────────────────────────
+  // ── navigation ──
+  const goTo = useCallback((idx) => {
+    setCurrentIdx(idx);
+    setShowMap(false);
+  }, []);
+
+  const goNext = () => {
+    if (currentIdx < totalQs - 1) setCurrentIdx((p) => p + 1);
+    else setConfirmSubmit(true);
+  };
+
+  const goPrev = () => {
+    if (currentIdx > 0) setCurrentIdx((p) => p - 1);
+  };
+
+  // ── practice: instant reveal ──
   const selectPractice = (q, opt) => {
     if (revealed[q.id]) return;
     setAnswers((p) => ({ ...p, [q.id]: opt }));
-    const ci     = q.correct_index ?? 0;
-    const cLetter = optLetter(ci);
+    const ci      = q.correct_index ?? 0;
+    const cLetter = optionLabel(ci);
     setRevealed((p) => ({
       ...p,
       [q.id]: {
@@ -357,10 +406,9 @@ const StudentExitExam = () => {
     }));
   };
 
-  // ── test select ──────────────────────────────────────────────────────────────
-  const selectTest = (qId, opt) => setAnswers((p) => ({ ...p, [qId]: opt }));
+  const selectTest  = (qId, opt) => setAnswers((p) => ({ ...p, [qId]: opt }));
+  const toggleMark  = (id)       => setMarked((p)  => ({ ...p, [id]: !p[id] }));
 
-  // ── practice option state ────────────────────────────────────────────────────
   const practiceState = (q, opt) => {
     const rev = revealed[q.id];
     const sel = answers[q.id];
@@ -370,9 +418,7 @@ const StudentExitExam = () => {
     return 'idle';
   };
 
-  const toggleMark = (id) => setMarked((p) => ({ ...p, [id]: !p[id] }));
-
-  // ── submit ───────────────────────────────────────────────────────────────────
+  // ── submit ──
   const submitExam = async () => {
     setLoading(true);
     try {
@@ -381,45 +427,36 @@ const StudentExitExam = () => {
         const res = await api.post('/student/exit-exam/submit', { departmentId: deptId, answers });
         data = res.data;
       } catch (err) {
-        if (err?.response?.status === 404 || err?.response?.status === 400) {
-          // Backend endpoint missing — grade client-side using correct_index
-          console.warn('Submit endpoint not available — scoring client-side');
-          let totalCorrect = 0, totalCount = 0;
-          const sectionResults = sections.map((sec) => {
-            let sectionCorrect = 0;
-            sec.questions.forEach((q) => {
-              const userLetter = answers[q.id] ?? '';
-              const userIndex  = userLetter ? userLetter.charCodeAt(0) - 65 : -1;
-              if (userIndex !== -1 && userIndex === (q.correct_index ?? -1)) sectionCorrect++;
-            });
-            totalCorrect += sectionCorrect;
-            totalCount   += sec.questions.length;
-            return {
-              courseId:     sec.courseId,
-              courseName:   sec.courseName,
-              correctCount: sectionCorrect,
-              totalCount:   sec.questions.length,
-              score: sec.questions.length > 0
-                ? Math.round((sectionCorrect / sec.questions.length) * 100)
-                : 0,
-            };
-          });
-          const score = totalCount > 0 ? Math.round((totalCorrect / totalCount) * 100) : 0;
-          data = { score, correctCount: totalCorrect, totalCount, isPassed: score >= 50, sectionResults };
-        } else {
-          throw err;
-        }
+        // Client-side scoring fallback
+        console.warn('Submit endpoint unavailable — scoring client-side');
+        let totalCorrect = 0;
+        const results = questions.map((q) => {
+          const userLetter = answers[q.id] ?? '';
+          const isCorrect  = userLetter === optionLabel(q.correct_index ?? 0);
+          if (isCorrect) totalCorrect++;
+          return {
+            id: q.id, text: q.question_text,
+            userAnswer: userLetter,
+            correctAnswer: optionLabel(q.correct_index ?? 0),
+            isCorrect,
+            explanation: q.explanation,
+          };
+        });
+        const score = totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0;
+        data = { score, correctCount: totalCorrect, totalCount: totalQs, results };
       }
-      setResult(data); setScreen('result'); setConfirmSubmit(false);
+      setResult(data);
+      setScreen('result');
+      setConfirmSubmit(false);
     } catch (e) {
       console.error(e);
       alert('Submission failed. Please try again.');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // SCREEN: loading
-  // ════════════════════════════════════════════════════════════════════════════
+  // ══ SCREEN: loading ══════════════════════════════════════════════════════════
   if (loading && screen === 'select') {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -431,33 +468,30 @@ const StudentExitExam = () => {
     );
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // SCREEN: mode selection
-  // ════════════════════════════════════════════════════════════════════════════
+  // ══ SCREEN: select (mode selection) ═══════════════════════════════════════════
   if (screen === 'select') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/40 py-10 px-4">
         <div className="max-w-5xl mx-auto">
-
           <button onClick={() => navigate(`/student/departments/${deptId}/courses`)}
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 mb-8 transition group">
             <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition" /> Back to Courses
           </button>
 
-          {/* hero */}
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl shadow-lg mb-4">
               <Trophy size={28} className="text-white" />
             </div>
-            <h1 className="text-3xl font-extrabold text-gray-900">Exit Exam</h1>
+            <h1 className="text-3xl font-extrabold text-gray-900">
+              {course?.name || 'Exit Exam'}
+            </h1>
             <p className="text-gray-400 mt-1 text-sm flex items-center justify-center gap-1.5">
-              <GraduationCap size={14} /> {department?.name} Department
+              <GraduationCap size={14} /> {department?.name || 'Department'} Department
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-
-            {/* ── Practice card ── */}
+            {/* Practice card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 overflow-hidden">
               <div className="h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500" />
               <div className="p-7">
@@ -467,25 +501,24 @@ const StudentExitExam = () => {
                 <h2 className="text-xl font-bold text-gray-900 mb-1">Practice Mode</h2>
                 <p className="text-gray-400 text-sm mb-6">Learn with instant feedback on every answer</p>
                 <ul className="space-y-2.5 mb-8">
-                  {[
-                    'Click any answer to instantly reveal correct/wrong',
+                  {['Click any answer to instantly reveal correct/wrong',
                     'Full explanation shown for every question',
-                    'Navigate freely between sections',
-                    'No time pressure',
-                  ].map((t) => (
+                    'Navigate freely',
+                    'No time pressure'].map((t) => (
                     <li key={t} className="flex items-start gap-2.5 text-sm text-gray-600">
                       <CheckCircle size={15} className="text-emerald-500 mt-0.5 shrink-0" />{t}
                     </li>
                   ))}
                 </ul>
-                <button onClick={() => startMode('practice')}
-                  className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold hover:shadow-md hover:shadow-emerald-200 active:scale-95 transition-all flex items-center justify-center gap-2">
-                  <BookOpen size={17} /> Start Practice
+                <button onClick={() => startMode('practice')} disabled={isStarting}
+                  className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold hover:shadow-md hover:shadow-emerald-200 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isStarting ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" /> : <BookOpen size={17} />}
+                  Start Practice
                 </button>
               </div>
             </div>
 
-            {/* ── Test card ── */}
+            {/* Test card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 overflow-hidden">
               <div className="h-1.5 bg-gradient-to-r from-indigo-500 to-purple-600" />
               <div className="p-7">
@@ -493,9 +526,8 @@ const StudentExitExam = () => {
                   <Target size={24} className="text-indigo-600" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-1">Test Mode</h2>
-                <p className="text-gray-400 text-sm mb-5">Full exam simulation with all sections</p>
+                <p className="text-gray-400 text-sm mb-5">Full exam simulation</p>
 
-                {/* timer toggle */}
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-4">
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                     <Timer size={15} className="text-indigo-500" /> Enable Timer
@@ -509,7 +541,6 @@ const StudentExitExam = () => {
                   </label>
                 </div>
 
-                {/* duration pills */}
                 {enableTimer && (
                   <div className="mb-5">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Duration</p>
@@ -527,15 +558,15 @@ const StudentExitExam = () => {
 
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-xs text-amber-700 space-y-1">
                   <p className="font-semibold mb-1">Exam rules</p>
-                  <p>• Questions grouped by course sections</p>
                   <p>• {enableTimer ? `${selectedMins} minute time limit` : 'No time limit'}</p>
                   <p>• Results revealed only after submission</p>
                   <p>• Passing score: 50%</p>
                 </div>
 
-                <button onClick={() => startMode('test')}
-                  className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-md hover:shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-2">
-                  <Zap size={17} /> Start Test {enableTimer && `· ${selectedMins}min`}
+                <button onClick={() => startMode('test')} disabled={isStarting}
+                  className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-md hover:shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isStarting ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" /> : <Zap size={17} />}
+                  Start Test {enableTimer && `· ${selectedMins}min`}
                 </button>
               </div>
             </div>
@@ -545,14 +576,11 @@ const StudentExitExam = () => {
     );
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // SCREEN: result
-  // ════════════════════════════════════════════════════════════════════════════
+  // ══ SCREEN: result ════════════════════════════════════════════════════════════
   if (screen === 'result' && result) {
     const passed    = result.score >= 50;
     const correct   = result.correctCount ?? 0;
     const incorrect = (result.totalCount ?? 0) - correct;
-
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/40 py-10 px-4">
         <div className="max-w-2xl mx-auto space-y-5">
@@ -561,8 +589,10 @@ const StudentExitExam = () => {
               <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 {passed ? <Trophy size={36} className="text-white" /> : <TrendingUp size={36} className="text-white" />}
               </div>
-              <h2 className="text-3xl font-extrabold text-white mb-1">{passed ? 'Exit Exam Passed! 🎉' : 'Keep Practicing!'}</h2>
-              <p className="text-white/80 text-sm mb-5">{department?.name} · {mode === 'practice' ? 'Practice Mode' : 'Test Mode'}</p>
+              <h2 className="text-3xl font-extrabold text-white mb-1">
+                {passed ? 'Exit Exam Passed! 🎉' : 'Keep Practicing!'}
+              </h2>
+              <p className="text-white/80 text-sm mb-5">{course?.name || 'Exit Exam'} · {mode === 'practice' ? 'Practice Mode' : 'Test Mode'}</p>
               <div className="inline-block bg-white/15 rounded-2xl px-8 py-4">
                 <p className="text-6xl font-extrabold text-white leading-none">{result.score}<span className="text-2xl opacity-70">%</span></p>
                 <p className="text-white/70 text-xs mt-1">{passed ? '✅ Passed (50% required)' : '❌ Below passing score (50%)'}</p>
@@ -571,10 +601,11 @@ const StudentExitExam = () => {
                 <div className="h-full bg-white rounded-full" style={{ width: `${result.score}%` }} />
               </div>
             </div>
+
             <div className="grid grid-cols-3 divide-x divide-gray-100">
               {[
-                { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50', val: correct, label: 'Correct' },
-                { icon: XCircle,     color: 'text-red-400',     bg: 'bg-red-50',     val: incorrect, label: 'Wrong' },
+                { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50', val: correct,   label: 'Correct' },
+                { icon: XCircle,     color: 'text-red-400',     bg: 'bg-red-50',     val: incorrect, label: 'Wrong'   },
                 { icon: Award,       color: 'text-indigo-500',  bg: 'bg-indigo-50',  val: `${result.score}%`, label: 'Score' },
               ].map(({ icon: Icon, color, bg, val, label }) => (
                 <div key={label} className="py-5 flex flex-col items-center gap-1">
@@ -586,6 +617,7 @@ const StudentExitExam = () => {
                 </div>
               ))}
             </div>
+
             <div className="p-6 flex gap-3">
               <button onClick={() => window.location.reload()}
                 className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-indigo-200 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition">
@@ -598,29 +630,26 @@ const StudentExitExam = () => {
             </div>
           </div>
 
-          {/* section breakdown */}
-          {(result.sectionResults || []).length > 0 && (
+          {Array.isArray(result.results) && result.results.length > 0 && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="px-6 py-4 border-b flex items-center gap-2">
                 <BarChart3 size={18} className="text-indigo-600" />
-                <h3 className="font-bold text-gray-800">Performance by Course</h3>
+                <h3 className="font-bold text-gray-800">Detailed Results</h3>
               </div>
-              <div className="divide-y divide-gray-100">
-                {result.sectionResults.map((sec, i) => (
-                  <div key={i} className="px-6 py-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="text-sm font-semibold text-gray-800">{sec.courseName}</p>
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${sec.score >= 50 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
-                        {sec.score}%
-                      </span>
+              <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+                {result.results.map((q, i) => (
+                  <div key={i} className={`px-6 py-4 ${q.isCorrect ? 'bg-emerald-50/30' : 'bg-red-50/30'}`}>
+                    <div className="flex items-start gap-2 mb-2">
+                      {q.isCorrect ? <CheckCircle size={15} className="text-emerald-500 mt-0.5 shrink-0" /> : <XCircle size={15} className="text-red-400 mt-0.5 shrink-0" />}
+                      <p className="text-sm font-medium text-gray-800 leading-snug">{q.text}</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full transition-all ${sec.score >= 50 ? 'bg-emerald-500' : 'bg-red-400'}`}
-                          style={{ width: `${sec.score}%` }} />
+                    {!q.isCorrect && (
+                      <div className="ml-5 text-xs space-y-0.5">
+                        <p className="text-red-500">Your answer: <span className="font-bold">{q.userAnswer}</span></p>
+                        <p className="text-emerald-600">Correct: <span className="font-bold">{q.correctAnswer}</span></p>
+                        {q.explanation && <p className="text-gray-500 mt-1">{q.explanation}</p>}
                       </div>
-                      <span className="text-xs text-gray-400 shrink-0">{sec.correctCount}/{sec.totalCount}</span>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -631,81 +660,27 @@ const StudentExitExam = () => {
     );
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // SHARED: sidebar + question map
-  // ════════════════════════════════════════════════════════════════════════════
-  const Sidebar = () => (
-    <div className="space-y-4">
-      {/* progress */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-          <BarChart3 size={14} className="text-indigo-500" /> Progress
-        </p>
-        <div className="space-y-3">
-          {[
-            { label: 'Answered',   val: answeredTotal,           color: 'bg-indigo-500' },
-            { label: 'Unanswered', val: totalQs - answeredTotal, color: 'bg-gray-200'   },
-            { label: 'Flagged',    val: flaggedTotal,            color: 'bg-yellow-400' },
-          ].map(({ label, val, color }) => (
-            <div key={label}>
-              <div className="flex justify-between text-xs text-gray-500 mb-1">
-                <span>{label}</span><span className="font-bold text-gray-700">{val}</span>
-              </div>
-              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div className={`h-full ${color} rounded-full transition-all`}
-                  style={{ width: `${totalQs ? (val/totalQs)*100 : 0}%` }} />
-              </div>
-            </div>
-          ))}
+  // ══ SCREEN: practice ═════════════════════════════════════════════════════════
+  if (screen === 'practice') {
+    if (questions.length === 0 || !currentQ) {
+      return (
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-sm text-gray-500">Preparing questions…</p>
+          </div>
         </div>
-      </div>
-      {/* sections */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Sections</p>
-        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-          {sections.map((sec, sIdx) => {
-            const secAns  = sec.questions.filter((q) => answers[q.id]).length;
-            const secTot  = sec.questions.length;
-            const pct     = secTot ? Math.round((secAns/secTot)*100) : 0;
-            const isCur   = sIdx === currentSection;
-            return (
-              <button key={sIdx} onClick={() => goTo(sIdx, 0)}
-                className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all
-                  ${isCur ? 'border-indigo-300 bg-indigo-50' : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'}`}>
-                <div className="flex justify-between items-center mb-1">
-                  <p className="text-xs font-semibold text-gray-700 truncate max-w-[160px]">{sIdx+1}. {sec.courseName}</p>
-                  <span className={`text-[10px] font-bold ${pct===100 ? 'text-emerald-600' : 'text-gray-400'}`}>{secAns}/{secTot}</span>
-                </div>
-                <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${pct===100 ? 'bg-emerald-500' : 'bg-indigo-400'}`} style={{ width:`${pct}%` }} />
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      <button onClick={() => setConfirmSubmit(true)}
-        className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center gap-2">
-        <Trophy size={16} /> Submit Exam
-      </button>
-    </div>
-  );
-
-  // ════════════════════════════════════════════════════════════════════════════
-  // SCREEN: practice
-  // ════════════════════════════════════════════════════════════════════════════
-  if (screen === 'practice' && currentQ) {
+      );
+    }
     const rev = revealed[currentQ.id];
-
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/30">
-        {showMap && <QuestionMap sections={sections} currentSection={currentSection} currentQIdx={currentQIdx}
-          answers={answers} marked={marked} onGo={goTo} onClose={() => setShowMap(false)} />}
+        {showMap && <QuestionMap questions={questions} answers={answers} marked={marked}
+          current={currentIdx} onGo={goTo} onClose={() => setShowMap(false)} />}
 
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-[1fr_280px] gap-6">
             <div className="space-y-4">
-
               {/* sticky top bar */}
               <div className="sticky top-3 z-10 bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm px-5 py-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -717,17 +692,17 @@ const StudentExitExam = () => {
                   <div className="w-px h-5 bg-gray-200" />
                   <div>
                     <p className="text-xs text-gray-400 font-medium">Practice Mode · Exit Exam</p>
-                    <p className="text-sm font-bold text-gray-800 leading-tight">{department?.name}</p>
+                    <p className="text-sm font-bold text-gray-800 leading-tight">{course?.name || 'Exit Exam'}</p>
                   </div>
                 </div>
                 <div className="flex-1 max-w-xs hidden sm:block">
                   <div className="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>Q {flatIdx + 1} of {totalQs}</span>
-                    <span>{answeredTotal} answered</span>
+                    <span>Q {currentIdx + 1} of {totalQs}</span>
+                    <span>{answeredCount} answered</span>
                   </div>
                   <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full bg-indigo-500 rounded-full transition-all"
-                      style={{ width: `${((flatIdx+1)/totalQs)*100}%` }} />
+                      style={{ width: `${((currentIdx + 1) / totalQs) * 100}%` }} />
                   </div>
                 </div>
                 <button onClick={() => setShowMap(true)}
@@ -741,12 +716,9 @@ const StudentExitExam = () => {
                 <div className="px-6 py-4 border-b bg-gray-50/60 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center">
-                      <span className="text-indigo-600 font-extrabold text-sm">{currentQIdx + 1}</span>
+                      <span className="text-indigo-600 font-extrabold text-sm">{currentIdx + 1}</span>
                     </div>
-                    <div>
-                      <span className="text-xs text-gray-400">of {sectionQs.length} · </span>
-                      <span className="text-xs font-semibold text-indigo-600">{currentSec.courseName}</span>
-                    </div>
+                    <span className="text-xs text-gray-400">of {totalQs}</span>
                   </div>
                   <button onClick={() => toggleMark(currentQ.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition
@@ -757,13 +729,13 @@ const StudentExitExam = () => {
 
                 <div className="px-6 pt-6 pb-2">
                   <p className="text-base font-medium text-gray-800 leading-relaxed mb-6">
-                    {currentQ.question_text || currentQ.text}
+                    {currentQ.question_text || currentQ.text || 'No question text'}
                   </p>
                   <div className="space-y-2.5">
                     {(currentQ.options || []).map((optText, i) => {
-                      const opt = optLetter(i);
+                      const opt = optionLabel(i);
                       return (
-                        <PracticeOption key={opt} opt={opt} text={optText}
+                        <OptionButton key={opt} opt={opt} optText={optText}
                           state={practiceState(currentQ, opt)}
                           onClick={() => selectPractice(currentQ, opt)}
                           disabled={!!rev} />
@@ -786,32 +758,27 @@ const StudentExitExam = () => {
                   </button>
                   {/* dot indicator */}
                   <div className="flex items-center gap-1 overflow-hidden max-w-[180px]">
-                    {sections.slice(0).flatMap((sec, sIdx) =>
-                      sec.questions.slice(
-                        Math.max(0, sIdx===currentSection ? currentQIdx-3 : 0),
-                        sIdx===currentSection ? currentQIdx+4 : 1
-                      ).map((q, li) => {
-                        const realQIdx = Math.max(0, sIdx===currentSection ? currentQIdx-3 : 0) + li;
-                        const isRev = !!revealed[q.id];
-                        const isCur = sIdx===currentSection && realQIdx===currentQIdx;
-                        return (
-                          <button key={q.id} onClick={() => goTo(sIdx, realQIdx)}
-                            className={`rounded-full transition-all ${isCur ? 'w-5 h-2.5 bg-indigo-600' : isRev ? 'w-2 h-2 bg-emerald-400' : 'w-2 h-2 bg-gray-200 hover:bg-gray-300'}`} />
-                        );
-                      })
-                    )}
+                    {questions.slice(Math.max(0, currentIdx - 3), currentIdx + 4).map((q, idx) => {
+                      const realIdx = Math.max(0, currentIdx - 3) + idx;
+                      const isRev   = !!revealed[q.id];
+                      const isCur   = realIdx === currentIdx;
+                      return (
+                        <button key={q.id} onClick={() => goTo(realIdx)}
+                          className={`rounded-full transition-all ${isCur ? 'w-5 h-2.5 bg-indigo-600' : isRev ? 'w-2 h-2 bg-emerald-400' : 'w-2 h-2 bg-gray-200 hover:bg-gray-300'}`} />
+                      );
+                    })}
                   </div>
                   {isLast ? (
                     <button onClick={() => {
-                      const score = Math.round((Object.values(revealed).filter(r=>r.isCorrect).length / totalQs) * 100);
-                      setResult({ score, correctCount: Object.values(revealed).filter(r=>r.isCorrect).length, totalCount: totalQs, sectionResults: [] });
+                      const totalCorrect = Object.values(revealed).filter(r => r?.isCorrect).length;
+                      const score = totalQs ? Math.round((totalCorrect / totalQs) * 100) : 0;
+                      setResult({ score, correctCount: totalCorrect, totalCount: totalQs, results: [] });
                       setScreen('result');
                     }} className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition">
                       Finish <Trophy size={15} />
                     </button>
                   ) : (
-                    <button onClick={goNext}
-                      className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition">
+                    <button onClick={goNext} className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition">
                       Next <ChevronRight size={16} />
                     </button>
                   )}
@@ -821,9 +788,9 @@ const StudentExitExam = () => {
               {/* stat strip */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Answered', val: answeredTotal, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                  { label: 'Flagged',  val: flaggedTotal,  color: 'text-yellow-600', bg: 'bg-yellow-50' },
-                  { label: 'Left',     val: totalQs - answeredTotal, color: 'text-gray-500', bg: 'bg-gray-50' },
+                  { label: 'Answered', val: answeredCount, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                  { label: 'Flagged',  val: flaggedCount,  color: 'text-yellow-600', bg: 'bg-yellow-50' },
+                  { label: 'Left',     val: totalQs - answeredCount, color: 'text-gray-500', bg: 'bg-gray-50' },
                 ].map(({ label, val, color, bg }) => (
                   <div key={label} className={`${bg} rounded-xl py-3 text-center`}>
                     <p className={`text-xl font-extrabold ${color}`}>{val}</p>
@@ -832,39 +799,46 @@ const StudentExitExam = () => {
                 ))}
               </div>
             </div>
-
-            {/* sidebar */}
-            <Sidebar />
+            <Sidebar questions={questions} answers={answers} marked={marked}
+              totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount}
+              currentIdx={currentIdx} goTo={goTo} onSubmit={() => setConfirmSubmit(true)} />
           </div>
         </div>
       </div>
     );
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // SCREEN: test
-  // ════════════════════════════════════════════════════════════════════════════
-  if (screen === 'test' && currentQ) {
-    const urgency = timerCls(timeLeft, totalTime);
-
+  // ══ SCREEN: test ══════════════════════════════════════════════════════════════
+  if (screen === 'test') {
+    if (questions.length === 0 || !currentQ) {
+      return (
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-sm text-gray-500">Preparing exam…</p>
+          </div>
+        </div>
+      );
+    }
+    const urgency = timerColor(timeLeft, totalTime);
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/30">
-        {showMap && <QuestionMap sections={sections} currentSection={currentSection} currentQIdx={currentQIdx}
-          answers={answers} marked={marked} onGo={goTo} onClose={() => setShowMap(false)} />}
+        {showMap && <QuestionMap questions={questions} answers={answers} marked={marked}
+          current={currentIdx} onGo={goTo} onClose={() => setShowMap(false)} />}
 
         {confirmSubmit && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
               <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle size={26} className="text-amber-600" />
+                <AlertCircle size={26} className="text-amber-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Submit Exit Exam?</h3>
               <p className="text-sm text-gray-500 mb-1">
-                Answered: <span className="font-bold text-indigo-600">{answeredTotal}</span> / {totalQs}
+                Answered: <span className="font-bold text-indigo-600">{answeredCount}</span> / {totalQs}
               </p>
-              {totalQs - answeredTotal > 0 && (
+              {totalQs - answeredCount > 0 && (
                 <p className="text-xs text-red-500 bg-red-50 rounded-lg py-2 px-3 mb-3">
-                  ⚠️ {totalQs - answeredTotal} question{totalQs - answeredTotal > 1 ? 's' : ''} unanswered
+                  ⚠️ {totalQs - answeredCount} question{totalQs - answeredCount > 1 ? 's' : ''} unanswered
                 </p>
               )}
               <p className="text-xs text-gray-400 mb-4">This action cannot be undone.</p>
@@ -881,7 +855,6 @@ const StudentExitExam = () => {
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-[1fr_280px] gap-6">
             <div className="space-y-4">
-
               {/* timer bar */}
               <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-2xl px-6 py-4 shadow-lg">
                 <div className="flex items-center justify-between">
@@ -898,22 +871,16 @@ const StudentExitExam = () => {
                     <div>
                       <p className="text-indigo-200 text-[11px] font-semibold uppercase">Time Left</p>
                       <p className={`text-2xl font-extrabold font-mono leading-none ${urgency}`}>
-                        {enableTimer ? fmtTime(timeLeft) : '∞'}
+                        {enableTimer ? formatTime(timeLeft) : '∞'}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-indigo-200 text-[11px] font-semibold uppercase">Question</p>
                     <p className="text-2xl font-extrabold text-white">
-                      {flatIdx+1} <span className="text-indigo-300 text-base">/ {totalQs}</span>
+                      {currentIdx + 1} <span className="text-indigo-300 text-base">/ {totalQs}</span>
                     </p>
                   </div>
-                </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="text-xs text-indigo-200 bg-white/10 px-2.5 py-1 rounded-full font-medium">
-                    Section {currentSection+1}/{totalSections}
-                  </span>
-                  <span className="text-xs text-indigo-100 font-semibold truncate">{currentSec.courseName}</span>
                 </div>
               </div>
 
@@ -922,12 +889,9 @@ const StudentExitExam = () => {
                 <div className="px-6 py-4 border-b bg-gray-50/60 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center">
-                      <span className="text-indigo-600 font-extrabold text-sm">{currentQIdx+1}</span>
+                      <span className="text-indigo-600 font-extrabold text-sm">{currentIdx + 1}</span>
                     </div>
-                    <div>
-                      <span className="text-xs text-gray-400">of {sectionQs.length} · </span>
-                      <span className="text-xs font-semibold text-indigo-600">{currentSec.courseName}</span>
-                    </div>
+                    <span className="text-xs text-gray-400">of {totalQs}</span>
                   </div>
                   <button onClick={() => toggleMark(currentQ.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition
@@ -938,15 +902,16 @@ const StudentExitExam = () => {
 
                 <div className="px-6 pt-6 pb-2">
                   <p className="text-base font-medium text-gray-800 leading-relaxed mb-6">
-                    {currentQ.question_text || currentQ.text}
+                    {currentQ.question_text || currentQ.text || 'No question text'}
                   </p>
                   <div className="space-y-2.5">
                     {(currentQ.options || []).map((optText, i) => {
-                      const opt = optLetter(i);
+                      const opt = optionLabel(i);
                       return (
-                        <TestOption key={opt} opt={opt} text={optText}
-                          selected={answers[currentQ.id] === opt}
-                          onChange={() => selectTest(currentQ.id, opt)} />
+                        <OptionButton key={opt} opt={opt} optText={optText}
+                          state={answers[currentQ.id] === opt ? 'selected' : 'idle'}
+                          onClick={() => selectTest(currentQ.id, opt)}
+                          disabled={false} />
                       );
                     })}
                   </div>
@@ -975,9 +940,9 @@ const StudentExitExam = () => {
                 </div>
               </div>
             </div>
-
-            {/* sidebar */}
-            <Sidebar />
+            <Sidebar questions={questions} answers={answers} marked={marked}
+              totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount}
+              currentIdx={currentIdx} goTo={goTo} onSubmit={() => setConfirmSubmit(true)} />
           </div>
         </div>
       </div>
