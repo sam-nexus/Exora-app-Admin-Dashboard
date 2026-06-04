@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -39,6 +40,7 @@ const Sidebar = () => {
       icon: <FileQuestion size={20} />,
       label: "Questions",
     },
+    { path: "/materials", icon: <FileText size={20} />, label: "Materials" },
     { path: "/payments", icon: <DollarSign size={20} />, label: "Payments" },
     {
       path: "/notifications",

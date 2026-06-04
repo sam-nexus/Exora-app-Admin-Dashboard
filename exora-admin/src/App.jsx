@@ -21,6 +21,9 @@ import StudentPayments from './pages/StudentPayments';
 import StudentHelpSupport from './pages/StudentHelpSupport';
 import StudentProfile from './pages/StudentProfile';
 import Notifications from './pages/Notifications';
+import Materials from './pages/Materials';
+
+
 
 function App() {
   return (
@@ -30,7 +33,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        <Route element={<PrivateRoute allowedRoles={[ 'admin' ]} />}>
+        <Route element={<PrivateRoute allowedRoles={['admin']} />}>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/users" element={<Users />} />
@@ -39,10 +42,11 @@ function App() {
             <Route path="/questions" element={<Questions />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/materials" element={<Materials />} />
           </Route>
         </Route>
 
-        <Route element={<PrivateRoute allowedRoles={[ 'user' ]} />}>
+        <Route element={<PrivateRoute allowedRoles={['user']} />}>
           <Route path="/student" element={<StudentLayout />}>
             <Route index element={<StudentDashboard />} />
             <Route path="departments" element={<StudentDepartments />} />
