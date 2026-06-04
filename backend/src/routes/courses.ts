@@ -24,6 +24,7 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
   const courseType = type || 'regular';
 
   try {
+    // 1. Create the course
     const { data: course, error: insertError } = await supabaseAdmin
       .from('courses')
       .insert({ department_id, name, type: courseType })
@@ -32,21 +33,47 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
 
     if (insertError || !course) throw insertError || new Error('Failed to create course');
 
-    // Insert locked rows for all existing users
+    // 2. Get ALL users
     const { data: users, error: usersError } = await supabaseAdmin
       .from('profiles')
       .select('id');
     if (usersError) throw usersError;
 
     if (users && users.length > 0) {
-      const locks = users.map(u => ({
-        user_id: u.id,
-        course_id: course.id,
-        is_locked: true,
-      }));
+      // 3. For each user, determine if their existing courses are unlocked
+      const userRows = [];
+
+      for (const user of users) {
+        // Check if this user has any existing courses and their lock status
+        const { data: existingCourses } = await supabaseAdmin
+          .from('user_courses')
+          .select('is_locked')
+          .eq('user_id', user.id);
+
+        // Determine lock status for the new course:
+        // - If user has NO existing courses → lock the new course (default)
+        // - If user has any EXISTING course that is UNLOCKED → unlock the new course
+        // - If ALL existing courses are LOCKED → lock the new course
+        let isLocked = true; // default: locked
+
+        if (existingCourses && existingCourses.length > 0) {
+          const anyUnlocked = existingCourses.some(uc => uc.is_locked === false);
+          if (anyUnlocked) {
+            isLocked = false; // user already has unlocked courses, so unlock the new one
+          }
+        }
+
+        userRows.push({
+          user_id: user.id,
+          course_id: course.id,
+          is_locked: isLocked,
+        });
+      }
+
+      // 4. Insert all user_courses rows
       const { error: lockError } = await supabaseAdmin
         .from('user_courses')
-        .insert(locks);
+        .insert(userRows);
       if (lockError) throw lockError;
     }
 
@@ -55,6 +82,7 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Edit a course
 router.put('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
