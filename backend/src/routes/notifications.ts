@@ -165,6 +165,38 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
   }
 });
 
+// Mark ALL notifications as read for the authenticated user
+router.post('/mark-all-read', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+
+    const { error } = await supabaseAdmin
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('recipient_id', userId)
+      .eq('is_read', false);
+
+    if (error) throw error;
+
+    // Reset Firebase unread count to 0
+    if (admin.apps.length > 0) {
+      try {
+        const database = admin.database();
+        await database.ref(`notifications/${userId}/unread_count`).set(0);
+        await database
+          .ref(`notifications/${userId}/last_updated`)
+          .set(new Date().toISOString());
+      } catch (firebaseError) {
+        console.error('Firebase update error:', firebaseError);
+      }
+    }
+
+    res.json({ message: 'All notifications marked as read.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.patch('/:id/read', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const notificationId = req.params.id;

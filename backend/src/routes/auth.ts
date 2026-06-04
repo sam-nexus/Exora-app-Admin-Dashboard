@@ -60,6 +60,8 @@ router.post('/register', async (req, res) => {
         title: 'New student registered',
         message: `${fullName} has registered with email ${email}.`,
         link: '/admin/users',
+        notification_type: 'student_registered',
+        data: { studentId: authUser.id, email: email },
         is_read: false,
       }));
 
@@ -78,6 +80,7 @@ router.post('/register', async (req, res) => {
           },
           data: {
             link: '/admin/users',
+            type: 'student_registered',
           },
         };
 

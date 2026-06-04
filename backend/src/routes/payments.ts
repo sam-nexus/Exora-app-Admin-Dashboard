@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import multer from 'multer';
+import admin from '../firebase';
 import { supabaseAdmin } from '../supabase';
 import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
@@ -37,18 +38,47 @@ router.post('/', authenticate, upload.single('receipt'), async (req: AuthRequest
 
     const { data: admins, error: adminFetchError } = await supabaseAdmin
       .from('profiles')
-      .select('id')
+      .select('id, device_tokens')
       .eq('role', 'admin');
 
     if (!adminFetchError && admins && admins.length > 0) {
       const adminNotifications = admins.map((admin: any) => ({
         recipient_id: admin.id,
         title: 'New payment receipt received',
-        message: `A new payment receipt has been uploaded by ${userId}. Please review and approve.`,
-        link: '/payments',
+        message: `A new payment receipt has been uploaded by a student. Please review and approve.`,
+        link: '/admin/payments',
+        notification_type: 'payment_received',
+        data: { receiptId: null, userId: userId },
         is_read: false,
       }));
       await supabaseAdmin.from('notifications').insert(adminNotifications);
+
+      // Send push notifications to admins
+      const tokens = admins
+        .flatMap((admin: any) => Array.isArray(admin.device_tokens) ? admin.device_tokens : [])
+        .map((item: any) => item.token)
+        .filter(Boolean);
+
+      if (tokens.length && admin.apps.length > 0) {
+        const payload = {
+          notification: {
+            title: 'New payment receipt received',
+            body: 'A student has uploaded a payment receipt for approval.',
+          },
+          data: {
+            link: '/admin/payments',
+            type: 'payment_received',
+          },
+        };
+
+        const chunkSize = 500;
+        for (let i = 0; i < tokens.length; i += chunkSize) {
+          const batch = tokens.slice(i, i + chunkSize);
+          await admin.messaging().sendToDevice(batch, payload).catch((sendError) => {
+            console.error('FCM send error:', sendError);
+          });
+        }
+      }
     }
 
     res.status(201).json({ message: 'Receipt uploaded, waiting for verification' });
@@ -62,7 +92,7 @@ router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response)
   try {
     let query = supabaseAdmin
       .from('payment_receipts')
-      .select('*, profiles(full_name, email)')
+      .select('*, profiles(full_name, email), departments(name)')
       .order('created_at', { ascending: false });
 
     const statusFilter = req.query.status as string;
@@ -79,14 +109,18 @@ router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response)
 });
 
 // Approve a payment
+// Body: { scope: 'department' | 'all' }
+// - 'department': unlocks only courses in the receipt's department_id
+// - 'all'       : unlocks every course for the user (legacy / general access)
 router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   try {
     const receiptId = req.params.id;
+    const scope: 'department' | 'all' = req.body.scope === 'department' ? 'department' : 'all';
 
-    // Get receipt
+    // Get receipt including department_id
     const { data: receipt, error: fetchError } = await supabaseAdmin
       .from('payment_receipts')
-      .select('user_id, status')
+      .select('user_id, status, department_id')
       .eq('id', receiptId)
       .single();
 
@@ -100,22 +134,57 @@ router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, r
       .eq('id', receiptId);
     if (updateError) throw updateError;
 
-    // Unlock all courses for the user
-    const { error: unlockError } = await supabaseAdmin
-      .from('user_courses')
-      .update({ is_locked: false })
-      .eq('user_id', receipt.user_id);
-    if (unlockError) throw unlockError;
+    let unlockedScope = 'all courses';
+
+    if (scope === 'department' && receipt.department_id) {
+      // Get all course IDs in this department
+      const { data: deptCourses, error: deptError } = await supabaseAdmin
+        .from('courses')
+        .select('id')
+        .eq('department_id', receipt.department_id);
+
+      if (deptError) throw deptError;
+
+      const courseIds = (deptCourses || []).map((c) => c.id);
+
+      if (courseIds.length > 0) {
+        const { error: unlockError } = await supabaseAdmin
+          .from('user_courses')
+          .update({ is_locked: false })
+          .eq('user_id', receipt.user_id)
+          .in('course_id', courseIds);
+        if (unlockError) throw unlockError;
+      }
+
+      // Get department name for notification
+      const { data: dept } = await supabaseAdmin
+        .from('departments')
+        .select('name')
+        .eq('id', receipt.department_id)
+        .single();
+
+      unlockedScope = `courses in ${dept?.name || 'the selected department'}`;
+    } else {
+      // Unlock ALL courses for the user
+      const { error: unlockError } = await supabaseAdmin
+        .from('user_courses')
+        .update({ is_locked: false })
+        .eq('user_id', receipt.user_id);
+      if (unlockError) throw unlockError;
+    }
 
     await supabaseAdmin.from('notifications').insert({
       recipient_id: receipt.user_id,
       title: 'Payment approved',
-      message: 'Your payment was approved and your courses are now unlocked.',
+      message: `Your payment was approved and your ${unlockedScope} are now unlocked.`,
       link: '/student/payments',
       is_read: false,
     });
 
-    res.json({ message: 'Payment approved, courses unlocked' });
+    res.json({
+      message: `Payment approved — ${unlockedScope} unlocked`,
+      scope,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

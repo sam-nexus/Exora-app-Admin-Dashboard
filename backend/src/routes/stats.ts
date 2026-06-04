@@ -12,7 +12,7 @@ router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response)
         supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
         supabaseAdmin.from('courses').select('*', { count: 'exact', head: true }),
         supabaseAdmin.from('questions').select('*', { count: 'exact', head: true }),
-        supabaseAdmin.from('payment_receipts').select('*', { count: 'exact', head: true }).eq('verified', false),
+        supabaseAdmin.from('payment_receipts').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
     res.json({
       users: usersCount ?? 0,

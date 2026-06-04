@@ -66,6 +66,30 @@ router.delete('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Res
   res.json({ message: 'User deleted' });
 });
 
+// Update extra student profile fields (university, department, etc.)
+router.put('/:id/profile', authenticate, async (req: AuthRequest, res: Response) => {
+  const userId = req.params.id as string;
+  if (req.userId !== userId && req.role !== 'admin') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const { university, student_id, department, year_of_study, phone } = req.body;
+  const updates: any = {};
+  if (university !== undefined) updates.university = university;
+  if (student_id !== undefined) updates.student_id = student_id;
+  if (department !== undefined) updates.department = department;
+  if (year_of_study !== undefined) updates.year_of_study = year_of_study;
+  if (phone !== undefined) updates.phone = phone;
+
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: 'No valid fields provided' });
+  }
+
+  const { error } = await supabaseAdmin.from('profiles').update(updates).eq('id', userId);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: 'Profile updated' });
+});
+
 // Admin create user (register)
 router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { email, password, fullName } = req.body;

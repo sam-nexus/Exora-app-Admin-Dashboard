@@ -4,19 +4,15 @@ import {
   Trash2,
   Eye,
   Edit,
-  Plus,
   Search,
   Lock,
   Unlock,
   Loader2,
   Users as UsersIcon,
   UserPlus,
-  Calendar,
-  AlertCircle,
   GraduationCap,
   BookOpen,
   CheckCircle,
-  XCircle,
   Shield,
   Key,
   Zap,
@@ -53,9 +49,11 @@ const Users = () => {
     try {
       const { data } = await api.get("/users");
       setUsers(data);
+      // Initialize all as locked (true) — will be updated when admin toggles
+      // Real state would require per-user fetch which is expensive at scale
       const initialStatus = {};
       data.forEach((u) => {
-        initialStatus[u.id] = true;
+        initialStatus[u.id] = userLockStatus[u.id] ?? true;
       });
       setUserLockStatus(initialStatus);
     } catch (err) {
@@ -85,7 +83,7 @@ const Users = () => {
 
   const totalUsers = users.length;
   const adminCount = users.filter((u) => u.role === "admin").length;
-  const studentCount = users.filter((u) => u.role === "student").length;
+  const studentCount = users.filter((u) => u.role === "user").length;
   const newToday = users.filter((u) => {
     const today = new Date().toISOString().split("T")[0];
     return new Date(u.created_at).toISOString().split("T")[0] === today;
@@ -328,7 +326,7 @@ const Users = () => {
         >
           <option value="all">All Roles</option>
           <option value="admin">Admin</option>
-          <option value="student">Student</option>
+          <option value="user">Student</option>
         </select>
 
         {/* Sort Dropdown */}
@@ -448,7 +446,7 @@ const Users = () => {
                         >
                           <Edit size={18} />
                         </button>
-                        {user.role === "student" && (
+                        {user.role === "user" && (
                           <button
                             onClick={() => {
                               setSelectedUser(user);
@@ -470,8 +468,8 @@ const Users = () => {
                           } disabled:opacity-50`}
                           title={
                             userLockStatus[user.id]
-                              ? "Lock all courses"
-                              : "Unlock all courses"
+                              ? "Unlock all courses"
+                              : "Lock all courses"
                           }
                         >
                           {toggling === user.id ? (
@@ -703,7 +701,7 @@ const Users = () => {
                 name="role"
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="student">Student</option>
+                <option value="user">Student</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
@@ -804,7 +802,16 @@ const Users = () => {
               Close
             </button>
             <button
-              onClick={() => setAccessModal(false)}
+              onClick={async () => {
+                try {
+                  await api.post(`/courses/toggle-all/${selectedUser.id}`);
+                  setUserLockStatus((prev) => ({ ...prev, [selectedUser.id]: false }));
+                  setAccessModal(false);
+                  alert(`All courses unlocked for ${selectedUser.full_name}`);
+                } catch (err) {
+                  alert(err.response?.data?.error || "Failed to grant access");
+                }
+              }}
               className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition"
             >
               Grant Full Access
