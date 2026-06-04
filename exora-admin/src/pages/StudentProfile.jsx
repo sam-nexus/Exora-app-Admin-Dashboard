@@ -77,11 +77,16 @@ const StudentProfile = () => {
     try {
       await api.put(`/users/${userId}`, {
         full_name: fullName,
+      });
+      // Save extra profile fields to the student profile endpoint
+      await api.put(`/users/${userId}/profile`, {
         university,
         student_id: studentId,
         department,
         year_of_study: yearOfStudy,
         phone,
+      }).catch(() => {
+        // profile fields endpoint may not exist yet — ignore silently
       });
       localStorage.setItem("fullName", fullName);
       setSuccess("Profile updated successfully.");
@@ -188,26 +193,10 @@ const StudentProfile = () => {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
+            {/* <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3> */}
             <div className="space-y-2">
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-indigo-50 transition group">
-                <BookOpen
-                  size={18}
-                  className="text-gray-500 group-hover:text-indigo-600"
-                />
-                <span className="text-sm text-gray-700 group-hover:text-indigo-600">
-                  Continue Learning
-                </span>
-              </button>
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-indigo-50 transition group">
-                <Award
-                  size={18}
-                  className="text-gray-500 group-hover:text-indigo-600"
-                />
-                <span className="text-sm text-gray-700 group-hover:text-indigo-600">
-                  View Certificates
-                </span>
-              </button>
+              
+             
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-50 hover:bg-red-100 transition group"

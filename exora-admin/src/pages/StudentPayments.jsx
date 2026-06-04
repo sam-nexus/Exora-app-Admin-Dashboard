@@ -62,7 +62,10 @@ const StudentPayments = () => {
     setUploading(true);
     const formData = new FormData();
     formData.append('receipt', receiptFile);
-    formData.append('paymentId', selectedPayment.id);
+    // When coming from Unlock tab: selectedPayment.id = department id
+    // When coming from History tab (re-upload): selectedPayment.department_id = department id
+    const deptId = selectedPayment.department_id || selectedPayment.id;
+    formData.append('paymentId', deptId);
 
     try {
       const token = localStorage.getItem('token');

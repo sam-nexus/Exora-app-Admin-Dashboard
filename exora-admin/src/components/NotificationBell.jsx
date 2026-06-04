@@ -8,16 +8,11 @@ const NotificationBell = ({ to = '/notifications' }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [userId, setUserId] = useState(null);
 
-  // Get user ID from localStorage or token
+  // Get user ID from localStorage
   useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (user) {
-      try {
-        const parsedUser = JSON.parse(user);
-        setUserId(parsedUser.id);
-      } catch (err) {
-        console.error('Failed to parse user from localStorage', err);
-      }
+    const id = localStorage.getItem('userId');
+    if (id) {
+      setUserId(id);
     }
   }, []);
 

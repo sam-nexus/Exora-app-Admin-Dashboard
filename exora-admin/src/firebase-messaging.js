@@ -40,7 +40,8 @@ export const registerForPushNotifications = async () => {
   }
 
   try {
-    await navigator.serviceWorker.register(new URL('./firebase-messaging-sw.js', import.meta.url), { type: 'module' });
+    const swUrl = '/firebase-messaging-sw.js';
+    await navigator.serviceWorker.register(swUrl, { scope: '/' });
     const messaging = initFirebaseApp();
     if (!messaging) return null;
 

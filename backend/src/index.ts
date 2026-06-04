@@ -13,6 +13,7 @@ import paymentRoutes from './routes/payments';
 import notificationRoutes from './routes/notifications';
 import deviceRoutes from './routes/devices';
 import studentRoutes from './routes/student';
+import unlockRequestRoutes from './routes/unlock-requests';
 
 const app = express();
 app.use(cors());
@@ -28,6 +29,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/unlock-requests', unlockRequestRoutes);
 app.get('/', (_req, res) => {
   res.json({
     message: 'Exora Backend is running',
