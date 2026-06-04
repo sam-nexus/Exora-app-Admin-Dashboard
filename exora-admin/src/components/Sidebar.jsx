@@ -84,7 +84,7 @@ const Sidebar = () => {
         >
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-indigo-200">
-              <GraduationCap className="w-5 h-5 text-white" />
+              <img src="/logoIcon.png" alt="Exora" className="w-7 h-7 object-contain" />
             </div>
             {!isCollapsed && (
               <div>
