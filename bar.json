@@ -1,0 +1,1599 @@
+[
+  {
+    "question_number": 4,
+    "question": "Which of the following is an example of a vulnerability in an information system?",
+    "options": {
+      "A": "A hacker launching a phishing attack",
+      "B": "An employee using a weak password",
+      "C": "Financial loss caused by data theft",
+      "D": "A cybercriminal attempting unauthorized access"
+    },
+    "correct_answer": "B",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 5,
+    "question": "What is a threat to an information system?",
+    "options": {
+      "A": "A flaw in software that can be exploited",
+      "B": "A weakness in security controls",
+      "C": "Any potential danger that can exploit a vulnerability and cause harm",
+      "D": "The impact resulting from a security incident"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 6,
+    "question": "An organization discovers that multiple employees have access to confidential payroll records, even though their job responsibilities do not require such access. Which security principle is being violated?",
+    "options": {
+      "A": "Data redundancy",
+      "B": "Least privilege",
+      "C": "Data compression",
+      "D": "Fault tolerance"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 7,
+    "question": "A company is designing a secure information system. Which of the following design decisions best reduces the risk of unauthorized access?",
+    "options": {
+      "A": "Using the same password for all users",
+      "B": "Disabling audit logs to improve performance",
+      "C": "Implementing multi-factor authentication and role-based access control",
+      "D": "Allowing unrestricted access to sensitive data"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 8,
+    "question": "While configuring a new user account, which action demonstrates the proper application of information systems security practices?",
+    "options": {
+      "A": "Sharing the account password with coworkers",
+      "B": "Assigning administrator privileges to all users",
+      "C": "Enabling a strong password and requiring periodic password changes",
+      "D": "Disabling authentication requirements"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 9,
+    "question": "Which of the following is a common network device used to forward data packets between different networks?",
+    "options": {
+      "A": "Switch",
+      "B": "Router",
+      "C": "Bridge",
+      "D": "Repeater"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 10,
+    "question": "A network administrator needs to remotely configure a switch securely. Which protocol should be used?",
+    "options": {
+      "A": "Telnet",
+      "B": "FTP",
+      "C": "SSH",
+      "D": "TFTP"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 11,
+    "question": "A company wants to separate the Accounting and Human Resources departments into different logical networks while using the same physical switch infrastructure. What should the administrator create?",
+    "options": {
+      "A": "Access Control Lists",
+      "B": "VLANs",
+      "C": "Routing Tables",
+      "D": "DHCP Pools"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 12,
+    "question": "Which protocol is commonly used to monitor network devices and detect configuration or performance changes?",
+    "options": {
+      "A": "SMTP",
+      "B": "SNMP",
+      "C": "POP3",
+      "D": "ARP"
+    },
+    "correct_answer": "B",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 13,
+    "question": "Which service is primarily used to collect, store, and review network device event logs?",
+    "options": {
+      "A": "DNS Server",
+      "B": "Syslog Server",
+      "C": "DHCP Server",
+      "D": "Proxy Server"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 14,
+    "question": "After configuring a router, which command should be used to save the running configuration so that it remains after a reboot?",
+    "options": {
+      "A": "show running-config",
+      "B": "reload",
+      "C": "copy running-config startup-config",
+      "D": "ping"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 15,
+    "question": "A network administrator is designing a network that automatically assigns IP addresses to client devices. Which protocol should be implemented and configured?",
+    "options": {
+      "A": "DHCP",
+      "B": "ICMP",
+      "C": "ARP",
+      "D": "SMTP"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 16,
+    "question": "Why is regular network management important in an organization?",
+    "options": {
+      "A": "To increase the size of network cables",
+      "B": "To ensure network performance, security, and reliability",
+      "C": "To eliminate the need for network devices",
+      "D": "To prevent users from accessing the network"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 17,
+    "question": "A network administrator wants to verify whether a remote server is reachable over the network. Which command should be used?",
+    "options": {
+      "A": "mkdir",
+      "B": "ping",
+      "C": "chmod",
+      "D": "passwd"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 18,
+    "question": "A network switch is not responding properly. What is the most appropriate first step for an administrator?",
+    "options": {
+      "A": "Replace all network cables immediately",
+      "B": "Check the device status and network connectivity",
+      "C": "Delete the switch configuration",
+      "D": "Reinstall the operating system on all connected computers"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 19,
+    "question": "A system administrator needs to create a new user account named \"john\" on a Linux system. Which command should be used?",
+    "options": {
+      "A": "adduser john",
+      "B": "ping john",
+      "C": "chmod john",
+      "D": "mkdir john"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 20,
+    "question": "An administrator wants to create a new group called \"developers\" and assign users to it. What is the primary purpose of creating groups?",
+    "options": {
+      "A": "To increase disk space",
+      "B": "To organize users and simplify permission management",
+      "C": "To encrypt user files",
+      "D": "To improve network speed"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 21,
+    "question": "A Linux administrator wants to view the available and used disk space on all mounted file systems. Which command should be used?",
+    "options": {
+      "A": "ps",
+      "B": "df -h",
+      "C": "chmod",
+      "D": "uname"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 22,
+    "question": "A file contains sensitive information and should only be readable and writable by its owner. Which permission setting best satisfies this requirement?",
+    "options": {
+      "A": "rw-r--r--",
+      "B": "rwxrwxrwx",
+      "C": "rw-------",
+      "D": "r--r--r--"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 23,
+    "question": "An administrator needs to create a backup of the /home directory before a system upgrade. What is the primary purpose of performing this backup?",
+    "options": {
+      "A": "To increase CPU performance",
+      "B": "To recover data if the upgrade causes data loss or corruption",
+      "C": "To reduce network traffic",
+      "D": "To install software updates automatically"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 24,
+    "question": "Which protocol provides secure remote access to administer servers and network devices?",
+    "options": {
+      "A": "FTP",
+      "B": "Telnet",
+      "C": "SSH",
+      "D": "HTTP"
+    },
+    "correct_answer": "C",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 25,
+    "question": "What is the primary purpose of a communication protocol in a computer network?",
+    "options": {
+      "A": "To increase the physical size of the network",
+      "B": "To define rules for data exchange between devices",
+      "C": "To reduce the number of computers on a network",
+      "D": "To store user data permanently"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 26,
+    "question": "Which transmission medium uses light signals to transmit data?",
+    "options": {
+      "A": "Twisted-pair cable",
+      "B": "Coaxial cable",
+      "C": "Fiber-optic cable",
+      "D": "Telephone line"
+    },
+    "correct_answer": "C",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 27,
+    "question": "Which statement best describes data transmission?",
+    "options": {
+      "A": "The process of converting data into files for storage",
+      "B": "The transfer of data between two or more devices through a communication medium",
+      "C": "The process of creating network hardware",
+      "D": "The physical installation of network cables"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 28,
+    "question": "A network technician is troubleshooting a problem where data is not being correctly formatted for transmission between applications. Which OSI layer is most likely involved?",
+    "options": {
+      "A": "Physical Layer",
+      "B": "Data Link Layer",
+      "C": "Presentation Layer",
+      "D": "Network Layer"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 29,
+    "question": "A router forwards packets from one network to another based on logical addressing. Which OSI layer performs this function?",
+    "options": {
+      "A": "Data Link Layer",
+      "B": "Network Layer",
+      "C": "Session Layer",
+      "D": "Application Layer"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 30,
+    "question": "Which layer of the TCP/IP model corresponds most closely to the Transport Layer of the OSI model?",
+    "options": {
+      "A": "Internet Layer",
+      "B": "Network Access Layer",
+      "C": "Transport Layer",
+      "D": "Application Layer"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 31,
+    "question": "What is a major difference between the OSI and TCP/IP models?",
+    "options": {
+      "A": "The OSI model has 7 layers, while the TCP/IP model has 4 layers",
+      "B": "The TCP/IP model has 7 layers, while the OSI model has 4 layers",
+      "C": "The OSI model does not support networking",
+      "D": "The TCP/IP model does not include protocols"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 32,
+    "question": "Which of the following is a fundamental component of an Android application?",
+    "options": {
+      "A": "Compiler",
+      "B": "Activity",
+      "C": "Database Server",
+      "D": "Router"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 33,
+    "question": "Which Android lifecycle method is called when an Activity is first created?",
+    "options": {
+      "A": "onResume()",
+      "B": "onPause()",
+      "C": "onCreate()",
+      "D": "onStop()"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 34,
+    "question": "In Android, what is an event?",
+    "options": {
+      "A": "A type of database table",
+      "B": "An action or occurrence detected by the application, such as a button click",
+      "C": "A network protocol",
+      "D": "A multimedia file"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 35,
+    "question": "Which interface is commonly used to handle button click events in Android?",
+    "options": {
+      "A": "Runnable",
+      "B": "Serializable",
+      "C": "OnClickListener",
+      "D": "Comparable"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 36,
+    "question": "Which Android component is commonly used to display images in an application?",
+    "options": {
+      "A": "TextView",
+      "B": "ImageView",
+      "C": "ListView",
+      "D": "EditText"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 37,
+    "question": "Which Android class is commonly used to play audio and video files?",
+    "options": {
+      "A": "MediaPlayer",
+      "B": "FileReader",
+      "C": "Intent",
+      "D": "BroadcastReceiver"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 38,
+    "question": "A developer wants to test an Android application without using a physical device. Which Android Studio feature should be used?",
+    "options": {
+      "A": "Logcat",
+      "B": "Emulator (Android Virtual Device)",
+      "C": "Gradle Build Tool",
+      "D": "SDK Manager"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 39,
+    "question": "After writing code for an Android application, which action should a developer perform to identify syntax errors before running the application?",
+    "options": {
+      "A": "Uninstall the SDK",
+      "B": "Build/Compile the project in Android Studio",
+      "C": "Delete the project cache",
+      "D": "Restart the operating system"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 40,
+    "question": "What is the primary purpose of server-side scripting in web applications?",
+    "options": {
+      "A": "To style web pages using CSS",
+      "B": "To process requests and generate dynamic content on the server",
+      "C": "To display images in a browser",
+      "D": "To increase internet speed"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 41,
+    "question": "Which of the following is a server-side scripting language commonly used for web development?",
+    "options": {
+      "A": "HTML",
+      "B": "CSS",
+      "C": "PHP",
+      "D": "XML"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 42,
+    "question": "A developer is building an online library management system that allows users to search, borrow, and return books. Which feature is most important for creating this web-based application?",
+    "options": {
+      "A": "Static HTML pages only",
+      "B": "Dynamic interaction between the user interface, server, and database",
+      "C": "A text editor without a web server",
+      "D": "A local file system only"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 43,
+    "question": "When developing a web-based application that stores user information, which component should be designed to persistently store the data?",
+    "options": {
+      "A": "Browser cache",
+      "B": "Database",
+      "C": "CSS stylesheet",
+      "D": "Web browser"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 44,
+    "question": "A web developer wants to create the structure of a web page containing headings, paragraphs, and links. Which language should be used?",
+    "options": {
+      "A": "PHP",
+      "B": "JSP",
+      "C": "HTML",
+      "D": "Servlet"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 45,
+    "question": "A web application needs to process user input submitted from a form and store it in a database. Which technology is most appropriate for handling the server-side processing?",
+    "options": {
+      "A": "HTML",
+      "B": "CSS",
+      "C": "PHP",
+      "D": "XML"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 46,
+    "question": "A developer wants users to enter their name and email address on a website. Which HTML element should be used to collect this information?",
+    "options": {
+      "A": "<table>",
+      "B": "<form>",
+      "C": "<img>",
+      "D": "<div>"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 47,
+    "question": "After a user submits a registration form, what is typically used to store the submitted data permanently?",
+    "options": {
+      "A": "CSS file",
+      "B": "JavaScript variable",
+      "C": "Database",
+      "D": "Browser history"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 48,
+    "question": "While designing an e-commerce website, which feature is essential for allowing customers to purchase products?",
+    "options": {
+      "A": "Guestbook",
+      "B": "Shopping cart",
+      "C": "Sitemap only",
+      "D": "Visitor counter"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 49,
+    "question": "An online store should allow customers to securely enter payment information. Which design consideration is most important?",
+    "options": {
+      "A": "Large image files",
+      "B": "Animated backgrounds",
+      "C": "Secure data transmission using HTTPS",
+      "D": "Multiple font styles"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 50,
+    "question": "Which protocol is primarily used for transferring web pages between a web server and a web browser?",
+    "options": {
+      "A": "FTP",
+      "B": "SMTP",
+      "C": "HTTP",
+      "D": "DHCP"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 51,
+    "question": "A web developer is creating a website that displays different content based on user input and database records. What type of web page should be developed?",
+    "options": {
+      "A": "Static web page",
+      "B": "Dynamic web page",
+      "C": "Plain text page",
+      "D": "Offline web page"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 52,
+    "question": "A user enters a website address into a browser. Which protocol is responsible for translating the domain name into an IP address?",
+    "options": {
+      "A": "HTTP",
+      "B": "FTP",
+      "C": "DNS",
+      "D": "SMTP"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 53,
+    "question": "When a browser requests a web page from a web server, which protocol is typically used to transfer the page?",
+    "options": {
+      "A": "HTTP",
+      "B": "POP3",
+      "C": "DHCP",
+      "D": "ARP"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 54,
+    "question": "Which of the following is a commonly used client-side web development tool?",
+    "options": {
+      "A": "Web Browser Developer Tools",
+      "B": "Database Server",
+      "C": "Mail Server",
+      "D": "DNS Server"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 55,
+    "question": "Which language is primarily executed on the client side to add interactivity to web pages?",
+    "options": {
+      "A": "SQL",
+      "B": "PHP",
+      "C": "JavaScript",
+      "D": "JSP"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 56,
+    "question": "A developer wants to change the font color and layout of a web page. Which technology should be used?",
+    "options": {
+      "A": "HTML",
+      "B": "CSS",
+      "C": "JavaScript",
+      "D": "XML"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 57,
+    "question": "A button on a web page should display an alert message when clicked. Which technology is most appropriate for implementing this functionality?",
+    "options": {
+      "A": "HTML",
+      "B": "CSS",
+      "C": "JavaScript",
+      "D": "SQL"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 58,
+    "question": "What is the primary purpose of query optimization in a database management system?",
+    "options": {
+      "A": "To increase the size of the database",
+      "B": "To find the most efficient way to execute a query",
+      "C": "To encrypt database records",
+      "D": "To create backup files"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 59,
+    "question": "Which component of a DBMS is responsible for generating an execution plan for an SQL query?",
+    "options": {
+      "A": "Transaction Manager",
+      "B": "Query Optimizer",
+      "C": "Recovery Manager",
+      "D": "Data Dictionary"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 60,
+    "question": "A bank customer transfers money from one account to another. If both debit and credit operations must be completed together or not at all, which ACID property is being applied?",
+    "options": {
+      "A": "Consistency",
+      "B": "Durability",
+      "C": "Atomicity",
+      "D": "Isolation"
+    },
+    "correct_answer": "C",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 61,
+    "question": "Two users are updating the same database record simultaneously. Which transaction management technique helps prevent data inconsistency?",
+    "options": {
+      "A": "Indexing",
+      "B": "Locking",
+      "C": "Hashing",
+      "D": "Compression"
+    },
+    "correct_answer": "B",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 62,
+    "question": "A company wants to ensure that employees can access only the data required for their job responsibilities. Which database security technique is most appropriate?",
+    "options": {
+      "A": "Data Replication",
+      "B": "Role-Based Access Control (RBAC)",
+      "C": "Query Optimization",
+      "D": "Data Normalization"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 63,
+    "database_attribute": "A database administrator notices repeated unauthorized login attempts. Which security measure would best help analyze and investigate this activity?",
+    "options": {
+      "A": "Audit Logs",
+      "B": "Data Compression",
+      "C": "Indexing",
+      "D": "Fragmentation"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 64,
+    "question": "A database system crashes due to a power outage. Which recovery mechanism is most useful for restoring committed transactions while undoing incomplete ones?",
+    "options": {
+      "A": "Query Optimization",
+      "B": "Transaction Log-Based Recovery",
+      "C": "Data Normalization",
+      "D": "View Management"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 65,
+    "question": "An organization must choose between full backups performed weekly and incremental backups performed daily. Which statement best evaluates the trade-off?",
+    "options": {
+      "A": "Full backups require less storage than incremental backups.",
+      "B": "Incremental backups simplify recovery because only one backup file is needed.",
+      "C": "Full backups simplify recovery, while incremental backups reduce backup time and storage requirements.",
+      "D": "Neither method can be used for database recovery."
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 66,
+    "question": "Which statement correctly distinguishes a homogeneous distributed database system from a heterogeneous distributed database system?",
+    "options": {
+      "A": "Homogeneous systems use different DBMSs, while heterogeneous systems use the same DBMS.",
+      "B": "Homogeneous systems use the same DBMS and data model across sites, while heterogeneous systems may use different DBMSs and data models.",
+      "C": "Homogeneous systems cannot share data between sites.",
+      "D": "Heterogeneous systems always operate on a single computer."
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 67,
+    "question": "Which of the following best describes the main purpose of a database design?",
+    "options": {
+      "A": "To increase computer processing speed",
+      "B": "To organize data efficiently and reduce redundancy",
+      "C": "To replace the operating system",
+      "D": "To eliminate the need for hardware"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 68,
+    "question": "Which database model organizes data in a tree-like structure using parent-child relationships?",
+    "options": {
+      "A": "Relational model",
+      "B": "Network model",
+      "C": "Hierarchical model",
+      "D": "Object-oriented model"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 69,
+    "question": "What is a key characteristic of the relational database model?",
+    "options": {
+      "A": "Data is stored in flat files only",
+      "B": "Data is represented using tables with rows and columns",
+      "C": "Data is stored in a tree structure",
+      "D": "Data has no relationships"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 70,
+    "question": "Which statement best describes the network database model?",
+    "options": {
+      "A": "It organizes data in a strict parent-child hierarchy",
+      "B": "It allows multiple relationships between records using a graph structure",
+      "C": "It stores data only in documents",
+      "D": "It does not support relationships between data"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 71,
+    "question": "Which of the following best differentiates a database system from a traditional file system?",
+    "options": {
+      "A": "Storing a single text document",
+      "B": "Managing large amounts of related data with multiple users accessing it concurrently",
+      "C": "Writing a simple note on a desktop",
+      "D": "Saving a single image file"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 72,
+    "question": "A database designer is creating a schema for a university system. Which step should be performed first?",
+    "options": {
+      "A": "Deleting duplicate tables",
+      "B": "Identifying entities and their relationships",
+      "C": "Writing SQL queries immediately",
+      "D": "Encrypting the database"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 73,
+    "question": "When designing a database schema, what is the correct purpose of normalization?",
+    "options": {
+      "A": "To increase data duplication for backup purposes",
+      "B": "To organize tables to reduce redundancy and improve integrity",
+      "C": "To remove all relationships between tables",
+      "D": "To store all data in a single table"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 74,
+    "question": "What does the WHERE clause in an SQL query do?",
+    "options": {
+      "A": "Sorts the result in ascending order",
+      "B": "Filters records based on a specified condition",
+      "C": "Deletes duplicate records",
+      "D": "Creates a new table"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 75,
+    "question": "Which SQL keyword is used to sort query results?",
+    "options": {
+      "A": "ORDER BY",
+      "B": "GROUP BY",
+      "C": "SORT BY",
+      "D": "ARRANGE BY"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 76,
+    "question": "What does this query do? (SELECT name, age FROM students WHERE age > 20)",
+    "options": {
+      "A": "Inserts new student records where age is greater than 20",
+      "B": "Deletes students older than 20",
+      "C": "Retrieves names and ages of students older than 20",
+      "D": "Updates student ages to 20"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 77,
+    "question": "What is the result of this query? (SELECT * FROM employees WHERE department = 'IT' ORDER BY salary DESC)",
+    "options": {
+      "A": "Displays all employees sorted by department",
+      "B": "Shows IT department employees sorted by salary from highest to lowest",
+      "C": "Deletes employees in the IT department",
+      "D": "Updates salary values in the IT department"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 78,
+    "question": "What does this query return? (SELECT COUNT(*) FROM orders WHERE status = 'delivered')",
+    "options": {
+      "A": "A list of all delivered orders",
+      "B": "The total number of delivered orders",
+      "C": "Updates order status to delivered",
+      "D": "Deletes delivered orders from the table"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 79,
+    "question": "Which of the following is the primary issue in IT project management?",
+    "options": {
+      "A": "Communication",
+      "B": "Scope creep",
+      "C": "Data Scarcity",
+      "D": "Risk"
+    },
+    "correct_answer": "B",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 80,
+    "question": "Which factor directly affects software quality?",
+    "options": {
+      "A": "Project color scheme",
+      "B": "Code readability and maintainability",
+      "C": "Number of statements",
+      "D": "Design and layout"
+    },
+    "correct_answer": "B",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 81,
+    "question": "Which Work Breakdown Approach deals that “it starts with the largest items of the project (project goal) and break it down into smaller and more manageable tasks.”",
+    "options": {
+      "A": "Guidelines approach",
+      "B": "Analogy approach",
+      "C": "Top-down approach",
+      "D": "Bottom-up approach"
+    },
+    "correct_answer": "C",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 82,
+    "question": "Which one of the following is NOT true when planning IT project objectives?",
+    "options": {
+      "A": "The goal should target a specific area of improvement or answer a specific need.",
+      "B": "The goal must be quantifiable, or at least allow for measurable progress.",
+      "C": "The goal should exceed by far from available resources and existing constraints.",
+      "D": "The goal should align with other organization goals."
+    },
+    "correct_answer": "C",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 83,
+    "question": "What is the importance of having good scope definition for project stakeholders? (Choose More than One)",
+    "options": {
+      "A": "Because it improves accuracy of time, cost, and resource estimates",
+      "B": "Because it defines baseline for performance measurement and project control",
+      "C": "Because it supports in communicating clear work responsibilities"
+    },
+    "correct_answer": "A, B, C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 84,
+    "question": "____________is formalizing acceptance of the project scope in the project scope management processes.",
+    "options": {
+      "A": "Scope planning",
+      "B": "Scope change control",
+      "C": "Scope verification",
+      "D": "Scope definition"
+    },
+    "correct_answer": "C",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 85,
+    "question": "Which one of the following is NOT a correct statement regarding the Work Breakdown Structure (WBS)?",
+    "options": {
+      "A": "WBS is a hierarchical decomposition of the project into phases, deliverables and work packages.",
+      "B": "A WBS can be formatted made through various approaches such as the top down approach, the use of organizational guidelines and the use of WBS templates.",
+      "C": "In order to start the creations of a WBS project managers have to finish the sequencing of activities.",
+      "D": "The lowest level in a WBS is named a work package."
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 86,
+    "question": "Which one of the following statements describes the primary objective of project planning for everyone involved in the project?",
+    "options": {
+      "A": "Setting specific objectives and goals",
+      "B": "Outlining the roadmap of where the project headed and the strategy to achieve it.",
+      "C": "Listing all potential risks and challenges",
+      "D": "Detailing the exact budget and resources allocations"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 87,
+    "question": "Assume that college of computing and informatics assigned you for selecting the potential Information Technology project that should be done in the Haramaya University, what is the consideration and task you may do in sequential order?",
+    "options": {
+      "A": "Develop IT strategic plan based on the Haramaya university‘s overall strategic plan, perform a business area analysis, define potential projects, select IT projects and assign resources.",
+      "B": "Define potential projects, select IT projects and assign resources, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan, perform a business area analysis",
+      "C": "Select IT projects and assign resources, define potential projects, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan, perform a business area analysis",
+      "D": "Perform a business area analysis, define potential projects, select IT projects and assign resources, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan."
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 88,
+    "question": "Which of the following best describes object-oriented technology?",
+    "options": {
+      "A": "A programming approach based only on functions",
+      "B": "A method that organizes software around objects containing data and behavior",
+      "C": "A technique used only for database design",
+      "D": "A hardware design method"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 89,
+    "question": "A systems analyst is working on a university registration system. They use a use case diagram to show how students register for courses, and a class diagram to show system structure. What is the main difference between these two modeling techniques?",
+    "options": {
+      "A": "Use case diagrams show system structure, while class diagrams show user interaction",
+      "B": "Use case diagrams show interactions between users and system, while class diagrams show system structure",
+      "C": "Both diagrams show only database design",
+      "D": "Both diagrams are used only for coding"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 90,
+    "question": "A company is designing a banking system. The analyst wants to represent the flow of messages between objects during a transaction process. Which UML diagram is most appropriate?",
+    "options": {
+      "A": "Activity diagram",
+      "B": "Sequence diagram",
+      "C": "Deployment diagram",
+      "D": "Package diagram"
+    },
+    "correct_answer": "B",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 91,
+    "question": "A hospital system requires that a patient can book an appointment, and the system should notify the doctor automatically. Which UML diagram best helps analyze user interaction with the system?",
+    "options": {
+      "A": "Class diagram",
+      "B": "Use case diagram",
+      "C": "Deployment diagram",
+      "D": "Object diagram"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 92,
+    "question": "A library system requires that a user must be registered before borrowing books. The analyst identifies this relationship between “User Registration” and “Borrow Book”. What UML relationship is being described?",
+    "options": {
+      "A": "Aggregation",
+      "B": "Dependency",
+      "C": "Inheritance",
+      "D": "Composition"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 93,
+    "question": "Which UML diagram is most appropriate for designing the internal structure of a system by showing classes and relationships?",
+    "options": {
+      "A": "Use case diagram",
+      "B": "Class diagram",
+      "C": "Activity diagram",
+      "D": "Communication diagram"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 94,
+    "question": "A developer is designing a system where objects interact over time in a specific order. Which UML diagram should be used?",
+    "options": {
+      "A": "Sequence diagram",
+      "B": "State diagram",
+      "C": "Component diagram",
+      "D": "Deployment diagram"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 95,
+    "question": "What is the main purpose of a visual development environment such as Visual Basic?",
+    "options": {
+      "A": "To write machine code directly",
+      "B": "To design interfaces and write code using visual tools and controls",
+      "C": "To manage hardware devices only",
+      "D": "To replace the operating system"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 96,
+    "question": "In a visual programming environment, what is the main advantage of using drag-and-drop controls?",
+    "options": {
+      "A": "It eliminates the need for any programming",
+      "B": "It allows faster interface design with less manual coding",
+      "C": "It increases hardware performance",
+      "D": "It prevents event handling"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 97,
+    "question": "In Visual Basic, what triggers the execution of a Button Click event procedure?",
+    "options": {
+      "A": "System startup",
+      "B": "User clicking the button",
+      "C": "Saving the project",
+      "D": "Closing the IDE"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 98,
+    "question": "What happens when the button is clicked? (MsgBox \"Data Submitted\")",
+    "options": {
+      "A": "The program closes",
+      "B": "A message box displays \"Data Submitted\"",
+      "C": "The form is deleted",
+      "D": "The button is disabled permanently"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 99,
+    "question": "Which statement best describes event-driven programming?",
+    "options": {
+      "A": "Programs execute instructions only from top to bottom",
+      "B": "Execution depends on user actions or system events",
+      "C": "Programs do not respond to user input",
+      "D": "Code runs only once and stops"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 100,
+    "question": "Which Visual Basic control is most appropriate for allowing a user to enter text such as a name?",
+    "options": {
+      "A": "Label",
+      "B": "TextBox",
+      "C": "Button",
+      "D": "PictureBox"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 101,
+    "question": "A developer is designing a login form in Visual Basic that includes a username field, password field, and a login button. Which control is used to mask password input?",
+    "options": {
+      "A": "TextArea",
+      "B": "TextBox with PasswordChar property",
+      "C": "ListBox",
+      "D": "TextView"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 102,
+    "question": "Which Visual Basic control is used to execute an action when the user interacts with it?",
+    "options": {
+      "A": "Label",
+      "B": "Button",
+      "C": "Panel",
+      "D": "Timer only"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 103,
+    "question": "What concept of object-oriented programming is mainly demonstrated in this code?",
+    "options": {
+      "A": "Encapsulation",
+      "B": "Inheritance",
+      "C": "Polymorphism",
+      "D": "Abstraction"
+    },
+    "correct_answer": "B",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 104,
+    "question": "Which OOP feature allows a Java class to inherit properties and methods from another class?",
+    "options": {
+      "A": "Encapsulation",
+      "B": "Inheritance",
+      "C": "Compilation",
+      "D": "Exception handling"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 105,
+    "question": "What will be the output of this program?",
+    "options": {
+      "A": "10",
+      "B": "20",
+      "C": "30",
+      "D": "40"
+    },
+    "correct_answer": "C",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 106,
+    "question": "Which Java collection is best suited for storing dynamically sized lists of elements?",
+    "options": {
+      "A": "Array",
+      "B": "ArrayList",
+      "C": "Integer",
+      "D": "Character"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 107,
+    "question": "What will be the output? (Try/Catch block handling exception)",
+    "options": {
+      "A": "0",
+      "B": "Error occurred",
+      "C": "Compilation error",
+      "D": "10"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 108,
+    "question": "Which block is always executed in Java exception handling?",
+    "options": {
+      "A": "try",
+      "B": "catch",
+      "C": "finally",
+      "D": "throw"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 109,
+    "question": "What is the correct way a thread is started in Java?",
+    "options": {
+      "A": "t.run();",
+      "B": "t.start();",
+      "C": "run(t);",
+      "D": "start.run();"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 110,
+    "question": "What is the main advantage of multithreading in Java programs?",
+    "options": {
+      "A": "It makes programs run without Java Virtual Machine",
+      "B": "It allows multiple tasks to execute concurrently",
+      "C": "It removes the need for classes",
+      "D": "It prevents runtime errors"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 111,
+    "question": "Which statement best explains the concept of encapsulation in object-oriented programming?",
+    "options": {
+      "A": "Combining multiple classes into one file",
+      "B": "Wrapping data and methods together and restricting direct access to data",
+      "C": "Executing multiple programs at once",
+      "D": "Writing code without using objects"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 112,
+    "question": "What is the main purpose of inheritance in Java?",
+    "options": {
+      "A": "To delete unused objects automatically",
+      "B": "To allow a class to acquire properties and behaviors of another class",
+      "C": "To increase program execution speed",
+      "D": "To store only primitive data types"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 113,
+    "question": "Which OOP concept allows a method to have different implementations in different classes?",
+    "options": {
+      "A": "Encapsulation",
+      "B": "Polymorphism",
+      "C": "Compilation",
+      "D": "Aggregation"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 114,
+    "question": "A programmer writes a program using functions like add(), subtract() and passes data separately, without using objects or classes. Another program uses classes like Student and Course with methods and attributes. What is the key difference between these two approaches?",
+    "options": {
+      "A": "Both are object-oriented programming",
+      "B": "The first is OOP, the second is structural programming",
+      "C": "The first is structural programming, the second is object-oriented programming",
+      "D": "Both use inheritance"
+    },
+    "correct_answer": "C",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 115,
+    "question": "Which of the following best distinguishes object-oriented programming from structured programming?",
+    "options": {
+      "A": "OOP focuses on functions, while structured programming focuses on objects",
+      "B": "OOP organizes code around objects, while structured programming organizes code around functions",
+      "C": "Both avoid the use of data",
+      "D": "Structured programming supports inheritance, OOP does not"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 116,
+    "question": "What will be the output of the following Java program? (System.out.println(5 + 10))",
+    "options": {
+      "A": "510",
+      "B": "15",
+      "C": "510",
+      "D": "Error"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 117,
+    "question": "What is the most likely issue in the following Java code?",
+    "options": {
+      "A": "No class definition",
+      "B": "Variable x is not declared",
+      "C": "Missing semicolon after class",
+      "D": "Wrong method name"
+    },
+    "correct_answer": "B",
+    "points": "Will be reviewed",
+    "status": "Pending Review"
+  },
+  {
+    "question_number": 118,
+    "question": "Which statement correctly creates an object of class Student in Java?",
+    "options": {
+      "A": "Student s = new Student();",
+      "B": "Student = new s();",
+      "C": "new Student s();",
+      "D": "create Student s;"
+    },
+    "correct_answer": "A",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 119,
+    "question": "Which component is responsible for performing arithmetic and logical operations in a computer system?",
+    "options": {
+      "A": "RAM",
+      "B": "CPU",
+      "C": "Hard Disk",
+      "D": "Power Supply"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 120,
+    "question": "Which of the following is a primary storage device?",
+    "options": {
+      "A": "SSD/HDD",
+      "B": "RAM",
+      "C": "ROM",
+      "D": "Cache"
+    },
+    "correct_answer": "B",
+    "points": "0/1",
+    "status": "Incorrect"
+  },
+  {
+    "question_number": 121,
+    "question": "A technician is inspecting two desktop systems. System A has a large tower case with multiple expansion slots and better airflow. System B is a small compact case designed to fit behind a monitor with limited upgrade options. What is the main difference between these two cases?",
+    "options": {
+      "A": "System A is a laptop case, System B is a server case",
+      "B": "System A is a full tower case, System B is a small form factor case",
+      "C": "Both are identical in design and usage",
+      "D": "System A has no cooling system"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 122,
+    "question": "A computer shuts down frequently due to overheating. The technician notices the case has very few ventilation openings and a single small fan. What type of problem is most likely occurring?",
+    "options": {
+      "A": "Software installation error",
+      "B": "Poor airflow and overheating due to case design",
+      "C": "Network failure",
+      "D": "Keyboard malfunction"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 123,
+    "question": "A user complains that their computer case is too large for their workspace, but it supports many upgrades and additional hardware components. What type of case is most appropriate for this description?",
+    "options": {
+      "A": "Mini tower case",
+      "B": "Full tower case",
+      "C": "Laptop case",
+      "D": "Tablet casing"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 124,
+    "question": "A technician compares a desktop with a slim, space-saving case and another with a bulky case designed for high-performance gaming systems. What is the correct analysis of these two cases?",
+    "options": {
+      "A": "Both are designed only for laptops",
+      "B": "Slim cases prioritize space efficiency, while bulky cases support high performance and expansion",
+      "C": "Both cases have identical hardware support",
+      "D": "Bulky cases cannot support cooling systems"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 125,
+    "question": "A computer technician finds that a desktop system is overheating due to dust accumulation inside the CPU fan. What is the best maintenance procedure to solve this problem?",
+    "options": {
+      "A": "Replace the monitor",
+      "B": "Clean internal components and fans using proper tools",
+      "C": "Reinstall the operating system",
+      "D": "Change the keyboard"
+    },
+    "correct_answer": "B",
+    "points": "1/1",
+    "status": "Correct"
+  },
+  {
+    "question_number": 126,
+    "question": "A user reports that their computer is slow and frequently freezes. The technician suspects low RAM and fragmented storage. What should the technician do first as part of a proper maintenance procedure?",
+    "options": {
+      "A": "Replace the motherboard immediately",
+      "B": "Diagnose system performance and check memory usage and disk health",
+      "C": "Remove all items"
+    },
+    "correct_answer": "B",
+    "points": "Will be reviewed",
+    "status": "Pending Review"
+  }
+]
