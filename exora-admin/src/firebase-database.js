@@ -10,7 +10,9 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  // fallback to known URL so SDK doesn't log "Can't determine Firebase Database URL"
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL ||
+    'https://avian-brand-474607-g8-default-rtdb.firebaseio.com',
 };
 
 const DB_APP_NAME = "exora-db";

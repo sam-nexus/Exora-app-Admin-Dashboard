@@ -194,8 +194,8 @@ const StudentLayout = () => {
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl blur-md opacity-40" />
-              <div className="relative bg-white w-10 h-10 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                <img src="/logoIcon.png" alt="Exora" className="w-8 h-8 object-contain" />
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md flex-shrink-0 ring-2 ring-white/60">
+                <img src="/logoIcon.png" alt="Exora" className="w-full h-full object-cover" />
               </div>
             </div>
             {sidebarOpen && (

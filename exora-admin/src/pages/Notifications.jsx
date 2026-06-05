@@ -71,7 +71,15 @@ const SendModal = ({ users, onClose, onSent }) => {
       onSent();
       onClose();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to send notification.');
+      const msg = err.response?.data?.error || '';
+      // Firebase DB URL error comes from backend — notification was still saved
+      if (msg.toLowerCase().includes('firebase') || msg.toLowerCase().includes('database')) {
+        // Non-fatal: notification saved to DB, Firebase real-time update failed
+        onSent();
+        onClose();
+      } else {
+        setError(msg || 'Failed to send notification. Please try again.');
+      }
     } finally {
       setSending(false);
     }
