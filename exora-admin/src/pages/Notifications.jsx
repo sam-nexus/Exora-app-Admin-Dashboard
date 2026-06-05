@@ -319,7 +319,7 @@ const Notifications = () => {
 
   // unique types present in notifications for filter bar
   const presentTypes = [...new Set(
-    notifications.map((n) => n.notification_type).filter(Boolean)
+    notifications.map((n) => n.notification_type).filter((t) => Boolean(t) && t !== 'general')
   )];
 
   return (
@@ -439,7 +439,7 @@ const Notifications = () => {
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed">{n.message}</p>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        {n.notification_type && (
+                        {n.notification_type && n.notification_type !== 'general' && (
                           <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md border border-gray-200">
                             {notificationTypeLabels[n.notification_type] || n.notification_type}
                           </span>

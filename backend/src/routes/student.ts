@@ -444,7 +444,7 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const { paymentId } = req.body; // paymentId = department id
+      const { paymentId, amount } = req.body; // paymentId = department id, amount = price in Birr
 
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
       if (!paymentId) return res.status(400).json({ error: 'paymentId (department id) is required' });
@@ -469,6 +469,7 @@ router.post(
           department_id: paymentId,
           image_url: signedData.signedUrl,
           status: 'pending',
+          amount: amount ? Number(amount) : null,
         });
 
       if (insertError) throw insertError;

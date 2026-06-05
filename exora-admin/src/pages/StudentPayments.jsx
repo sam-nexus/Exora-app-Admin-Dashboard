@@ -70,6 +70,10 @@ const StudentPayments = () => {
     formData.append('receipt', receiptFile);
     const deptId = selectedPayment.department_id || selectedPayment.id;
     formData.append('paymentId', deptId);
+    // Send the amount so it gets stored in the database
+    if (selectedPayment.amount) {
+      formData.append('amount', String(selectedPayment.amount));
+    }
 
     try {
       const token = localStorage.getItem('token');
@@ -567,11 +571,16 @@ const StudentPayments = () => {
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-amber-600">Account Number:</span>
-                    <span className="font-mono font-medium">1000XXXXXX</span>
+                    <span className="font-mono font-medium select-all">
+                      {selectedBank === 'cbe'     && (import.meta.env.VITE_PAYMENT_CBE_NUMBER     || 'Not configured')}
+                      {selectedBank === 'awash'   && (import.meta.env.VITE_PAYMENT_AWASH_NUMBER   || 'Not configured')}
+                      {selectedBank === 'dashen'  && (import.meta.env.VITE_PAYMENT_DASHEN_NUMBER  || 'Not configured')}
+                      {selectedBank === 'telebirr'&& (import.meta.env.VITE_PAYMENT_TELEBIRR_NUMBER|| 'Not configured')}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-amber-600">Account Name:</span>
-                    <span className="font-medium">Exora Educational Services</span>
+                    <span className="font-medium">{import.meta.env.VITE_PAYMENT_ACCOUNT_NAME || 'Exora Educational Services'}</span>
                   </div>
                 </div>
               </div>

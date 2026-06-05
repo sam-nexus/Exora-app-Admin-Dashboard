@@ -88,16 +88,8 @@ const StudentDashboard = () => {
         console.error("Error fetching stats:", err);
       }
 
-      // Fetch upcoming exams
-      let upcomingExams = [];
-      try {
-        const examsRes = await api.get(`/student/upcoming-exams`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
-        upcomingExams = examsRes.data || [];
-      } catch (err) {
-        console.error("Error fetching upcoming exams:", err);
-      }
+      // upcoming-exams endpoint not yet implemented — use empty array
+      const upcomingExams = [];
 
       setDashboardData({
         courses,

@@ -166,24 +166,45 @@ const StudentHelpSupport = () => {
             </div>
             <div className="p-5 space-y-3">
               <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition">
-                <Mail size={16} className="text-gray-500" />
-                <div>
+                <Mail size={16} className="text-gray-500 shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-gray-800">support@exora.com</p>
+                  <p className="text-sm font-medium text-gray-800 truncate">
+                    {import.meta.env.VITE_SUPPORT_EMAIL || 'support@exora.com'}
+                  </p>
+                  {import.meta.env.VITE_SUPPORT_EMAIL_2 && (
+                    <p className="text-sm font-medium text-gray-600 truncate">
+                      {import.meta.env.VITE_SUPPORT_EMAIL_2}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition">
-                <Phone size={16} className="text-gray-500" />
-                <div>
+                <Phone size={16} className="text-gray-500 shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-gray-500">Phone</p>
-                  <p className="text-sm font-medium text-gray-800">+251-911-123456</p>
+                  <p className="text-sm font-medium text-gray-800">
+                    {import.meta.env.VITE_SUPPORT_PHONE || '+251-911-123456'}
+                  </p>
+                  {import.meta.env.VITE_SUPPORT_PHONE_2 && (
+                    <p className="text-sm font-medium text-gray-600">
+                      {import.meta.env.VITE_SUPPORT_PHONE_2}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition">
-                <MessageCircle size={16} className="text-gray-500" />
-                <div>
+                <MessageCircle size={16} className="text-gray-500 shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-gray-500">Telegram</p>
-                  <p className="text-sm font-medium text-gray-800">@exora_mobilet</p>
+                  <p className="text-sm font-medium text-gray-800">
+                    {import.meta.env.VITE_SUPPORT_TELEGRAM || '@exora_mobile'}
+                  </p>
+                  {import.meta.env.VITE_SUPPORT_TELEGRAM_2 && (
+                    <p className="text-sm font-medium text-gray-600">
+                      {import.meta.env.VITE_SUPPORT_TELEGRAM_2}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
