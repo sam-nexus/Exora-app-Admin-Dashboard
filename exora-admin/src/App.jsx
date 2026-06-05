@@ -24,6 +24,9 @@ import StudentProfile from './pages/StudentProfile';
 import Notifications from './pages/Notifications';
 import Materials from './pages/Materials';
 import NotFound from './pages/NotFound';
+import Support from './pages/Support';
+
+
 
 
 
@@ -46,6 +49,7 @@ function App() {
             <Route path="/payments" element={<Payments />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/materials" element={<Materials />} />
+            <Route path="/support" element={<Support />} />
           </Route>
         </Route>
 

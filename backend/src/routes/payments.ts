@@ -4,28 +4,78 @@ import admin from '../firebase';
 import { supabaseAdmin } from '../supabase';
 import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
-const upload = multer({ storage: multer.memoryStorage() });
+// Allowed image MIME types
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/bmp',
+];
+
+// Allowed file extensions
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+
+// File filter function
+const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  // Check MIME type
+  if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+    cb(null, true);
+    return;
+  }
+
+  // Check extension as fallback
+  const ext = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+  if (ALLOWED_EXTENSIONS.includes(ext)) {
+    cb(null, true);
+    return;
+  }
+
+  cb(new Error(`Invalid file type. Allowed types: ${ALLOWED_EXTENSIONS.join(', ')}`));
+};
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max
+  },
+});
+
 const router = Router();
 
-// Upload payment receipt (unchanged, but sets status = 'pending')
+// Upload payment receipt
 router.post('/', authenticate, upload.single('receipt'), async (req: AuthRequest, res: Response) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
     const userId = req.userId!;
 
-    const filePath = `receipts/${userId}/${Date.now()}-${req.file.originalname}`;
+    // Get the file extension from original name
+    const ext = req.file.originalname.substring(req.file.originalname.lastIndexOf('.'));
+    const timestamp = Date.now();
+    const filePath = `receipts/${userId}/${timestamp}${ext}`;
+
+    // Upload to Supabase Storage
     const { error: uploadError } = await supabaseAdmin.storage
       .from('payment-receipts')
-      .upload(filePath, req.file.buffer, { contentType: req.file.mimetype });
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false,
+      });
 
     if (uploadError) throw uploadError;
 
+    // Generate signed URL (valid for 1 year)
     const { data: signedData, error: signedError } = await supabaseAdmin.storage
       .from('payment-receipts')
       .createSignedUrl(filePath, 31536000);
+
     if (signedError) throw signedError;
     const imageUrl = signedData.signedUrl;
 
+    // Insert record into database
     const { error: insertError } = await supabaseAdmin
       .from('payment_receipts')
       .insert({
@@ -36,6 +86,7 @@ router.post('/', authenticate, upload.single('receipt'), async (req: AuthRequest
 
     if (insertError) throw insertError;
 
+    // Notify admins
     const { data: admins, error: adminFetchError } = await supabaseAdmin
       .from('profiles')
       .select('id, device_tokens')
@@ -59,7 +110,7 @@ router.post('/', authenticate, upload.single('receipt'), async (req: AuthRequest
         .map((item: any) => item.token)
         .filter(Boolean);
 
-      if (tokens.length && admin.apps.length > 0) {
+      if (tokens.length && admin.apps && admin.apps.length > 0) {
         const payload = {
           notification: {
             title: 'New payment receipt received',
@@ -74,7 +125,7 @@ router.post('/', authenticate, upload.single('receipt'), async (req: AuthRequest
         const chunkSize = 500;
         for (let i = 0; i < tokens.length; i += chunkSize) {
           const batch = tokens.slice(i, i + chunkSize);
-          await admin.messaging().sendToDevice(batch, payload).catch((sendError) => {
+          await admin.messaging().sendToDevice(batch, payload).catch((sendError: any) => {
             console.error('FCM send error:', sendError);
           });
         }
@@ -83,6 +134,13 @@ router.post('/', authenticate, upload.single('receipt'), async (req: AuthRequest
 
     res.status(201).json({ message: 'Receipt uploaded, waiting for verification' });
   } catch (err: any) {
+    // Handle multer errors (file too large, invalid type)
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
+    }
+    if (err.message && err.message.includes('Invalid file type')) {
+      return res.status(400).json({ error: err.message });
+    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -109,15 +167,11 @@ router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response)
 });
 
 // Approve a payment
-// Body: { scope: 'department' | 'all' }
-// - 'department': unlocks only courses in the receipt's department_id
-// - 'all'       : unlocks every course for the user (legacy / general access)
 router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   try {
     const receiptId = req.params.id;
     const scope: 'department' | 'all' = req.body.scope === 'department' ? 'department' : 'all';
 
-    // Get receipt including department_id
     const { data: receipt, error: fetchError } = await supabaseAdmin
       .from('payment_receipts')
       .select('user_id, status, department_id')
@@ -127,7 +181,6 @@ router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, r
     if (fetchError || !receipt) return res.status(404).json({ error: 'Receipt not found' });
     if (receipt.status !== 'pending') return res.status(400).json({ error: 'Receipt is not pending' });
 
-    // Update status to approved
     const { error: updateError } = await supabaseAdmin
       .from('payment_receipts')
       .update({ status: 'approved' })
@@ -137,7 +190,6 @@ router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, r
     let unlockedScope = 'all courses';
 
     if (scope === 'department' && receipt.department_id) {
-      // Get all course IDs in this department
       const { data: deptCourses, error: deptError } = await supabaseAdmin
         .from('courses')
         .select('id')
@@ -156,7 +208,6 @@ router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, r
         if (unlockError) throw unlockError;
       }
 
-      // Get department name for notification
       const { data: dept } = await supabaseAdmin
         .from('departments')
         .select('name')
@@ -165,7 +216,6 @@ router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, r
 
       unlockedScope = `courses in ${dept?.name || 'the selected department'}`;
     } else {
-      // Unlock ALL courses for the user
       const { error: unlockError } = await supabaseAdmin
         .from('user_courses')
         .update({ is_locked: false })
@@ -181,10 +231,7 @@ router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, r
       is_read: false,
     });
 
-    res.json({
-      message: `Payment approved — ${unlockedScope} unlocked`,
-      scope,
-    });
+    res.json({ message: `Payment approved — ${unlockedScope} unlocked`, scope });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -222,6 +269,18 @@ router.patch('/:id/decline', authenticate, adminOnly, async (req: AuthRequest, r
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Get payment info (bank details with optional discount)
+router.get('/info', authenticate, async (req: AuthRequest, res: Response) => {
+  res.json({
+    amount: '50 ETB',
+    originalAmount: '100 ETB',
+    discount: '50%',       // set to null to hide discount badge
+    bank: 'Commercial Bank of Ethiopia (CBE)',
+    accountNumber: '100023456789',
+    accountName: 'John Dalton',
+  });
 });
 
 export default router;

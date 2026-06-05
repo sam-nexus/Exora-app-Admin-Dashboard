@@ -47,6 +47,7 @@ const Sidebar = () => {
       icon: <Bell size={20} />,
       label: "Notifications",
     },
+    { path: "/support", icon: <MessageSquare size={20} />, label: "Support" },
   ];
 
   // Close mobile sidebar when route changes
