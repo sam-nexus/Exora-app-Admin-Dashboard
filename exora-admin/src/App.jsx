@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Departments from './pages/Departments';
@@ -22,6 +23,7 @@ import StudentHelpSupport from './pages/StudentHelpSupport';
 import StudentProfile from './pages/StudentProfile';
 import Notifications from './pages/Notifications';
 import Materials from './pages/Materials';
+import NotFound from './pages/NotFound';
 
 
 
@@ -30,6 +32,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -61,6 +64,9 @@ function App() {
             <Route path="profile" element={<StudentProfile />} />
           </Route>
         </Route>
+
+        {/* Catch-all — any unmatched URL shows the 404 page */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

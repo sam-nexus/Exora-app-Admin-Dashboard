@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Lock, Unlock, Computer, Database, Code, Cpu, BookOpen } from 'lucide-react';
+import { 
+  Search, Lock, Unlock, Computer, Database, Code, Cpu, BookOpen, 
+  ChevronRight, Sparkles, GraduationCap, Trophy, Target, ArrowRight,
+  Filter, Layers, Star, Zap, Award, Brain, AlertCircle
+} from 'lucide-react';
 import api from '../api/axios';
 
 const StudentDepartments = () => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [departments, setDepartments] = useState([]);
   const [courseCounts, setCourseCounts] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,13 +22,14 @@ const StudentDepartments = () => {
   }, []);
 
   const fetchDepartments = async () => {
+    setLoading(true);
+    setError('');
     try {
       const [{ data: departmentsData }, { data: coursesData }] = await Promise.all([
         api.get('/departments'),
         api.get('/courses'),
       ]);
 
-      
       setDepartments(departmentsData || []);
 
       const counts = (coursesData || []).reduce((acc, course) => {
@@ -36,312 +42,362 @@ const StudentDepartments = () => {
       setCourseCounts(counts);
     } catch (error) {
       console.error('Error fetching departments or courses:', error);
+      setError('Unable to load departments. Please check your connection.');
     } finally {
       setLoading(false);
     }
   };
+
   const getDepartmentIcon = (name) => {
     const icons = {
-      'Information Technology': <Computer className="w-12 h-12" />,
-      'Computer Science': <Code className="w-12 h-12" />,
-      'Software Engineering': <Database className="w-12 h-12" />,
+      'Information Technology': <Computer className="w-10 h-10" />,
+      'Computer Science': <Code className="w-10 h-10" />,
+      'Software Engineering': <Database className="w-10 h-10" />,
     };
-    return icons[name] || <Cpu className="w-12 h-12" />;
+    return icons[name] || <Cpu className="w-10 h-10" />;
+  };
+
+  const getDepartmentGradient = (name) => {
+    const gradients = {
+      'Information Technology': 'from-cyan-500 to-blue-600',
+      'Computer Science': 'from-emerald-500 to-teal-600',
+      'Software Engineering': 'from-violet-500 to-purple-600',
+    };
+    return gradients[name] || 'from-indigo-500 to-purple-600';
   };
 
   const filteredDepartments = departments
-    .filter((dept) => dept.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((dept) => dept.name?.toLowerCase().includes(searchTerm.toLowerCase()))
     .filter((dept) => {
       if (selectedFilter === 'all') return true;
       if (selectedFilter === 'in-progress') return dept.progress > 0 && dept.progress < 100;
       if (selectedFilter === 'completed') return dept.progress === 100;
-      if (selectedFilter === 'locked') return dept.isLocked;
+      if (selectedFilter === 'locked') return dept.isLocked === true;
       return true;
     });
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <GraduationCap className="w-5 h-5 text-indigo-600 animate-pulse" />
+          </div>
+        </div>
+        <p className="mt-3 text-gray-500 text-sm">Loading departments...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-7 h-7 text-red-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load</h3>
+          <p className="text-gray-500 text-sm mb-4">{error}</p>
+          <button
+            onClick={fetchDepartments}
+            className="bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   const unlockedCount = departments.filter((dept) => !(dept.isLocked ?? false)).length;
   const lockedCount = departments.filter((dept) => dept.isLocked ?? false).length;
+  const inProgressCount = departments.filter((dept) => dept.progress > 0 && dept.progress < 100).length;
+  const completedCount = departments.filter((dept) => dept.progress === 100).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-linear-to-br from-indigo-700 via-purple-600 to-blue-500 pb-10 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-md text-white">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">🎓</span>
-                  <p className="text-xs uppercase tracking-widest text-indigo-100 font-semibold">
-                    Student Learning Hub
-                  </p>
-                </div>
-                <h1 className="mt-3 text-5xl font-bold tracking-tight text-white">
-                  Select Your Department
-                </h1>
-                <p className="mt-4 text-base leading-7 text-indigo-100">
-                  Choose a department to unlock courses, practice questions, master concepts,
-                  and prepare for your exit exams. Your learning journey awaits! ✨
-                </p>
-              </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="border-b border-gray-200 pb-4">
+        <h1 className="text-2xl font-semibold text-gray-900">Departments</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Select a department to start learning</p>
+      </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl bg-white/15 border border-white/30 p-5 text-center hover:bg-white/20 transition backdrop-blur">
-                  <p className="text-xs text-indigo-100 uppercase tracking-widest font-bold">
-                    📚 Total
-                  </p>
-                  <p className="mt-4 text-4xl font-bold text-white">
-                    {departments.length}
-                  </p>
-                  <p className="text-xs text-indigo-100 mt-2">Departments</p>
-                </div>
-                <div className="rounded-2xl bg-white/15 border border-white/30 p-5 text-center hover:bg-white/20 transition backdrop-blur">
-                  <p className="text-xs text-green-100 uppercase tracking-widest font-bold">
-                    🔓 Unlocked
-                  </p>
-                  <p className="mt-4 text-4xl font-bold text-white">{unlockedCount}</p>
-                  <p className="text-xs text-green-100 mt-2">Available Now</p>
-                </div>
-                <div className="rounded-2xl bg-white/15 border border-white/30 p-5 text-center hover:bg-white/20 transition backdrop-blur">
-                  <p className="text-xs text-orange-100 uppercase tracking-widest font-bold">
-                    🔒 Locked
-                  </p>
-                  <p className="mt-4 text-4xl font-bold text-white">{lockedCount}</p>
-                  <p className="text-xs text-orange-100 mt-2">Unlock Soon</p>
-                </div>
-              </div>
-            </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard
+          icon={<Layers size={16} />}
+          label="Total"
+          value={departments.length}
+          color="gray"
+        />
+        <StatCard
+          icon={<Unlock size={16} />}
+          label="Unlocked"
+          value={unlockedCount}
+          color="green"
+        />
+        <StatCard
+          icon={<Lock size={16} />}
+          label="Locked"
+          value={lockedCount}
+          color="orange"
+        />
+        <StatCard
+          icon={<Award size={16} />}
+          label="Completed"
+          value={completedCount}
+          color="purple"
+        />
+      </div>
+
+      {/* Search and Filter Bar */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search departments..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gray-400 focus:ring-1 focus:ring-gray-400 outline-none"
+            />
           </div>
+          <div className="relative sm:w-64">
+            <Zap size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <select
+              value=""
+              onChange={(e) => {
+                if (e.target.value) navigate(`/student/departments/${e.target.value}/courses`);
+              }}
+              className="w-full pl-9 pr-8 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-400 outline-none appearance-none cursor-pointer"
+            >
+              <option value="">Quick Jump</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name} {dept.isLocked ? '(Locked)' : ''}
+                </option>
+              ))}
+            </select>
+            <ChevronRight size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Filter Chips */}
+        <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-gray-100">
+          <Filter size={14} className="text-gray-400 mr-1 self-center hidden sm:block" />
+          {[
+            { key: 'all', label: 'All', icon: '📋' },
+            { key: 'in-progress', label: 'In Progress', icon: '⏳' },
+            { key: 'completed', label: 'Completed', icon: '✅' },
+            { key: 'locked', label: 'Locked', icon: '🔒' }
+          ].map((filter) => (
+            <button
+              key={filter.key}
+              onClick={() => setSelectedFilter(filter.key)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                selectedFilter === filter.key
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <span className="mr-1">{filter.icon}</span>
+              {filter.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 -mt-8 pb-12">
-        <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-          <section className="space-y-6">
-            <div className="rounded-2xl bg-white p-6 shadow-md border border-gray-200">
-              <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-indigo-400" />
-                  <input
-                    type="text"
-                    placeholder="Search departments..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full rounded-xl border border-gray-300 bg-gray-50 px-12 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    🚀 Quick Jump
-                  </label>
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      if (e.target.value)
-                        navigate(
-                          `/student/departments/${e.target.value}/courses`,
-                        );
-                    }}
-                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 font-medium"
-                  >
-                    <option value="">Choose a department...</option>
-                    {departments.map((dept) => (
-                      <option key={dept.id} value={dept.id}>
-                        {dept.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                {["all", "in-progress", "completed", "locked"].map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setSelectedFilter(filter)}
-                    className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                      selectedFilter === filter
-                        ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-300 scale-105"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    {filter === "all"
-                      ? "📋 All"
-                      : filter === "in-progress"
-                        ? "⏳ In Progress"
-                        : filter === "completed"
-                          ? "✅ Completed"
-                          : "🔒 Locked"}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredDepartments.length === 0 ? (
-                <div className="col-span-full rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-gray-500">
-                  <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg font-semibold">No departments found</p>
-                  <p className="text-sm mt-1">Try adjusting your search or filter</p>
-                </div>
-              ) : (
-                filteredDepartments.map((dept) => (
-                  <div
-                    key={dept.id}
-                    className={`overflow-hidden rounded-2xl shadow-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
-                      dept.isLocked
-                        ? "border border-gray-300 bg-white"
-                        : "border border-indigo-200 bg-linear-to-br from-white to-indigo-50"
-                    }`}
-                  >
-                    {/* Top Progress Bar */}
-                    {!dept.isLocked && (dept.progress ?? 0) > 0 && (
-                      <div className="h-1.5 bg-gray-200 overflow-hidden">
-                        <div
-                          className="h-full bg-linear-to-r from-indigo-500 to-purple-500"
-                          style={{ width: `${dept.progress}%` }}
-                        />
-                      </div>
-                    )}
-                    {dept.isLocked && <div className="h-1.5 bg-gray-200" />}
-
-                    <div className="p-6">
-                      <div className="flex items-start justify-between gap-4 mb-4">
-                        <div
-                          className={`rounded-2xl p-3 shadow-sm ${
-                            dept.isLocked
-                              ? "bg-gray-100"
-                              : "bg-linear-to-br from-indigo-100 to-purple-100"
-                          }`}
-                        >
-                          {getDepartmentIcon(dept.name)}
-                        </div>
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${
-                            dept.isLocked
-                              ? "bg-orange-100 text-orange-700 border border-orange-200"
-                              : "bg-green-100 text-green-700 border border-green-200"
-                          }`}
-                        >
-                          {dept.isLocked ? (
-                            <>
-                              <Lock size={12} />
-                              Locked
-                            </>
-                          ) : (
-                            <>
-                              <Unlock size={12} />
-                              Unlocked
-                            </>
-                          )}
-                        </span>
-                      </div>
-
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
-                        {dept.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-4 font-medium">
-                        📚 {(courseCounts[dept.id] ?? dept.totalCourses ?? dept.courses_count ?? 0).toString()} Courses Available
-                      </p>
-
-                      {(dept.progress ?? 0) > 0 &&
-                        !(dept.isLocked ?? false) && (
-                          <div className="mb-5 bg-gray-50 rounded-lg p-3">
-                            <div className="flex items-center justify-between text-sm mb-2">
-                              <span className="font-semibold text-gray-700">Progress</span>
-                              <span className="font-bold text-indigo-600 text-base">{dept.progress}%</span>
-                            </div>
-                            <div className="h-2.5 overflow-hidden rounded-full bg-gray-200 shadow-inner">
-                              <div
-                                className="h-full bg-linear-to-r from-indigo-500 to-purple-500 shadow-sm"
-                                style={{ width: `${dept.progress}%` }}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                      {(dept.isLocked ?? false) ? (
-                        <Link
-                          to="/student/payments"
-                          className="block w-full rounded-xl bg-linear-to-r from-orange-600 to-orange-600 px-4 py-3 text-center text-sm font-bold text-white transition hover:shadow-lg hover:shadow-orange-300 hover:scale-105"
-                        >
-                          🔓 Unlock Now
-                        </Link>
-                      ) : (
-                        <Link
-                          to={`/student/departments/${dept.id}/courses`}
-                          className="block w-full rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 px-4 py-3 text-center text-sm font-bold text-white transition hover:shadow-lg hover:shadow-indigo-300 hover:scale-105"
-                        >
-                          {(dept.progress ?? 0) > 0
-                            ? "📖 Continue Learning"
-                            : "🚀 Start Learning"}
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-
-          <aside className="space-y-6">
-            <div className="rounded-2xl bg-linear-to-br from-indigo-50 to-purple-50 border border-indigo-200 p-6 shadow-md">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-2xl">📖</span> How it Works
-              </h2>
-              <ol className="space-y-4 text-sm text-gray-700">
-                <li className="flex gap-3 items-start">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold">
-                    1
-                  </span>
-                  <span className="pt-1"><span className="font-semibold">Select a department</span> to explore the course path and unlock content.</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold">
-                    2
-                  </span>
-                  <span className="pt-1"><span className="font-semibold">Upload payment proof</span> to unlock premium departments.</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold">
-                    3
-                  </span>
-                  <span className="pt-1"><span className="font-semibold">Practice & master</span> with questions, mock exams & reviews.</span>
-                </li>
-              </ol>
-            </div>
-
-            <div className="rounded-2xl bg-linear-to-br from-yellow-50 to-orange-50 border border-yellow-200 p-6 shadow-md">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-2xl">💡</span> Pro Tips
-              </h2>
-              <ul className="space-y-3 text-sm text-gray-700">
-                <li className="flex gap-3 items-start">
-                  <span className="mt-1 text-xl shrink-0">⚡</span>
-                  <span><span className="font-semibold">Start unlocked departments</span> first for fast progress.</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="mt-1 text-xl shrink-0">🔍</span>
-                  <span><span className="font-semibold">Use quick jump</span> to navigate departments instantly.</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="mt-1 text-xl shrink-0">📊</span>
-                  <span><span className="font-semibold">Watch progress bars</span> to track your learning journey.</span>
-                </li>
-              </ul>
-            </div>
-          </aside>
+      {/* Departments Grid */}
+      {filteredDepartments.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+          <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <BookOpen size={24} className="text-gray-400" />
+          </div>
+          <p className="text-gray-600 font-medium">No departments found</p>
+          <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filter</p>
+          <button 
+            onClick={() => { setSearchTerm(''); setSelectedFilter('all'); }}
+            className="mt-3 text-indigo-600 text-sm hover:text-indigo-700"
+          >
+            Clear filters
+          </button>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredDepartments.map((dept) => (
+            <DepartmentCard
+              key={dept.id}
+              department={dept}
+              courseCount={courseCounts[dept.id] ?? dept.totalCourses ?? dept.courses_count ?? 0}
+              getDepartmentIcon={getDepartmentIcon}
+              getDepartmentGradient={getDepartmentGradient}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Tips Sidebar (Responsive) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <HowItWorksCard />
+        <ProTipsCard />
       </div>
     </div>
   );
 };
+
+// Helper Components
+const StatCard = ({ icon, label, value, color }) => {
+  const colors = {
+    gray: 'bg-gray-100 text-gray-600',
+    green: 'bg-green-100 text-green-600',
+    orange: 'bg-orange-100 text-orange-600',
+    purple: 'bg-purple-100 text-purple-600',
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-3 text-center">
+      <div className={`w-8 h-8 ${colors[color]} rounded-lg flex items-center justify-center mx-auto mb-2`}>
+        {icon}
+      </div>
+      <p className="text-xl font-bold text-gray-800">{value}</p>
+      <p className="text-xs text-gray-500">{label}</p>
+    </div>
+  );
+};
+
+const DepartmentCard = ({ department, courseCount, getDepartmentIcon, getDepartmentGradient }) => {
+  const isLocked = department.isLocked ?? false;
+  const progress = department.progress ?? 0;
+  const gradient = getDepartmentGradient(department.name);
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+      {/* Progress Bar */}
+      {!isLocked && progress > 0 && (
+        <div className="h-1 bg-gray-100">
+          <div 
+            className={`h-full bg-gradient-to-r ${gradient}`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
+      
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient} text-white shadow-sm`}>
+            {getDepartmentIcon(department.name)}
+          </div>
+          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+            isLocked ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
+          }`}>
+            {isLocked ? <Lock size={10} className="inline mr-1" /> : <Unlock size={10} className="inline mr-1" />}
+            {isLocked ? 'Locked' : 'Unlocked'}
+          </span>
+        </div>
+
+        <h3 className="font-bold text-gray-900 text-base">{department.name}</h3>
+        <p className="text-xs text-gray-500 mt-0.5">{courseCount} Courses Available</p>
+
+        {/* Progress Display */}
+        {!isLocked && progress > 0 && (
+          <div className="mt-3 mb-3">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-gray-500">Progress</span>
+              <span className="font-medium text-gray-700">{progress}%</span>
+            </div>
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full bg-gradient-to-r ${gradient}`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Action Button */}
+        {isLocked ? (
+          <Link
+            to="/student/payments"
+            className="block w-full text-center bg-orange-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition mt-2"
+          >
+            Unlock Now
+          </Link>
+        ) : (
+          <Link
+            to={`/student/departments/${department.id}/courses`}
+            className="block w-full text-center bg-gray-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-900 transition mt-2"
+          >
+            {progress > 0 ? 'Continue Learning' : 'Start Learning'}
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const HowItWorksCard = () => (
+  <div className="bg-white rounded-xl border border-gray-200 p-4">
+    <div className="flex items-center gap-2 mb-3">
+      <div className="p-1.5 bg-gray-100 rounded-lg">
+        <Brain size={16} className="text-gray-600" />
+      </div>
+      <h3 className="font-semibold text-gray-800">How It Works</h3>
+    </div>
+    <ol className="space-y-3">
+      <li className="flex gap-3">
+        <span className="w-5 h-5 rounded-full bg-gray-800 text-white text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+        <div>
+          <p className="font-medium text-gray-800 text-sm">Select Department</p>
+          <p className="text-xs text-gray-500">Explore course path and unlock content</p>
+        </div>
+      </li>
+      <li className="flex gap-3">
+        <span className="w-5 h-5 rounded-full bg-gray-800 text-white text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+        <div>
+          <p className="font-medium text-gray-800 text-sm">Upload Payment Proof</p>
+          <p className="text-xs text-gray-500">Unlock premium departments</p>
+        </div>
+      </li>
+      <li className="flex gap-3">
+        <span className="w-5 h-5 rounded-full bg-gray-800 text-white text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+        <div>
+          <p className="font-medium text-gray-800 text-sm">Practice & Master</p>
+          <p className="text-xs text-gray-500">Questions, mock exams & reviews</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+);
+
+const ProTipsCard = () => (
+  <div className="bg-white rounded-xl border border-gray-200 p-4">
+    <div className="flex items-center gap-2 mb-3">
+      <div className="p-1.5 bg-gray-100 rounded-lg">
+        <Zap size={16} className="text-gray-600" />
+      </div>
+      <h3 className="font-semibold text-gray-800">Pro Tips</h3>
+    </div>
+    <ul className="space-y-2">
+      <li className="flex gap-2 text-sm">
+        <span>🚀</span>
+        <span className="text-gray-700">Start with unlocked departments first</span>
+      </li>
+      <li className="flex gap-2 text-sm">
+        <span>🔍</span>
+        <span className="text-gray-700">Use Quick Jump to navigate instantly</span>
+      </li>
+      <li className="flex gap-2 text-sm">
+        <span>📊</span>
+        <span className="text-gray-700">Track progress in each department</span>
+      </li>
+      <li className="flex gap-2 text-sm">
+        <span>💡</span>
+        <span className="text-gray-700">15 minutes daily = better retention</span>
+      </li>
+    </ul>
+  </div>
+);
 
 export default StudentDepartments;

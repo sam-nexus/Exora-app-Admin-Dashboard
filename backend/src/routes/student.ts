@@ -75,7 +75,8 @@ router.post('/courses/:courseId/mock-exam/start', authenticate, async (req: Auth
 // Returns field names that match the frontend: correctAnswers, totalQuestions
 router.post('/mock-exam/submit', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { courseId, answers } = req.body;
+    const { courseId, answers, mode, timeTaken } = req.body;
+    const userId = req.userId!;
 
     if (!courseId || !answers) {
       return res.status(400).json({ error: 'courseId and answers are required' });
@@ -93,7 +94,6 @@ router.post('/mock-exam/submit', authenticate, async (req: AuthRequest, res: Res
 
     let correctAnswers = 0;
     const results = questions.map((q) => {
-      // answers keyed by question id, value is letter "A"/"B"/"C"/"D"
       const userLetter: string = answers[q.id] ?? '';
       const userIndex = userLetter ? userLetter.charCodeAt(0) - 65 : -1;
       const isCorrect = userIndex === q.correct_index;
@@ -112,15 +112,36 @@ router.post('/mock-exam/submit', authenticate, async (req: AuthRequest, res: Res
     });
 
     const score = Math.round((correctAnswers / questions.length) * 100);
+    const isPassed = score >= 60;
+
+    // ── Save result to database ──────────────────────────────────────────────
+    const { error: saveError } = await supabaseAdmin.from('exam_results').insert({
+      user_id:       userId,
+      course_id:     courseId,
+      exam_type:     'mock',
+      mode:          mode || 'test',
+      score,
+      correct_count: correctAnswers,
+      total_count:   questions.length,
+      is_passed:     isPassed,
+      answers,
+      results,
+      time_taken:    timeTaken ?? null,
+    });
+
+    if (saveError) {
+      // Non-fatal: log but still return results to student
+      console.error('Failed to save mock exam result:', saveError.message);
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     res.json({
       score,
       totalQuestions: questions.length,
       correctAnswers,
-      // aliases so older frontend references still work
       totalCount: questions.length,
       correctCount: correctAnswers,
-      isPassed: score >= 60,
+      isPassed,
       passingScore: 60,
       results,
       timestamp: new Date().toISOString(),
@@ -201,43 +222,82 @@ router.post('/departments/:deptId/exit-exam/start', authenticate, async (req: Au
 // POST – Submit department exit exam
 router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { departmentId, answers } = req.body;
+    const { departmentId, courseId, answers, mode, timeTaken } = req.body;
+    const userId = req.userId!;
 
-    if (!departmentId || !answers) {
-      return res.status(400).json({ error: 'departmentId and answers are required' });
+    if (!answers) {
+      return res.status(400).json({ error: 'answers are required' });
     }
 
-    // Get all exit-type courses for this department
-    const { data: courses, error: coursesError } = await supabaseAdmin
-      .from('courses')
-      .select('id, name')
-      .eq('department_id', departmentId)
-      .eq('type', 'exit');
+    // Support both course-specific exit exam (courseId) and dept-wide (departmentId)
+    let courses: any[] = [];
 
-    if (coursesError) return res.status(500).json({ error: coursesError.message });
-    if (!courses || courses.length === 0) {
+    if (courseId) {
+      // Single course exit exam
+      const { data, error } = await supabaseAdmin
+        .from('courses')
+        .select('id, name')
+        .eq('id', courseId);
+      if (error) return res.status(500).json({ error: error.message });
+      courses = data || [];
+    } else if (departmentId) {
+      // Department-wide: all exit-type courses
+      const { data, error } = await supabaseAdmin
+        .from('courses')
+        .select('id, name')
+        .eq('department_id', departmentId)
+        .eq('type', 'exit');
+      if (error) return res.status(500).json({ error: error.message });
+      courses = data || [];
+
+      // Fallback: if no exit-type courses, try all courses in the dept
+      if (courses.length === 0) {
+        const { data: allCourses } = await supabaseAdmin
+          .from('courses')
+          .select('id, name')
+          .eq('department_id', departmentId);
+        courses = allCourses || [];
+      }
+    } else {
+      return res.status(400).json({ error: 'departmentId or courseId is required' });
+    }
+
+    if (courses.length === 0) {
       return res.status(404).json({ error: 'No exit exam courses found' });
     }
 
     let totalCorrect = 0;
     let totalQuestions = 0;
+    const allResults: any[] = [];
 
     const sectionResults = await Promise.all(
       courses.map(async (course) => {
         const { data: questions } = await supabaseAdmin
           .from('questions')
-          .select('id, correct_index')
+          .select('id, correct_index, question_text, options, explanation')
           .eq('course_id', course.id);
 
         const qs = questions || [];
         let sectionCorrect = 0;
 
-        qs.forEach((q) => {
+        const qResults = qs.map((q) => {
           const userLetter: string = answers[q.id] ?? '';
           const userIndex = userLetter ? userLetter.charCodeAt(0) - 65 : -1;
-          if (userIndex === q.correct_index) sectionCorrect++;
+          const isCorrect = userIndex === q.correct_index;
+          if (isCorrect) sectionCorrect++;
+          const correctLetter = String.fromCharCode(65 + (q.correct_index ?? 0));
+          return {
+            id: q.id,
+            text: q.question_text,
+            options: q.options,
+            userAnswer: userLetter || '(none)',
+            correctAnswer: correctLetter,
+            isCorrect,
+            explanation: q.explanation || '',
+          };
         });
 
+        allResults.push(...qResults);
         totalCorrect += sectionCorrect;
         totalQuestions += qs.length;
 
@@ -252,14 +312,37 @@ router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Res
     );
 
     const score = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+    const isPassed = score >= 50;
+
+    // ── Save result to database ──────────────────────────────────────────────
+    const { error: saveError } = await supabaseAdmin.from('exam_results').insert({
+      user_id:       userId,
+      course_id:     courseId || null,
+      department_id: departmentId || null,
+      exam_type:     'exit',
+      mode:          mode || 'test',
+      score,
+      correct_count: totalCorrect,
+      total_count:   totalQuestions,
+      is_passed:     isPassed,
+      answers,
+      results:       allResults,
+      time_taken:    timeTaken ?? null,
+    });
+
+    if (saveError) {
+      console.error('Failed to save exit exam result:', saveError.message);
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     res.json({
       score,
       correctCount: totalCorrect,
       totalCount: totalQuestions,
-      isPassed: score >= 50,
+      isPassed,
       passingScore: 50,
       sectionResults,
+      results: allResults,
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
@@ -553,6 +636,83 @@ router.post('/support-tickets', authenticate, async (req: AuthRequest, res: Resp
       .single();
 
     if (error) throw error;
+
+    // ── Notify all admins ────────────────────────────────────────────────────
+    try {
+      // Get student name for the notification message
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', userId)
+        .single();
+
+      const studentName = profile?.full_name || profile?.email || 'A student';
+
+      // Get all admins with their device tokens
+      const { data: admins } = await supabaseAdmin
+        .from('profiles')
+        .select('id, device_tokens')
+        .eq('role', 'admin');
+
+      if (admins && admins.length > 0) {
+        // Insert in-app notifications for each admin
+        await supabaseAdmin.from('notifications').insert(
+          admins.map((a: any) => ({
+            recipient_id: a.id,
+            title: `New support ticket: ${subject}`,
+            message: `${studentName} opened a support ticket (${category || 'technical'}): "${message.substring(0, 100)}${message.length > 100 ? '…' : ''}"`,
+            link: '/admin/support',
+            notification_type: 'support_ticket',
+            is_read: false,
+          }))
+        );
+
+        // Update Firebase unread counts for admins
+        if (admin.apps.length > 0) {
+          const database = admin.database();
+          for (const adminUser of admins) {
+            try {
+              const snapshot = await database
+                .ref(`notifications/${adminUser.id}/unread_count`)
+                .get();
+              const currentCount = snapshot.val() || 0;
+              await database
+                .ref(`notifications/${adminUser.id}/unread_count`)
+                .set(currentCount + 1);
+            } catch (fbErr) {
+              console.error('Firebase update error:', fbErr);
+            }
+          }
+        }
+
+        // Send FCM push notification to admin devices
+        const tokens = admins
+          .flatMap((a: any) => (Array.isArray(a.device_tokens) ? a.device_tokens : []))
+          .map((t: any) => t.token)
+          .filter(Boolean);
+
+        if (tokens.length && admin.apps.length > 0) {
+          await admin
+            .messaging()
+            .sendToDevice(tokens, {
+              notification: {
+                title: '📩 New Support Ticket',
+                body: `${studentName}: ${subject}`,
+              },
+              data: {
+                link: '/admin/support',
+                type: 'support_ticket',
+                ticketId: String(data.id),
+              },
+            })
+            .catch((e: any) => console.error('FCM push error:', e));
+        }
+      }
+    } catch (notifyErr: any) {
+      // Non-fatal — ticket is saved, notification failure shouldn't block response
+      console.error('Admin notification failed:', notifyErr.message);
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     res.status(201).json({ message: 'Ticket submitted', ticketId: data.id });
   } catch (err: any) {
