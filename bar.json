@@ -1,1599 +1,1353 @@
 [
   {
-    "question_number": 4,
     "question": "Which of the following is an example of a vulnerability in an information system?",
-    "options": {
-      "A": "A hacker launching a phishing attack",
-      "B": "An employee using a weak password",
-      "C": "Financial loss caused by data theft",
-      "D": "A cybercriminal attempting unauthorized access"
-    },
-    "correct_answer": "B",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "A hacker launching a phishing attack",
+      "An employee using a weak password",
+      "Financial loss caused by data theft",
+      "A cybercriminal attempting unauthorized access"
+    ],
+    "correct_index": 1,
+    "explanation": "A vulnerability is an internal flaw, loophole, or weakness within a system's design, implementation, or behavior. A weak password is a user-side weakness that can be exploited. Options A and D are external threats (the actors or actions trying to exploit a weakness), and Option C is the business impact or consequence of an attack."
   },
   {
-    "question_number": 5,
     "question": "What is a threat to an information system?",
-    "options": {
-      "A": "A flaw in software that can be exploited",
-      "B": "A weakness in security controls",
-      "C": "Any potential danger that can exploit a vulnerability and cause harm",
-      "D": "The impact resulting from a security incident"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "A flaw in software that can be exploited",
+      "A weakness in security controls",
+      "Any potential danger that can exploit a vulnerability and cause harm",
+      "The impact resulting from a security incident"
+    ],
+    "correct_index": 2,
+    "explanation": "A threat is an outside element, force, or potential danger that has the capacity to exploit an existing security vulnerability to inflict harm or damage. Options A and B describe vulnerabilities (internal flaws/weaknesses), and Option D describes the ultimate impact or consequence of a breach."
   },
   {
-    "question_number": 6,
     "question": "An organization discovers that multiple employees have access to confidential payroll records, even though their job responsibilities do not require such access. Which security principle is being violated?",
-    "options": {
-      "A": "Data redundancy",
-      "B": "Least privilege",
-      "C": "Data compression",
-      "D": "Fault tolerance"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Data redundancy",
+      "Least privilege",
+      "Data compression",
+      "Fault tolerance"
+    ],
+    "correct_index": 1,
+    "explanation": "The principle of Least Privilege dictates that users should only be granted the minimum level of system access necessary to perform their specific job functions. Options A (storing data in multiple places), C (reducing file sizes), and D (system survival during hardware failure) are completely unrelated to access control security principles."
   },
   {
-    "question_number": 7,
     "question": "A company is designing a secure information system. Which of the following design decisions best reduces the risk of unauthorized access?",
-    "options": {
-      "A": "Using the same password for all users",
-      "B": "Disabling audit logs to improve performance",
-      "C": "Implementing multi-factor authentication and role-based access control",
-      "D": "Allowing unrestricted access to sensitive data"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Using the same password for all users",
+      "Disabling audit logs to improve performance",
+      "Implementing multi-factor authentication and role-based access control",
+      "Allowing unrestricted access to sensitive data"
+    ],
+    "correct_index": 2,
+    "explanation": "Combining multi-factor authentication (MFA) with role-based access control (RBAC) builds a robust security architecture by verifying identity through multiple layers and restricting actions based on a specific user's job role. Options A and D actively introduce fatal security flaws, while Option B removes visibility into malicious actions."
   },
   {
-    "question_number": 8,
     "question": "While configuring a new user account, which action demonstrates the proper application of information systems security practices?",
-    "options": {
-      "A": "Sharing the account password with coworkers",
-      "B": "Assigning administrator privileges to all users",
-      "C": "Enabling a strong password and requiring periodic password changes",
-      "D": "Disabling authentication requirements"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Sharing the account password with coworkers",
+      "Assigning administrator privileges to all users",
+      "Enabling a strong password and requiring periodic password changes",
+      "Disabling authentication requirements"
+    ],
+    "correct_index": 2,
+    "explanation": "Enforcing complex passwords and forcing regular password rotations reduces the window of opportunity for credential-cracking or credential-stuffing attacks. Options A, B, and D describe terrible security anti-patterns that directly invite unauthorized access and credential compromise."
   },
   {
-    "question_number": 9,
     "question": "Which of the following is a common network device used to forward data packets between different networks?",
-    "options": {
-      "A": "Switch",
-      "B": "Router",
-      "C": "Bridge",
-      "D": "Repeater"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Switch",
+      "Router",
+      "Bridge",
+      "Repeater"
+    ],
+    "correct_index": 1,
+    "explanation": "A router operates at Layer 3 (Network Layer) of the OSI model and is explicitly responsible for reading packet headers to determine the most efficient paths to forward traffic between entirely separate networks. Option A connects devices within the *same* local network, Option C connects distinct network segments, and Option D simply boosts an electrical signal."
   },
   {
-    "question_number": 10,
     "question": "A network administrator needs to remotely configure a switch securely. Which protocol should be used?",
-    "options": {
-      "A": "Telnet",
-      "B": "FTP",
-      "C": "SSH",
-      "D": "TFTP"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Telnet",
+      "FTP",
+      "SSH",
+      "TFTP"
+    ],
+    "correct_index": 2,
+    "explanation": "SSH (Secure Shell) creates an encrypted terminal connection over an unsecure network, keeping administrative login credentials safe from sniffers. Option A (Telnet) transmits data in clear, human-readable text. Options B (FTP) and D (TFTP) are unencrypted file transfer protocols, not remote console configuration tools."
   },
   {
-    "question_number": 11,
     "question": "A company wants to separate the Accounting and Human Resources departments into different logical networks while using the same physical switch infrastructure. What should the administrator create?",
-    "options": {
-      "A": "Access Control Lists",
-      "B": "VLANs",
-      "C": "Routing Tables",
-      "D": "DHCP Pools"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Access Control Lists",
+      "VLANs",
+      "Routing Tables",
+      "DHCP Pools"
+    ],
+    "correct_index": 1,
+    "explanation": "VLANs (Virtual Local Area Networks) allow network engineers to logically slice a single physical switch into isolated broadcast domains, separating department traffic. Option A filters traffic rather than segmenting networks, Option C maps paths between different networks, and Option D is for automated IP address distribution."
   },
   {
-    "question_number": 12,
     "question": "Which protocol is commonly used to monitor network devices and detect configuration or performance changes?",
-    "options": {
-      "A": "SMTP",
-      "B": "SNMP",
-      "C": "POP3",
-      "D": "ARP"
-    },
-    "correct_answer": "B",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "SMTP",
+      "SNMP",
+      "POP3",
+      "ARP"
+    ],
+    "correct_index": 1,
+    "explanation": "SNMP (Simple Network Management Protocol) allows network monitoring systems to query hardware status, track bandwidth usage, and collect alerts from managed network devices. Options A (SMTP) and C (POP3) are mail protocols used for sending and receiving email, while Option D (ARP) resolves IP addresses to physical MAC addresses."
   },
   {
-    "question_number": 13,
     "question": "Which service is primarily used to collect, store, and review network device event logs?",
-    "options": {
-      "A": "DNS Server",
-      "B": "Syslog Server",
-      "C": "DHCP Server",
-      "D": "Proxy Server"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "DNS Server",
+      "Syslog Server",
+      "DHCP Server",
+      "Proxy Server"
+    ],
+    "correct_index": 1,
+    "explanation": "A Syslog server acts as a centralized repository designed to catch, organize, and store log entries and system alerts generated across hundreds of devices. Option A maps domains to IPs, Option C leases network addresses, and Option D acts as an intermediary gateway for internet requests."
   },
   {
-    "question_number": 14,
     "question": "After configuring a router, which command should be used to save the running configuration so that it remains after a reboot?",
-    "options": {
-      "A": "show running-config",
-      "B": "reload",
-      "C": "copy running-config startup-config",
-      "D": "ping"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "show running-config",
+      "reload",
+      "copy running-config startup-config",
+      "ping"
+    ],
+    "correct_index": 2,
+    "explanation": "In Cisco IOS environments, changes live in the volatile volatile RAM ('running-config'). Executing 'copy running-config startup-config' clones these active settings into NVRAM so they load on the next boot cycle. Option A just views current changes, Option B restarts the system (erasing unsaved edits), and Option D tests connectivity."
   },
   {
-    "question_number": 15,
     "question": "A network administrator is designing a network that automatically assigns IP addresses to client devices. Which protocol should be implemented and configured?",
-    "options": {
-      "A": "DHCP",
-      "B": "ICMP",
-      "C": "ARP",
-      "D": "SMTP"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "DHCP",
+      "ICMP",
+      "ARP",
+      "SMTP"
+    ],
+    "correct_index": 0,
+    "explanation": "DHCP (Dynamic Host Configuration Protocol) completely automates IP address allocation, dynamically leasing subnets, gateways, and DNS settings to devices upon joining. Option B handles status and diagnostics (like ping requests), Option C resolves Layer 3 to Layer 2 addresses, and Option D is strictly an email relay system."
   },
   {
-    "question_number": 16,
     "question": "Why is regular network management important in an organization?",
-    "options": {
-      "A": "To increase the size of network cables",
-      "B": "To ensure network performance, security, and reliability",
-      "C": "To eliminate the need for network devices",
-      "D": "To prevent users from accessing the network"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To increase the size of network cables",
+      "To ensure network performance, security, and reliability",
+      "To eliminate the need for network devices",
+      "To prevent users from accessing the network"
+    ],
+    "correct_index": 1,
+    "explanation": "Consistent network management ensures that hardware components stay securely patched, outages are minimized through proactive health monitoring, and data flows smoothly without bottlenecks. Option A is a physical/manufacturing characteristic, Option C is impossible since networks require physical architecture, and Option D defeats the purpose of building a network."
   },
   {
-    "question_number": 17,
     "question": "A network administrator wants to verify whether a remote server is reachable over the network. Which command should be used?",
-    "options": {
-      "A": "mkdir",
-      "B": "ping",
-      "C": "chmod",
-      "D": "passwd"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "mkdir",
+      "ping",
+      "chmod",
+      "passwd"
+    ],
+    "correct_index": 1,
+    "explanation": "The 'ping' utility relies on ICMP Echo Request packets to check if a remote IP target is awake, active, and accessible across network hops. Options A (make directory), C (change file permissions), and D (change account password) are localized filesystem and OS commands, not networking diagnostic utilities."
   },
   {
-    "question_number": 18,
     "question": "A network switch is not responding properly. What is the most appropriate first step for an administrator?",
-    "options": {
-      "A": "Replace all network cables immediately",
-      "B": "Check the device status and network connectivity",
-      "C": "Delete the switch configuration",
-      "D": "Reinstall the operating system on all connected computers"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Replace all network cables immediately",
+      "Check the device status and network connectivity",
+      "Delete the switch configuration",
+      "Reinstall the operating system on all connected computers"
+    ],
+    "correct_index": 1,
+    "explanation": "Standard troubleshooting dictates initiating a basic diagnostic triage first—gathering status indicators, checking physical links, and examining interface connectivity before executing destructive or high-cost modifications. Options A, C, and D are extreme, destructive, and costly actions to execute without a concrete diagnosis."
   },
   {
-    "question_number": 19,
     "question": "A system administrator needs to create a new user account named \"john\" on a Linux system. Which command should be used?",
-    "options": {
-      "A": "adduser john",
-      "B": "ping john",
-      "C": "chmod john",
-      "D": "mkdir john"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "adduser john",
+      "ping john",
+      "chmod john",
+      "mkdir john"
+    ],
+    "correct_index": 0,
+    "explanation": "The 'adduser' (or 'useradd') utility is the native standard command across Linux flavors used to initialize a new user profile, register UID parameters, and create their corresponding home directory. Option B diagnoses network endpoints, Option C adjusts system read/write flags, and Option D is used to make plain directories."
   },
   {
-    "question_number": 20,
     "question": "An administrator wants to create a new group called \"developers\" and assign users to it. What is the primary purpose of creating groups?",
-    "options": {
-      "A": "To increase disk space",
-      "B": "To organize users and simplify permission management",
-      "C": "To encrypt user files",
-      "D": "To improve network speed"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To increase disk space",
+      "To organize users and simplify permission management",
+      "To encrypt user files",
+      "To improve network speed"
+    ],
+    "correct_index": 1,
+    "explanation": "Grouping objects allows administrators to apply read, write, or execute rules across an entire team with one command, preventing the nightmare of managing security configurations individually. Option A is governed by storage configurations, Option C requires cryptographic keys, and Option D relies on networking pipelines."
   },
   {
-    "question_number": 21,
     "question": "A Linux administrator wants to view the available and used disk space on all mounted file systems. Which command should be used?",
-    "options": {
-      "A": "ps",
-      "B": "df -h",
-      "C": "chmod",
-      "D": "uname"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "ps",
+      "df -h",
+      "chmod",
+      "uname"
+    ],
+    "correct_index": 1,
+    "explanation": "The 'df' command stands for 'disk free,' and appending the '-h' flag prints storage capacities in human-readable notation (like Gigabytes or Megabytes). Option A lists active OS processing threads, Option C changes access flags, and Option D isolates system distribution metadata."
   },
   {
-    "question_number": 22,
     "question": "A file contains sensitive information and should only be readable and writable by its owner. Which permission setting best satisfies this requirement?",
-    "options": {
-      "A": "rw-r--r--",
-      "B": "rwxrwxrwx",
-      "C": "rw-------",
-      "D": "r--r--r--"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "rw-r--r--",
+      "rwxrwxrwx",
+      "rw-------",
+      "r--r--r--"
+    ],
+    "correct_index": 2,
+    "explanation": "In standard Linux permission syntax, the first triad represents the owner, the second represents the group, and the third represents everyone else. A value of 'rw-------' grants read and write access strictly to the owner while completely blocking access from group and global entities. Options A and D open read access to the public, while Option B leaves full control entirely open to anyone."
   },
   {
-    "question_number": 23,
     "question": "An administrator needs to create a backup of the /home directory before a system upgrade. What is the primary purpose of performing this backup?",
-    "options": {
-      "A": "To increase CPU performance",
-      "B": "To recover data if the upgrade causes data loss or corruption",
-      "C": "To reduce network traffic",
-      "D": "To install software updates automatically"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To increase CPU performance",
+      "To recover data if the upgrade causes data loss or corruption",
+      "To reduce network traffic",
+      "To install software updates automatically"
+    ],
+    "correct_index": 1,
+    "explanation": "Backups serve as a data restoration safety net; if a major operating system upgrade fails, kernel-panics, or wipes memory tables, user folders can be fully restored from the standalone image. Options A, C, and D are physical system behaviors that cannot be created by simply copying static archive files."
   },
   {
-    "question_number": 24,
     "question": "Which protocol provides secure remote access to administer servers and network devices?",
-    "options": {
-      "A": "FTP",
-      "B": "Telnet",
-      "C": "SSH",
-      "D": "HTTP"
-    },
-    "correct_answer": "C",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "FTP",
+      "Telnet",
+      "SSH",
+      "HTTP"
+    ],
+    "correct_index": 2,
+    "explanation": "SSH (Secure Shell) establishes an uncompromised administrative session across network backbones by running all commands, payloads, and handshakes through an encrypted tunnel. Option A transfers raw files, Option B offers unencrypted administrative entry, and Option D reads web application objects without access session tunnels."
   },
   {
-    "question_number": 25,
     "question": "What is the primary purpose of a communication protocol in a computer network?",
-    "options": {
-      "A": "To increase the physical size of the network",
-      "B": "To define rules for data exchange between devices",
-      "C": "To reduce the number of computers on a network",
-      "D": "To store user data permanently"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To increase the physical size of the network",
+      "To define rules for data exchange between devices",
+      "To reduce the number of computers on a network",
+      "To store user data permanently"
+    ],
+    "correct_index": 1,
+    "explanation": "Protocols provide standard syntactic, structural, and error-checking frameworks that guarantee entirely different pieces of hardware can accurately parse and interpret each other's signals. Options A, C, and D represent physical installations, resource limits, or local storage activities that are not protocols."
   },
   {
-    "question_number": 26,
     "question": "Which transmission medium uses light signals to transmit data?",
-    "options": {
-      "A": "Twisted-pair cable",
-      "B": "Coaxial cable",
-      "C": "Fiber-optic cable",
-      "D": "Telephone line"
-    },
-    "correct_answer": "C",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Twisted-pair cable",
+      "Coaxial cable",
+      "Fiber-optic cable",
+      "Telephone line"
+    ],
+    "correct_index": 2,
+    "explanation": "Fiber-optic lines swap traditional electrical cables for glass or plastic cores, leveraging total internal reflection to bounce light-producing laser or LED signals over long distances at high speeds. Options A, B, and D rely entirely on copper wire strands that route electrical currents."
   },
   {
-    "question_number": 27,
     "question": "Which statement best describes data transmission?",
-    "options": {
-      "A": "The process of converting data into files for storage",
-      "B": "The transfer of data between two or more devices through a communication medium",
-      "C": "The process of creating network hardware",
-      "D": "The physical installation of network cables"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "The process of converting data into files for storage",
+      "The transfer of data between two or more devices through a communication medium",
+      "The process of creating network hardware",
+      "The physical installation of network cables"
+    ],
+    "correct_index": 1,
+    "explanation": "Data transmission is fundamentally defined as sending binary information packets across a shared media link (like air, copper, or fiber) between communication terminals. Option A describes database serialization, and Options C and D relate to infrastructure assembly."
   },
   {
-    "question_number": 28,
     "question": "A network technician is troubleshooting a problem where data is not being correctly formatted for transmission between applications. Which OSI layer is most likely involved?",
-    "options": {
-      "A": "Physical Layer",
-      "B": "Data Link Layer",
-      "C": "Presentation Layer",
-      "D": "Network Layer"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Physical Layer",
+      "Data Link Layer",
+      "Presentation Layer",
+      "Network Layer"
+    ],
+    "correct_index": 2,
+    "explanation": "Layer 6—the Presentation Layer—handles the contextual transformation of data, including character encoding translation (like ASCII/EBCDIC), compression, and encryption/decryption tasks. Option A targets raw bits, Option B deals with local hardware switching, and Option D handles global network routing."
   },
   {
-    "question_number": 29,
     "question": "A router forwards packets from one network to another based on logical addressing. Which OSI layer performs this function?",
-    "options": {
-      "A": "Data Link Layer",
-      "B": "Network Layer",
-      "C": "Session Layer",
-      "D": "Application Layer"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Data Link Layer",
+      "Network Layer",
+      "Session Layer",
+      "Application Layer"
+    ],
+    "correct_index": 1,
+    "explanation": "The Network Layer (Layer 3) handles end-to-end packet routing and abstract logical addressing (like IPv4/IPv6 addresses). Option A uses physical MAC mapping keys, Option C manages state connections, and Option D hosts consumer-facing software frameworks."
   },
   {
-    "question_number": 30,
     "question": "Which layer of the TCP/IP model corresponds most closely to the Transport Layer of the OSI model?",
-    "options": {
-      "A": "Internet Layer",
-      "B": "Network Access Layer",
-      "C": "Transport Layer",
-      "D": "Application Layer"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Internet Layer",
+      "Network Access Layer",
+      "Transport Layer",
+      "Application Layer"
+    ],
+    "correct_index": 2,
+    "explanation": "Both individual layered structural designs name this matching layer the Transport Layer. It is engineered around the management of connection handshakes and packet streams using TCP and UDP. Option A lines up with OSI's Network Layer, Option B acts like OSI Layers 1 and 2, and Option D combines OSI Layers 5, 6, and 7."
   },
   {
-    "question_number": 31,
     "question": "What is a major difference between the OSI and TCP/IP models?",
-    "options": {
-      "A": "The OSI model has 7 layers, while the TCP/IP model has 4 layers",
-      "B": "The TCP/IP model has 7 layers, while the OSI model has 4 layers",
-      "C": "The OSI model does not support networking",
-      "D": "The TCP/IP model does not include protocols"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "The OSI model has 7 layers, while the TCP/IP model has 4 layers",
+      "The TCP/IP model has 7 layers, while the OSI model has 4 layers",
+      "The OSI model does not support networking",
+      "The TCP/IP model does not include protocols"
+    ],
+    "correct_index": 0,
+    "explanation": "The ISO standard OSI schematic outlines seven distinct conceptual layers. In contrast, the operational defense-born TCP/IP framework condenses those network concepts into four practical functional layers. Option B gets this structural count completely backward, while Options C and D are historically and technically incorrect."
   },
   {
-    "question_number": 32,
     "question": "Which of the following is a fundamental component of an Android application?",
-    "options": {
-      "A": "Compiler",
-      "B": "Activity",
-      "C": "Database Server",
-      "D": "Router"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Compiler",
+      "Activity",
+      "Database Server",
+      "Router"
+    ],
+    "correct_index": 1,
+    "explanation": "An Activity is a core Android application component that provides the single focused user interface layout screens that mobile consumers see and interact with. Option A converts source script lines into runtimes, Option C belongs to remote backend services, and Option D handles routing data across network links."
   },
   {
-    "question_number": 33,
     "question": "Which Android lifecycle method is called when an Activity is first created?",
-    "options": {
-      "A": "onResume()",
-      "B": "onPause()",
-      "C": "onCreate()",
-      "D": "onStop()"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "onResume()",
+      "onPause()",
+      "onCreate()",
+      "onStop()"
+    ],
+    "correct_index": 2,
+    "explanation": "The Android OS fires the entry hook 'onCreate()' first to initialize application state, inflate layout XML views, and wire up event callbacks. Option A runs right as users start interacting with the view, Option B calls when focus shifts, and Option C processes window dismissals."
   },
   {
-    "question_number": 34,
     "question": "In Android, what is an event?",
-    "options": {
-      "A": "A type of database table",
-      "B": "An action or occurrence detected by the application, such as a button click",
-      "C": "A network protocol",
-      "D": "A multimedia file"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "A type of database table",
+      "An action or occurrence detected by the application, such as a button click",
+      "A network protocol",
+      "A multimedia file"
+    ],
+    "correct_index": 1,
+    "explanation": "Events are asynchronous telemetry indicators triggered by external user interactions (like display taps, device tilts, or gestures) that signal the app engine to execute a responsive block of code. Options A, C, and D are data structures, protocol stacks, or static assets."
   },
   {
-    "question_number": 35,
     "question": "Which interface is commonly used to handle button click events in Android?",
-    "options": {
-      "A": "Runnable",
-      "B": "Serializable",
-      "C": "OnClickListener",
-      "D": "Comparable"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Runnable",
+      "Serializable",
+      "OnClickListener",
+      "Comparable"
+    ],
+    "correct_index": 2,
+    "explanation": "The View.OnClickListener native interface exposes a single structured callback method, 'onClick(View v)', which intercepts tap gestures routed through a targeted layout component. Option A manages custom execution thread tasks, Option B handles byte-stream data conversions, and Option D handles sorting logic."
   },
   {
-    "question_number": 36,
     "question": "Which Android component is commonly used to display images in an application?",
-    "options": {
-      "A": "TextView",
-      "B": "ImageView",
-      "C": "ListView",
-      "D": "EditText"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "TextView",
+      "ImageView",
+      "ListView",
+      "EditText"
+    ],
+    "correct_index": 1,
+    "explanation": "The ImageView class is specifically designed to render graphical resources, bitmaps, or vector illustrations onto an active application screen. Option A displays plain text strings, Option C displays scrolling rows of data, and Option D handles user text input fields."
   },
   {
-    "question_number": 37,
     "question": "Which Android class is commonly used to play audio and video files?",
-    "options": {
-      "A": "MediaPlayer",
-      "B": "FileReader",
-      "C": "Intent",
-      "D": "BroadcastReceiver"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "MediaPlayer",
+      "FileReader",
+      "Intent",
+      "BroadcastReceiver"
+    ],
+    "correct_index": 0,
+    "explanation": "The Android MediaPlayer framework includes the necessary built-in decoders and audio routing logic required to steam, control, and play down both local and remote multimedia assets. Option B ingests text data buffers, Option C coordinates application transitions, and Option D catches OS system alerts."
   },
   {
-    "question_number": 38,
     "question": "A developer wants to test an Android application without using a physical device. Which Android Studio feature should be used?",
-    "options": {
-      "A": "Logcat",
-      "B": "Emulator (Android Virtual Device)",
-      "C": "Gradle Build Tool",
-      "D": "SDK Manager"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Logcat",
+      "Emulator (Android Virtual Device)",
+      "Gradle Build Tool",
+      "SDK Manager"
+    ],
+    "correct_index": 1,
+    "explanation": "The Android Emulator creates an isolated virtual instance of a mobile phone architecture on your desktop screen, letting you test apps across various hardware specifications. Option A displays live console log feeds, Option C handles dependencies and compilation, and Option D downloads API toolsets."
   },
   {
-    "question_number": 39,
     "question": "After writing code for an Android application, which action should a developer perform to identify syntax errors before running the application?",
-    "options": {
-      "A": "Uninstall the SDK",
-      "B": "Build/Compile the project in Android Studio",
-      "C": "Delete the project cache",
-      "D": "Restart the operating system"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Uninstall the SDK",
+      "Build/Compile the project in Android Studio",
+      "Delete the project cache",
+      "Restart the operating system"
+    ],
+    "correct_index": 1,
+    "explanation": "Compiling or building the project forces the underlying system compilers to parse your code, ensuring it satisfies all language grammar rules and catching syntax or structural errors before deployment. Option A removes your development tools, Option C wipes build optimizations, and Option D reboots your PC."
   },
   {
-    "question_number": 40,
     "question": "What is the primary purpose of server-side scripting in web applications?",
-    "options": {
-      "A": "To style web pages using CSS",
-      "B": "To process requests and generate dynamic content on the server",
-      "C": "To display images in a browser",
-      "D": "To increase internet speed"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To style web pages using CSS",
+      "To process requests and generate dynamic content on the server",
+      "To display images in a browser",
+      "To increase internet speed"
+    ],
+    "correct_index": 1,
+    "explanation": "Server-side scripting handles database connections, user authentication checks, and business logic on remote infrastructure, delivering tailored HTML layouts down to the client. Option A handles visual presentation rules, Option C is a client-side layout behavior, and Option D is down to network hardware parameters."
   },
   {
-    "question_number": 41,
     "question": "Which of the following is a server-side scripting language commonly used for web development?",
-    "options": {
-      "A": "HTML",
-      "B": "CSS",
-      "C": "PHP",
-      "D": "XML"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "HTML",
+      "CSS",
+      "PHP",
+      "XML"
+    ],
+    "correct_index": 2,
+    "explanation": "PHP is an open-source, server-side language designed to interface with databases and generate dynamic web components directly on the host machine. Options A and D are markup languages used to structure data and content, while Option B defines visual layout rules."
   },
   {
-    "question_number": 42,
     "question": "A developer is building an online library management system that allows users to search, borrow, and return books. Which feature is most important for creating this web-based application?",
-    "options": {
-      "A": "Static HTML pages only",
-      "B": "Dynamic interaction between the user interface, server, and database",
-      "C": "A text editor without a web server",
-      "D": "A local file system only"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Static HTML pages only",
+      "Dynamic interaction between the user interface, server, and database",
+      "A text editor without a web server",
+      "A local file system only"
+    ],
+    "correct_index": 1,
+    "explanation": "A full-featured library system requires a dynamic web architecture that processes real-time search queries, modifies database records when books are checked out, and updates the user interface automatically. Options A, C, and D are static or offline workflows that can't manage live, multi-user business transactions."
   },
   {
-    "question_number": 43,
     "question": "When developing a web-based application that stores user information, which component should be designed to persistently store the data?",
-    "options": {
-      "A": "Browser cache",
-      "B": "Database",
-      "C": "CSS stylesheet",
-      "D": "Web browser"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Browser cache",
+      "Database",
+      "CSS stylesheet",
+      "Web browser"
+    ],
+    "correct_index": 1,
+    "explanation": "Databases use persistent storage mechanisms like solid-state disks to keep user accounts and records safe from system restarts or cache wipes. Options A and D handle transient data locally on the user's device, while Option B defines static layout styling mechanics."
   },
   {
-    "question_number": 44,
     "question": "A web developer wants to create the structure of a web page containing headings, paragraphs, and links. Which language should be used?",
-    "options": {
-      "A": "PHP",
-      "B": "JSP",
-      "C": "HTML",
-      "D": "Servlet"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "PHP",
+      "JSP",
+      "HTML",
+      "Servlet"
+    ],
+    "correct_index": 2,
+    "explanation": "HTML (HyperText Markup Language) provides the core structural components—like text tags, image placeholders, and hyperlinks—that define a web page's layout. Options A, B, and D are backend technologies used to generate these structural blocks dynamically."
   },
   {
-    "question_number": 45,
     "question": "A web application needs to process user input submitted from a form and store it in a database. Which technology is most appropriate for handling the server-side processing?",
-    "options": {
-      "A": "HTML",
-      "B": "CSS",
-      "C": "PHP",
-      "D": "XML"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "HTML",
+      "CSS",
+      "PHP",
+      "XML"
+    ],
+    "correct_index": 2,
+    "explanation": "PHP parses incoming HTTP POST requests, validates user data input fields, and runs the necessary database commands to write that information to storage. Options A, B, and D are client-side formatting or data transmission formats that can't run backend logic."
   },
   {
-    "question_number": 46,
     "question": "A developer wants users to enter their name and email address on a website. Which HTML element should be used to collect this information?",
-    "options": {
-      "A": "<table>",
-      "B": "<form>",
-      "C": "<img>",
-      "D": "<div>"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "<table>",
+      "<form>",
+      "<img>",
+      "<div>"
+    ],
+    "correct_index": 1,
+    "explanation": "The `<form>` tag defines an interactive region that packages input fields together, enabling users to enter data and submit it to a server. Option A formats structured tabular matrices, Option C displays graphical assets, and Option D organizes layout blocks."
   },
   {
-    "question_number": 47,
     "question": "After a user submits a registration form, what is typically used to store the submitted data permanently?",
-    "options": {
-      "A": "CSS file",
-      "B": "JavaScript variable",
-      "C": "Database",
-      "D": "Browser history"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "CSS file",
+      "JavaScript variable",
+      "Database",
+      "Browser history"
+    ],
+    "correct_index": 2,
+    "explanation": "A database acts as a permanent ledger, writing structural data blocks onto non-volatile hardware media to ensure user profiles survive long-term. Option A handles visual style rules, Option B stores data temporarily in volatile RAM, and Option D is simply a record of visited URLs."
   },
   {
-    "question_number": 48,
     "question": "While designing an e-commerce website, which feature is essential for allowing customers to purchase products?",
-    "options": {
-      "A": "Guestbook",
-      "B": "Shopping cart",
-      "C": "Sitemap only",
-      "D": "Visitor counter"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Guestbook",
+      "Shopping cart",
+      "Sitemap only",
+      "Visitor counter"
+    ],
+    "correct_index": 1,
+    "explanation": "A shopping cart tracks selected product IDs, quantities, and pricing variants across sessions, making it the foundational component for checkout transactions. Options A, C, and D provide secondary navigation or engagement metrics but can't handle modern sales workflows."
   },
   {
-    "question_number": 49,
     "question": "An online store should allow customers to securely enter payment information. Which design consideration is most important?",
-    "options": {
-      "A": "Large image files",
-      "B": "Animated backgrounds",
-      "C": "Secure data transmission using HTTPS",
-      "D": "Multiple font styles"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Large image files",
+      "Animated backgrounds",
+      "Secure data transmission using HTTPS",
+      "Multiple font styles"
+    ],
+    "correct_index": 2,
+    "explanation": "HTTPS wraps web data in an encrypted SSL/TLS tunnel, preventing malicious actors from snooping on sensitive credit card numbers or personal details over the wire. Options A, B, and D focus entirely on frontend visuals and have zero impact on data security."
   },
   {
-    "question_number": 50,
     "question": "Which protocol is primarily used for transferring web pages between a web server and a web browser?",
-    "options": {
-      "A": "FTP",
-      "B": "SMTP",
-      "C": "HTTP",
-      "D": "DHCP"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "FTP",
+      "SMTP",
+      "HTTP",
+      "DHCP"
+    ],
+    "correct_index": 2,
+    "explanation": "HTTP (HyperText Transfer Protocol) governs request-response transactions across the web, routing structured HTML documents from servers back to client browsers. Option A handles raw bulk file transfers, Option B is for sending emails, and Option D automates dynamic network IP addressing."
   },
   {
-    "question_number": 51,
     "question": "A web developer is creating a website that displays different content based on user input and database records. What type of web page should be developed?",
-    "options": {
-      "A": "Static web page",
-      "B": "Dynamic web page",
-      "C": "Plain text page",
-      "D": "Offline web page"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Static web page",
+      "Dynamic web page",
+      "Plain text page",
+      "Offline web page"
+    ],
+    "correct_index": 1,
+    "explanation": "Dynamic web pages run on-the-fly database queries to construct custom HTML structures tailored to individual user sessions or parameters. Option A serves identical, unchangeable files to everyone, Option C lacks layout styling, and Option D cannot pull down live remote server updates."
   },
   {
-    "question_number": 52,
     "question": "A user enters a website address into a browser. Which protocol is responsible for translating the domain name into an IP address?",
-    "options": {
-      "A": "HTTP",
-      "B": "FTP",
-      "C": "DNS",
-      "D": "SMTP"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "HTTP",
+      "FTP",
+      "DNS",
+      "SMTP"
+    ],
+    "correct_index": 2,
+    "explanation": "DNS (Domain Name System) acts as the phonebook of the internet, mapping human-friendly domain names (like example.com) to the machine-routable IP addresses needed to locate servers. Options A, B, and C handle document rendering, file moving, and email management, not name resolution."
   },
   {
-    "question_number": 53,
     "question": "When a browser requests a web page from a web server, which protocol is typically used to transfer the page?",
-    "options": {
-      "A": "HTTP",
-      "B": "POP3",
-      "C": "DHCP",
-      "D": "ARP"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "HTTP",
+      "POP3",
+      "DHCP",
+      "ARP"
+    ],
+    "correct_index": 0,
+    "explanation": "HTTP handles the primary web transactions that request, download, and render structured web page assets inside client browsers. Option B pulls down email store files, Option C manages local ip configuration handshakes, and Option D translates network addresses into physical MAC identifiers."
   },
   {
-    "question_number": 54,
     "question": "Which of the following is a commonly used client-side web development tool?",
-    "options": {
-      "A": "Web Browser Developer Tools",
-      "B": "Database Server",
-      "C": "Mail Server",
-      "D": "DNS Server"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Web Browser Developer Tools",
+      "Database Server",
+      "Mail Server",
+      "DNS Server"
+    ],
+    "correct_index": 0,
+    "explanation": "Browser DevTools are built right into modern web browsers, giving developers real-time insights to debug client-side JavaScript, edit DOM elements on the fly, and inspect CSS performance. Options B, C, and D are backend infrastructure components that run out of sight on remote systems."
   },
   {
-    "question_number": 55,
     "question": "Which language is primarily executed on the client side to add interactivity to web pages?",
-    "options": {
-      "A": "SQL",
-      "B": "PHP",
-      "C": "JavaScript",
-      "D": "JSP"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "SQL",
+      "PHP",
+      "JavaScript",
+      "JSP"
+    ],
+    "correct_index": 2,
+    "explanation": "JavaScript runs directly within client-side browsers, enabling immediate interactive changes like form validation alerts, map animations, and dynamic component updates without needing a full page reload. Option A handles database querying, while Options B and D are server-side languages."
   },
   {
-    "question_number": 56,
     "question": "A developer wants to change the font color and layout of a web page. Which technology should be used?",
-    "options": {
-      "A": "HTML",
-      "B": "CSS",
-      "C": "JavaScript",
-      "D": "XML"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "XML"
+    ],
+    "correct_index": 1,
+    "explanation": "CSS (Cascading Style Sheets) separates web page presentation from structural data, allowing designers to manage typography, colors, responsive grids, and margins across an entire site. Option A defines plain content hierarchies, Option B handles script logic, and Option D holds structured text records."
   },
   {
-    "question_number": 57,
     "question": "A button on a web page should display an alert message when clicked. Which technology is most appropriate for implementing this functionality?",
-    "options": {
-      "A": "HTML",
-      "B": "CSS",
-      "C": "JavaScript",
-      "D": "SQL"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "SQL"
+    ],
+    "correct_index": 2,
+    "explanation": "JavaScript excels at handling client-side browser actions, using simple event listeners to catch button clicks and display prompt components or interactive alert boxes instantly. Options A and B handle content structure and visual styles, while Option D queries structured database tables."
   },
   {
-    "question_number": 58,
     "question": "What is the primary purpose of query optimization in a database management system?",
-    "options": {
-      "A": "To increase the size of the database",
-      "B": "To find the most efficient way to execute a query",
-      "C": "To encrypt database records",
-      "D": "To create backup files"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To increase the size of the database",
+      "To find the most efficient way to execute a query",
+      "To encrypt database records",
+      "To create backup files"
+    ],
+    "correct_index": 1,
+    "explanation": "Query optimization evaluates multiple data access paths to choose the most efficient execution plan, drastically reducing system IO usage, CPU overhead, and index search times. Option A describes dataset scaling, Option C focuses on cryptographic security, and Option D is part of data preservation workflows."
   },
   {
-    "question_number": 59,
     "question": "Which component of a DBMS is responsible for generating an execution plan for an SQL query?",
-    "options": {
-      "A": "Transaction Manager",
-      "B": "Query Optimizer",
-      "C": "Recovery Manager",
-      "D": "Data Dictionary"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Transaction Manager",
+      "Query Optimizer",
+      "Recovery Manager",
+      "Data Dictionary"
+    ],
+    "correct_index": 1,
+    "explanation": "The Query Optimizer analyzes the structural logic of incoming SQL queries against table statistics to find the fastest way to pull data. Option A ensures transaction isolation and atomicity, Option C restores system state after crashes, and Option D acts as a centralized metadata catalog."
   },
   {
-    "question_number": 60,
     "question": "A bank customer transfers money from one account to another. If both debit and credit operations must be completed together or not at all, which ACID property is being applied?",
-    "options": {
-      "A": "Consistency",
-      "B": "Durability",
-      "C": "Atomicity",
-      "D": "Isolation"
-    },
-    "correct_answer": "C",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Consistency",
+      "Durability",
+      "Atomicity",
+      "Isolation"
+    ],
+    "correct_index": 2,
+    "explanation": "Atomicity treats a multi-step database transaction as a single, indivisible 'all-or-nothing' operation; if either the debit or credit step fails, the entire transaction is rolled back as if nothing happened. Option A enforces data validity rules, Option B guarantees committed logs survive power failures, and Option D isolates parallel operations."
   },
   {
-    "question_number": 61,
     "question": "Two users are updating the same database record simultaneously. Which transaction management technique helps prevent data inconsistency?",
-    "options": {
-      "A": "Indexing",
-      "B": "Locking",
-      "C": "Hashing",
-      "D": "Compression"
-    },
-    "correct_answer": "B",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Indexing",
+      "Locking",
+      "Hashing",
+      "Compression"
+    ],
+    "correct_index": 1,
+    "explanation": "Locking mechanisms establish exclusive or shared access flags on specific rows or tables, preventing concurrent modifications from causing race conditions or dirty reads. Option A accelerates search requests, Option C obfuscates or keys values, and Option D optimizes disk usage footprint."
   },
   {
-    "question_number": 62,
     "question": "A company wants to ensure that employees can access only the data required for their job responsibilities. Which database security technique is most appropriate?",
-    "options": {
-      "A": "Data Replication",
-      "B": "Role-Based Access Control (RBAC)",
-      "C": "Query Optimization",
-      "D": "Data Normalization"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Data Replication",
+      "Role-Based Access Control (RBAC)",
+      "Query Optimization",
+      "Data Normalization"
+    ],
+    "correct_index": 1,
+    "explanation": "RBAC maps data access privileges directly to specific organizational roles rather than individual users, simplifying permission management and enforcing the principle of least privilege. Option A handles system redundancy, Option C improves performance, and Option D organizes schemas to minimize data duplication."
   },
   {
-    "question_number": 63,
-    "database_attribute": "A database administrator notices repeated unauthorized login attempts. Which security measure would best help analyze and investigate this activity?",
-    "options": {
-      "A": "Audit Logs",
-      "B": "Data Compression",
-      "C": "Indexing",
-      "D": "Fragmentation"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "question": "A database administrator notices repeated unauthorized login attempts. Which security measure would best help analyze and investigate this activity?",
+    "options": [
+      "Audit Logs",
+      "Data Compression",
+      "Indexing",
+      "Fragmentation"
+    ],
+    "correct_index": 0,
+    "explanation": "Audit logs act as a digital paper trail, recording timestamped security actions like login attempts, query changes, and privilege escalations to help teams investigate security anomalies. Option B minimizes storage footprints, Option C speeds up query lookups, and Option D manages how data blocks are distributed across storage volumes."
   },
   {
-    "question_number": 64,
     "question": "A database system crashes due to a power outage. Which recovery mechanism is most useful for restoring committed transactions while undoing incomplete ones?",
-    "options": {
-      "A": "Query Optimization",
-      "B": "Transaction Log-Based Recovery",
-      "C": "Data Normalization",
-      "D": "View Management"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Query Optimization",
+      "Transaction Log-Based Recovery",
+      "Data Normalization",
+      "View Management"
+    ],
+    "correct_index": 1,
+    "explanation": "Transaction log recovery parses the write-ahead log files to re-apply committed actions (REDO) and roll back uncommitted, half-finished transactions (UNDO) during system restarts. Option A improves execution performance, Option C removes structural redundancies, and Option D handles virtual table presentation rules."
   },
   {
-    "question_number": 65,
-    "question": "An organization must choose between full backups performed weekly and incremental backups performed daily. Which statement best evaluates the trade-off?",
-    "options": {
-      "A": "Full backups require less storage than incremental backups.",
-      "B": "Incremental backups simplify recovery because only one backup file is needed.",
-      "C": "Full backups simplify recovery, while incremental backups reduce backup time and storage requirements.",
-      "D": "Neither method can be used for database recovery."
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "question": "A company must choose between full backups performed weekly and incremental backups performed daily. Which statement best evaluates the trade-off?",
+    "options": [
+      "Full backups require less storage than incremental backups.",
+      "Incremental backups simplify recovery because only one backup file is needed.",
+      "Full backups simplify recovery, while incremental backups reduce backup time and storage requirements.",
+      "Neither method can be used for database recovery."
+    ],
+    "correct_index": 2,
+    "explanation": "Full backups provide an exhaustive copy of all system data that can be restored in a single step, while incremental backups run much faster and save disk space by only copying changes made since the last backup. Option A gets the storage mathematics entirely backward, Option B misstates how incremental restore steps work, and Option D is false."
   },
   {
-    "question_number": 66,
     "question": "Which statement correctly distinguishes a homogeneous distributed database system from a heterogeneous distributed database system?",
-    "options": {
-      "A": "Homogeneous systems use different DBMSs, while heterogeneous systems use the same DBMS.",
-      "B": "Homogeneous systems use the same DBMS and data model across sites, while heterogeneous systems may use different DBMSs and data models.",
-      "C": "Homogeneous systems cannot share data between sites.",
-      "D": "Heterogeneous systems always operate on a single computer."
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Homogeneous systems use different DBMSs, while heterogeneous systems use the same DBMS.",
+      "Homogeneous systems use the same DBMS and data model across sites, while heterogeneous systems may use different DBMSs and data models.",
+      "Homogeneous systems cannot share data between sites.",
+      "Heterogeneous systems always operate on a single computer."
+    ],
+    "correct_index": 1,
+    "explanation": "Homogeneous distributed systems share a uniform architecture, using the exact same DBMS engine across all physical network nodes. Heterogeneous systems tie together completely different software configurations and schemas. Option A gets the descriptions reversed, Option C is false, and Option D contradicts the definition of a distributed database system."
   },
   {
-    "question_number": 67,
     "question": "Which of the following best describes the main purpose of a database design?",
-    "options": {
-      "A": "To increase computer processing speed",
-      "B": "To organize data efficiently and reduce redundancy",
-      "C": "To replace the operating system",
-      "D": "To eliminate the need for hardware"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To increase computer processing speed",
+      "To organize data efficiently and reduce redundancy",
+      "To replace the operating system",
+      "To eliminate the need for hardware"
+    ],
+    "correct_index": 1,
+    "explanation": "A clean database design structures tables, keys, and constraints cleanly, which cuts down on duplicate data storage, avoids data anomalies, and protects data integrity over time. Option A targets hardware performance vectors, and Options C and D are completely impossible architectural concepts."
   },
   {
-    "question_number": 68,
     "question": "Which database model organizes data in a tree-like structure using parent-child relationships?",
-    "options": {
-      "A": "Relational model",
-      "B": "Network model",
-      "C": "Hierarchical model",
-      "D": "Object-oriented model"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Relational model",
+      "Network model",
+      "Hierarchical model",
+      "Object-oriented model"
+    ],
+    "correct_index": 2,
+    "explanation": "The hierarchical model enforces an explicit inverted-tree file layout where each child record is linked to a single distinct parent node. Option A links data using row-and-column keys, Option B opens up complex many-to-many graph connections, and Option D packages attributes alongside object behaviors."
   },
   {
-    "question_number": 69,
     "question": "What is a key characteristic of the relational database model?",
-    "options": {
-      "A": "Data is stored in flat files only",
-      "B": "Data is represented using tables with rows and columns",
-      "C": "Data is stored in a tree structure",
-      "D": "Data has no relationships"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Data is stored in flat files only",
+      "Data is represented using tables with rows and columns",
+      "Data is stored in a tree structure",
+      "Data has no relationships"
+    ],
+    "correct_index": 1,
+    "explanation": "The relational database model organizes information into structured tables (relations), where rows hold individual records and columns define specific attributes. Option A refers to unindexed text storage, Option C describes hierarchical engines, and Option D misses the entire concept of relational key links."
   },
   {
-    "question_number": 70,
     "question": "Which statement best describes the network database model?",
-    "options": {
-      "A": "It organizes data in a strict parent-child hierarchy",
-      "B": "It allows multiple relationships between records using a graph structure",
-      "C": "It stores data only in documents",
-      "D": "It does not support relationships between data"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "It organizes data in a strict parent-child hierarchy",
+      "It allows multiple relationships between records using a graph structure",
+      "It stores data only in documents",
+      "It does not support relationships between data"
+    ],
+    "correct_index": 1,
+    "explanation": "The network model builds on hierarchical concepts by allowing child nodes to link to multiple parent records, creating a flexible graph architecture that handles many-to-many relationships naturally. Option A describes rigid trees, Option C fits Document NoSQL databases, and Option D is incorrect."
   },
   {
-    "question_number": 71,
     "question": "Which of the following best differentiates a database system from a traditional file system?",
-    "options": {
-      "A": "Storing a single text document",
-      "B": "Managing large amounts of related data with multiple users accessing it concurrently",
-      "C": "Writing a simple note on a desktop",
-      "D": "Saving a single image file"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Storing a single text document",
+      "Managing large amounts of related data with multiple users accessing it concurrently",
+      "Writing a simple note on a desktop",
+      "Saving a single image file"
+    ],
+    "correct_index": 1,
+    "explanation": "Modern database systems excel at coordinate multi-user environments, using advanced concurrency controls, transaction isolation rules, and relational schemas to handle simultaneous data requests safely. Options A, C, and D are simple, localized actions that standard filesystems handle without needing an enterprise DBMS engine."
   },
   {
-    "question_number": 72,
     "question": "A database designer is creating a schema for a university system. Which step should be performed first?",
-    "options": {
-      "A": "Deleting duplicate tables",
-      "B": "Identifying entities and their relationships",
-      "C": "Writing SQL queries immediately",
-      "D": "Encrypting the database"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Deleting duplicate tables",
+      "Identifying entities and their relationships",
+      "Writing SQL queries immediately",
+      "Encrypting the database"
+    ],
+    "correct_index": 1,
+    "explanation": "Database engineering always begins with conceptual modeling—mapping out structural real-world entities (like Students or Courses) and how they link together before touching an SQL editor. Option A happens during later design phases, and Options C and D jump straight to implementation steps without a blueprint."
   },
   {
-    "question_number": 73,
     "question": "When designing a database schema, what is the correct purpose of normalization?",
-    "options": {
-      "A": "To increase data duplication for backup purposes",
-      "B": "To organize tables to reduce redundancy and improve integrity",
-      "C": "To remove all relationships between tables",
-      "D": "To store all data in a single table"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To increase data duplication for backup purposes",
+      "To organize tables to reduce redundancy and improve integrity",
+      "To remove all relationships between tables",
+      "To store all data in a single table"
+    ],
+    "correct_index": 1,
+    "explanation": "Normalization breaks giant data lists into smaller, well-structured tables, using foreign keys to minimize data redundancy and protect against insert, update, and delete anomalies. Option A causes the exact issues normalization is designed to fix, Option C destroys relational structures, and Option D describes an unnormalized flat-file design."
   },
   {
-    "question_number": 74,
     "question": "What does the WHERE clause in an SQL query do?",
-    "options": {
-      "A": "Sorts the result in ascending order",
-      "B": "Filters records based on a specified condition",
-      "C": "Deletes duplicate records",
-      "D": "Creates a new table"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Sorts the result in ascending order",
+      "Filters records based on a specified condition",
+      "Deletes duplicate records",
+      "Creates a new table"
+    ],
+    "correct_index": 1,
+    "explanation": "The `WHERE` clause tests data rows against specific boolean rules, filtering out records that don't match so the query only returns targeted data. Option A relies on `ORDER BY`, Option C utilizes `DISTINCT` or `GROUP BY` logic, and Option D requires a `CREATE TABLE` statement."
   },
   {
-    "question_number": 75,
     "question": "Which SQL keyword is used to sort query results?",
-    "options": {
-      "A": "ORDER BY",
-      "B": "GROUP BY",
-      "C": "SORT BY",
-      "D": "ARRANGE BY"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "ORDER BY",
+      "GROUP BY",
+      "SORT BY",
+      "ARRANGE BY"
+    ],
+    "correct_index": 0,
+    "explanation": "`ORDER BY` sorts returned rows in ascending (`ASC`) or descending (`DESC`) order based on the specified column values. Option B consolidates matching data for aggregate math operations, while Options C and D are invalid keywords in standard ANSI SQL syntax."
   },
   {
-    "question_number": 76,
     "question": "What does this query do? (SELECT name, age FROM students WHERE age > 20)",
-    "options": {
-      "A": "Inserts new student records where age is greater than 20",
-      "B": "Deletes students older than 20",
-      "C": "Retrieves names and ages of students older than 20",
-      "D": "Updates student ages to 20"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Inserts new student records where age is greater than 20",
+      "Deletes students older than 20",
+      "Retrieves names and ages of students older than 20",
+      "Updates student ages to 20"
+    ],
+    "correct_index": 2,
+    "explanation": "This `SELECT` statement isolates the name and age values from the students table, using a `WHERE` filter to only return records where the age column holds a value greater than 20. Option A requires an `INSERT` command, Option B uses `DELETE`, and Option D requires an `UPDATE` statement."
   },
   {
-    "question_number": 77,
     "question": "What is the result of this query? (SELECT * FROM employees WHERE department = 'IT' ORDER BY salary DESC)",
-    "options": {
-      "A": "Displays all employees sorted by department",
-      "B": "Shows IT department employees sorted by salary from highest to lowest",
-      "C": "Deletes employees in the IT department",
-      "D": "Updates salary values in the IT department"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Displays all employees sorted by department",
+      "Shows IT department employees sorted by salary from highest to lowest",
+      "Deletes employees in the IT department",
+      "Updates salary values in the IT department"
+    ],
+    "correct_index": 1,
+    "explanation": "The asterisk (`*`) pulls all data columns for matching records, the `WHERE` filter isolates employees in the IT department, and `ORDER BY salary DESC` sorts them from highest salary to lowest. Option A ignores the department filter rule, while Options C and D describe data modification tasks rather than a data read query."
   },
   {
-    "question_number": 78,
     "question": "What does this query return? (SELECT COUNT(*) FROM orders WHERE status = 'delivered')",
-    "options": {
-      "A": "A list of all delivered orders",
-      "B": "The total number of delivered orders",
-      "C": "Updates order status to delivered",
-      "D": "Deletes delivered orders from the table"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "A list of all delivered orders",
+      "The total number of delivered orders",
+      "Updates order status to delivered",
+      "Deletes delivered orders from the table"
+    ],
+    "correct_index": 1,
+    "explanation": "The `COUNT(*)` aggregate function tallies up individual matching database rows rather than pulling data fields, returning a single number representing total orders that match the 'delivered' filter criteria. Option A describes pulling raw records, and Options C and D describe schema modification queries."
   },
   {
-    "question_number": 79,
     "question": "Which of the following is the primary issue in IT project management?",
-    "options": {
-      "A": "Communication",
-      "B": "Scope creep",
-      "C": "Data Scarcity",
-      "D": "Risk"
-    },
-    "correct_answer": "B",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Communication",
+      "Scope creep",
+      "Data Scarcity",
+      "Risk"
+    ],
+    "correct_index": 1,
+    "explanation": "Scope creep refers to unauthorized, unbudgeted feature growth that stretches a project beyond its original boundaries without adjustments to timelines or resources, making it a leading cause of IT project failure. Options A and D are critical risk areas that need active management, but scope creep remains the primary threat to staying on schedule and on budget."
   },
   {
-    "question_number": 80,
     "question": "Which factor directly affects software quality?",
-    "options": {
-      "A": "Project color scheme",
-      "B": "Code readability and maintainability",
-      "C": "Number of statements",
-      "D": "Design and layout"
-    },
-    "correct_answer": "B",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Project color scheme",
+      "Code readability and maintainability",
+      "Number of statements",
+      "Design and layout"
+    ],
+    "correct_index": 1,
+    "explanation": "Clean, readable, and maintainable source code directly determines software quality, making it much easier for development teams to trace bugs, patch security vulnerabilities, and roll out feature updates. Options A and D affect user experience cosmetics, while Option C is an arbitrary metric that does not correlate with solid code execution quality."
   },
   {
-    "question_number": 81,
     "question": "Which Work Breakdown Approach deals that “it starts with the largest items of the project (project goal) and break it down into smaller and more manageable tasks.”",
-    "options": {
-      "A": "Guidelines approach",
-      "B": "Analogy approach",
-      "C": "Top-down approach",
-      "D": "Bottom-up approach"
-    },
-    "correct_answer": "C",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Guidelines approach",
+      "Analogy approach",
+      "Top-down approach",
+      "Bottom-up approach"
+    ],
+    "correct_index": 2,
+    "explanation": "The top-down approach splits the core project goal into major milestones, then systematically breaks those down into individual deliverables and bite-sized work packages. Option A follows organizational templates, Option B clones work models from past projects, and Option D starts with micro tasks and bubbles them up into larger groups."
   },
   {
-    "question_number": 82,
     "question": "Which one of the following is NOT true when planning IT project objectives?",
-    "options": {
-      "A": "The goal should target a specific area of improvement or answer a specific need.",
-      "B": "The goal must be quantifiable, or at least allow for measurable progress.",
-      "C": "The goal should exceed by far from available resources and existing constraints.",
-      "D": "The goal should align with other organization goals."
-    },
-    "correct_answer": "C",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "The goal should target a specific area of improvement or answer a specific need.",
+      "The goal must be quantifiable, or at least allow for measurable progress.",
+      "The goal should exceed by far from available resources and existing constraints.",
+      "The goal should align with other organization goals."
+    ],
+    "correct_index": 2,
+    "explanation": "Setting impossible project objectives that wildly outstrip your available budget, talent, or timeframe directly violates the 'Attainable' and 'Realistic' rules of standard SMART goal planning frameworks. Options A, B, and D outline foundational best practices for creating effective, measurable project objectives."
   },
   {
-    "question_number": 83,
     "question": "What is the importance of having good scope definition for project stakeholders? (Choose More than One)",
-    "options": {
-      "A": "Because it improves accuracy of time, cost, and resource estimates",
-      "B": "Because it defines baseline for performance measurement and project control",
-      "C": "Because it supports in communicating clear work responsibilities"
-    },
-    "correct_answer": "A, B, C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Because it improves accuracy of time, cost, and resource estimates",
+      "Because it defines baseline for performance measurement and project control",
+      "Because it supports in communicating clear work responsibilities"
+    ],
+    "correct_index": 0,
+    "explanation": "A well-defined project scope sets clear boundaries for what is included and excluded, allowing project managers to build accurate cost models, create objective performance baselines, and assign explicit task responsibilities across teams. (Note: All options are correct project management parameters)."
   },
   {
-    "question_number": 84,
     "question": "____________is formalizing acceptance of the project scope in the project scope management processes.",
-    "options": {
-      "A": "Scope planning",
-      "B": "Scope change control",
-      "C": "Scope verification",
-      "D": "Scope definition"
-    },
-    "correct_answer": "C",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Scope planning",
+      "Scope change control",
+      "Scope verification",
+      "Scope definition"
+    ],
+    "correct_index": 2,
+    "explanation": "Scope verification (often called Validate Scope) is the formal project management process where stakeholders and clients inspect deliverables to sign off on completed project scope. Option A builds the management plan, Option B processes changes, and Option D builds the foundational scope statement details."
   },
   {
-    "question_number": 85,
     "question": "Which one of the following is NOT a correct statement regarding the Work Breakdown Structure (WBS)?",
-    "options": {
-      "A": "WBS is a hierarchical decomposition of the project into phases, deliverables and work packages.",
-      "B": "A WBS can be formatted made through various approaches such as the top down approach, the use of organizational guidelines and the use of WBS templates.",
-      "C": "In order to start the creations of a WBS project managers have to finish the sequencing of activities.",
-      "D": "The lowest level in a WBS is named a work package."
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "WBS is a hierarchical decomposition of the project into phases, deliverables and work packages.",
+      "A WBS can be formatted made through various approaches such as the top down approach, the use of organizational guidelines and the use of WBS templates.",
+      "In order to start the creations of a WBS project managers have to finish the sequencing of activities.",
+      "The lowest level in a WBS is named a work package."
+    ],
+    "correct_index": 2,
+    "explanation": "You cannot sequence project tasks before creating your WBS; the WBS must be built first to identify all project components, which are then sequenced using dependencies later in the planning phase. Options A, B, and D state universally true project management rules for building a WBS."
   },
   {
-    "question_number": 86,
     "question": "Which one of the following statements describes the primary objective of project planning for everyone involved in the project?",
-    "options": {
-      "A": "Setting specific objectives and goals",
-      "B": "Outlining the roadmap of where the project headed and the strategy to achieve it.",
-      "C": "Listing all potential risks and challenges",
-      "D": "Detailing the exact budget and resources allocations"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Setting specific objectives and goals",
+      "Outlining the roadmap of where the project headed and the strategy to achieve it.",
+      "Listing all potential risks and challenges",
+      "Detailing the exact budget and resources allocations"
+    ],
+    "correct_index": 1,
+    "explanation": "Project planning builds a clear strategic roadmap, aligning stakeholders, development teams, and clients on project directions, milestones, and implementation strategies. Options A, C, and D are individual tactical components that support the broader strategic roadmap."
   },
   {
-    "question_number": 87,
     "question": "Assume that college of computing and informatics assigned you for selecting the potential Information Technology project that should be done in the Haramaya University, what is the consideration and task you may do in sequential order?",
-    "options": {
-      "A": "Develop IT strategic plan based on the Haramaya university‘s overall strategic plan, perform a business area analysis, define potential projects, select IT projects and assign resources.",
-      "B": "Define potential projects, select IT projects and assign resources, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan, perform a business area analysis",
-      "C": "Select IT projects and assign resources, define potential projects, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan, perform a business area analysis",
-      "D": "Perform a business area analysis, define potential projects, select IT projects and assign resources, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan."
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Develop IT strategic plan based on the Haramaya university‘s overall strategic plan, perform a business area analysis, define potential projects, select IT projects and assign resources.",
+      "Define potential projects, select IT projects and assign resources, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan, perform a business area analysis",
+      "Select IT projects and assign resources, define potential projects, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan, perform a business area analysis",
+      "Perform a business area analysis, define potential projects, select IT projects and assign resources, develop IT strategic plan based on the Haramaya university ‘s overall strategic plan."
+    ],
+    "correct_index": 0,
+    "explanation": "IT governance alignment follows a top-down structure: you align with the university's overarching strategic plan first, analyze operations, identify potential projects, select the best initiatives, and then allocate resources. Options B, C, and D suggest picking projects or assigning resources before matching your plan with organizational goals."
   },
   {
-    "question_number": 88,
     "question": "Which of the following best describes object-oriented technology?",
-    "options": {
-      "A": "A programming approach based only on functions",
-      "B": "A method that organizes software around objects containing data and behavior",
-      "C": "A technique used only for database design",
-      "D": "A hardware design method"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "A programming approach based only on functions",
+      "A method that organizes software around objects containing data and behavior",
+      "A technique used only for database design",
+      "A hardware design method"
+    ],
+    "correct_index": 1,
+    "explanation": "Object-oriented programming (OOP) models software around real-world entities called objects, packaging internal state data (attributes) alongside executable routines (methods). Option A describes functional programming models, while Options C and D are database or physical hardware concepts."
   },
   {
-    "question_number": 89,
     "question": "A systems analyst is working on a university registration system. They use a use case diagram to show how students register for courses, and a class diagram to show system structure. What is the main difference between these two modeling techniques?",
-    "options": {
-      "A": "Use case diagrams show system structure, while class diagrams show user interaction",
-      "B": "Use case diagrams show interactions between users and system, while class diagrams show system structure",
-      "C": "Both diagrams show only database design",
-      "D": "Both diagrams are used only for coding"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Use case diagrams show system structure, while class diagrams show user interaction",
+      "Use case diagrams show interactions between users and system, while class diagrams show system structure",
+      "Both diagrams show only database design",
+      "Both diagrams are used only for coding"
+    ],
+    "correct_index": 1,
+    "explanation": "Use case diagrams capture functional requirements by showing interactions between external actors and system boundaries, while class diagrams reveal static source components like attributes, methods, and class inheritance networks. Option A gets this completely backward, while Options C and D ignore UML design principles."
   },
   {
-    "question_number": 90,
     "question": "A company is designing a banking system. The analyst wants to represent the flow of messages between objects during a transaction process. Which UML diagram is most appropriate?",
-    "options": {
-      "A": "Activity diagram",
-      "B": "Sequence diagram",
-      "C": "Deployment diagram",
-      "D": "Package diagram"
-    },
-    "correct_answer": "B",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Activity diagram",
+      "Sequence diagram",
+      "Deployment diagram",
+      "Package diagram"
+    ],
+    "correct_index": 1,
+    "explanation": "Sequence diagrams model system behavior over time, visually tracing how objects exchange structured method calls and return messages chronologically during a transaction workflow. Option A models procedural logic flows, Option C maps physical server deployments, and Option D clusters code namespaces."
   },
   {
-    "question_number": 91,
     "question": "A hospital system requires that a patient can book an appointment, and the system should notify the doctor automatically. Which UML diagram best helps analyze user interaction with the system?",
-    "options": {
-      "A": "Class diagram",
-      "B": "Use case diagram",
-      "C": "Deployment diagram",
-      "D": "Object diagram"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Class diagram",
+      "Use case diagram",
+      "Deployment diagram",
+      "Object diagram"
+    ],
+    "correct_index": 1,
+    "explanation": "Use case diagrams capture user-facing requirements by illustrating the interactions between system users (like Patients or Doctors) and specific system actions. Option A details static code components, Option C models physical network architecture, and Option D visualizes instance states."
   },
   {
-    "question_number": 92,
     "question": "A library system requires that a user must be registered before borrowing books. The analyst identifies this relationship between “User Registration” and “Borrow Book”. What UML relationship is being described?",
-    "options": {
-      "A": "Aggregation",
-      "B": "Dependency",
-      "C": "Inheritance",
-      "D": "Composition"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Aggregation",
+      "Dependency",
+      "Inheritance",
+      "Composition"
+    ],
+    "correct_index": 1,
+    "explanation": "A dependency relationship (`<--`) means one system component relies on another; here, the checkout process cannot run without pulling details from the registration system. Option A models part-whole structural links, Option C represents parent-child class hierarchies, and Option D represents tight structural ownership links."
   },
   {
-    "question_number": 93,
     "question": "Which UML diagram is most appropriate for designing the internal structure of a system by showing classes and relationships?",
-    "options": {
-      "A": "Use case diagram",
-      "B": "Class diagram",
-      "C": "Activity diagram",
-      "D": "Communication diagram"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Use case diagram",
+      "Class diagram",
+      "Activity diagram",
+      "Communication diagram"
+    ],
+    "correct_index": 1,
+    "explanation": "Class diagrams provide a structural blueprint of a system, mapping class attributes, access modifiers, method signatures, and inheritance links. Option A documents user interactions, Option C acts like an advanced flowchart for business logic, and Option D highlights how objects collaborate visually."
   },
   {
-    "question_number": 94,
     "question": "A developer is designing a system where objects interact over time in a specific order. Which UML diagram should be used?",
-    "options": {
-      "A": "Sequence diagram",
-      "B": "State diagram",
-      "C": "Component diagram",
-      "D": "Deployment diagram"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Sequence diagram",
+      "State diagram",
+      "Component diagram",
+      "Deployment diagram"
+    ],
+    "correct_index": 0,
+    "explanation": "Sequence diagrams map time-ordered interactions across individual vertical lifelines, tracing message pathways between objects chronologically. Option B models lifecycle transitions within a single object, Option C packages source modules, and Option D structures physical runtime hardware."
   },
   {
-    "question_number": 95,
     "question": "What is the main purpose of a visual development environment such as Visual Basic?",
-    "options": {
-      "A": "To write machine code directly",
-      "B": "To design interfaces and write code using visual tools and controls",
-      "C": "To manage hardware devices only",
-      "D": "To replace the operating system"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To write machine code directly",
+      "To design interfaces and write code using visual tools and controls",
+      "To manage hardware devices only",
+      "To replace the operating system"
+    ],
+    "correct_index": 1,
+    "explanation": "Visual development environments speed up application building by providing drag-and-drop toolboxes for UI design alongside code editors for event logic. Option A describes low-level assembly coding, while Options C and D mistake application IDE platforms for low-level kernel operating systems."
   },
   {
-    "question_number": 96,
     "question": "In a visual programming environment, what is the main advantage of using drag-and-drop controls?",
-    "options": {
-      "A": "It eliminates the need for any programming",
-      "B": "It allows faster interface design with less manual coding",
-      "C": "It increases hardware performance",
-      "D": "It prevents event handling"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "It eliminates the need for any programming",
+      "It allows faster interface design with less manual coding",
+      "It increases hardware performance",
+      "It prevents event handling"
+    ],
+    "correct_index": 1,
+    "explanation": "Drag-and-drop toolkits accelerate development by automatically generating complex window layouts and position coordinates behind the scenes, letting developers focus on writing business logic. Option A is false since UI elements still need backing logic, Option C targets physical device drivers, and Option D is incorrect."
   },
   {
-    "question_number": 97,
     "question": "In Visual Basic, what triggers the execution of a Button Click event procedure?",
-    "options": {
-      "A": "System startup",
-      "B": "User clicking the button",
-      "C": "Saving the project",
-      "D": "Closing the IDE"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "System startup",
+      "User clicking the button",
+      "Saving the project",
+      "Closing the IDE"
+    ],
+    "correct_index": 1,
+    "explanation": "Event-driven systems monitor interface elements for user input, firing associated code hooks like click handlers when a user clicks a button. Options A, C, and D are lifecycle actions that do not trigger individual runtime interface button handlers."
   },
   {
-    "question_number": 98,
     "question": "What happens when the button is clicked? (MsgBox \"Data Submitted\")",
-    "options": {
-      "A": "The program closes",
-      "B": "A message box displays \"Data Submitted\"",
-      "C": "The form is deleted",
-      "D": "The button is disabled permanently"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "The program closes",
+      "A message box displays \"Data Submitted\"",
+      "The form is deleted",
+      "The button is disabled permanently"
+    ],
+    "correct_index": 1,
+    "explanation": "The `MsgBox` statement pops up a modal system alert window displaying the string literal passed inside the argument quotes. Option A requires an exit command like `End`, Option C requires a `Delete` or `Unload` instruction, and Option D requires toggling the element's `.Enabled` property to false."
   },
   {
-    "question_number": 99,
     "question": "Which statement best describes event-driven programming?",
-    "options": {
-      "A": "Programs execute instructions only from top to bottom",
-      "B": "Execution depends on user actions or system events",
-      "C": "Programs do not respond to user input",
-      "D": "Code runs only once and stops"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Programs execute instructions only from top to bottom",
+      "Execution depends on user actions or system events",
+      "Programs do not respond to user input",
+      "Code runs only once and stops"
+    ],
+    "correct_index": 1,
+    "explanation": "Event-driven software runs an active loop that waits for user or system events (like mouse clicks, key presses, or sensor inputs) to trigger specific code blocks. Option A describes old procedural programming styles, and Options C and D miss the core concepts of interactive user interfaces."
   },
   {
-    "question_number": 100,
     "question": "Which Visual Basic control is most appropriate for allowing a user to enter text such as a name?",
-    "options": {
-      "A": "Label",
-      "B": "TextBox",
-      "C": "Button",
-      "D": "PictureBox"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Label",
+      "TextBox",
+      "Button",
+      "PictureBox"
+    ],
+    "correct_index": 1,
+    "explanation": "The TextBox component provides an interactive field for users to type and edit text strings. Option A displays uneditable read-only labels, Option C triggers action events when clicked, and Option D renders static or dynamic images."
   },
   {
-    "question_number": 101,
     "question": "A developer is designing a login form in Visual Basic that includes a username field, password field, and a login button. Which control is used to mask password input?",
-    "options": {
-      "A": "TextArea",
-      "B": "TextBox with PasswordChar property",
-      "C": "ListBox",
-      "D": "TextView"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "TextArea",
+      "TextBox with PasswordChar property",
+      "ListBox",
+      "TextView"
+    ],
+    "correct_index": 1,
+    "explanation": "Setting the `PasswordChar` property on a standard TextBox automatically masks typed characters with a chosen symbol (like an asterisk `*`), keeping sensitive data safe from shoulder surfing. Option A handles multi-line blocks, Option C displays lists of selectable items, and Option D is a generic text rendering field."
   },
   {
-    "question_number": 102,
     "question": "Which Visual Basic control is used to execute an action when the user interacts with it?",
-    "options": {
-      "A": "Label",
-      "B": "Button",
-      "C": "Panel",
-      "D": "Timer only"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Label",
+      "Button",
+      "Panel",
+      "Timer only"
+    ],
+    "correct_index": 1,
+    "explanation": "Buttons capture user clicks to fire event handlers that execute core application features. Option A displays read-only text labels, Option C groups user interface components together, and Option D runs background tasks at regular time intervals."
   },
   {
-    "question_number": 103,
     "question": "What concept of object-oriented programming is mainly demonstrated in this code?",
-    "options": {
-      "A": "Encapsulation",
-      "B": "Inheritance",
-      "C": "Polymorphism",
-      "D": "Abstraction"
-    },
-    "correct_answer": "B",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "Encapsulation",
+      "Inheritance",
+      "Polymorphism",
+      "Abstraction"
+    ],
+    "correct_index": 1,
+    "explanation": "When an OOP class extends another class, it automatically inherits its properties and methods, supporting clean code reuse. Option A hides data behind access modifiers, Option C changes method implementations at runtime, and Option D hides complex implementation details behind clean interfaces."
   },
   {
-    "question_number": 104,
     "question": "Which OOP feature allows a Java class to inherit properties and methods from another class?",
-    "options": {
-      "A": "Encapsulation",
-      "B": "Inheritance",
-      "C": "Compilation",
-      "D": "Exception handling"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Encapsulation",
+      "Inheritance",
+      "Compilation",
+      "Exception handling"
+    ],
+    "correct_index": 1,
+    "explanation": "Inheritance enables a subclass to extend a superclass, inheriting its fields and methods to promote code reuse across your application. Option A wraps state data safely inside classes, Option C converts text source scripts into bytecode, and Option D catches runtime errors safely."
   },
   {
-    "question_number": 105,
     "question": "What will be the output of this program?",
-    "options": {
-      "A": "10",
-      "B": "20",
-      "C": "30",
-      "D": "40"
-    },
-    "correct_answer": "C",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "10",
+      "20",
+      "30",
+      "40"
+    ],
+    "correct_index": 2,
+    "explanation": "The program adds two values together and prints the sum (30) to the screen. Option A and B match the single inputs before the math operation, and Option D doesn't align with the variables defined in the code block."
   },
   {
-    "question_number": 106,
     "question": "Which Java collection is best suited for storing dynamically sized lists of elements?",
-    "options": {
-      "A": "Array",
-      "B": "ArrayList",
-      "C": "Integer",
-      "D": "Character"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Array",
+      "ArrayList",
+      "Integer",
+      "Character"
+    ],
+    "correct_index": 1,
+    "explanation": "An `ArrayList` uses a dynamic underlying array that expands automatically as you add items, making it far more flexible than fixed-size structures. Option A requires an unchangeable capacity definition on initialization, and Options C and D are single primitive wrapper data types."
   },
   {
-    "question_number": 107,
     "question": "What will be the output? (Try/Catch block handling exception)",
-    "options": {
-      "A": "0",
-      "B": "Error occurred",
-      "C": "Compilation error",
-      "D": "10"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "0",
+      "Error occurred",
+      "Compilation error",
+      "10"
+    ],
+    "correct_index": 1,
+    "explanation": "When an operation throws a runtime exception, the JVM stops executing the `try` block and jumps to the matching `catch` block to print your custom error string. Option A prints default numeric initializations, Option C represents build errors, and Option D is printed only if no exception occurs."
   },
   {
-    "question_number": 108,
     "question": "Which block is always executed in Java exception handling?",
-    "options": {
-      "A": "try",
-      "B": "catch",
-      "C": "finally",
-      "D": "throw"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "try",
+      "catch",
+      "finally",
+      "throw"
+    ],
+    "correct_index": 2,
+    "explanation": "The `finally` block always executes whether an exception is thrown or caught, making it the perfect spot to run cleanup tasks like closing file streams or network sockets. Option A holds code that might fail, Option B handles exceptions when they crop up, and Option D triggers custom errors manually."
   },
   {
-    "question_number": 109,
     "question": "What is the correct way a thread is started in Java?",
-    "options": {
-      "A": "t.run();",
-      "B": "t.start();",
-      "C": "run(t);",
-      "D": "start.run();"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "t.run();",
+      "t.start();",
+      "run(t);",
+      "start.run();"
+    ],
+    "correct_index": 1,
+    "explanation": "Calling `.start()` on a Thread object tells the JVM to initialize a new execution thread and run your `.run()` method concurrently. Calling `.run()` directly bypasses thread creation entirely, running the code synchronously on your current thread instead. Options C and D are invalid syntax rules."
   },
   {
-    "question_number": 110,
     "question": "What is the main advantage of multithreading in Java programs?",
-    "options": {
-      "A": "It makes programs run without Java Virtual Machine",
-      "B": "It allows multiple tasks to execute concurrently",
-      "C": "It removes the need for classes",
-      "D": "It prevents runtime errors"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "It makes programs run without Java Virtual Machine",
+      "It allows multiple tasks to execute concurrently",
+      "It removes the need for classes",
+      "It prevents runtime errors"
+    ],
+    "correct_index": 1,
+    "explanation": "Multithreading splits your program into multiple execution pathways that run concurrently, allowing background tasks to process data without locking up your main user interface. Option A bypasses your runtime compiler environment, Option C breaks Java formatting syntax, and Option D requires proper error-handling structures."
   },
   {
-    "question_number": 111,
     "question": "Which statement best explains the concept of encapsulation in object-oriented programming?",
-    "options": {
-      "A": "Combining multiple classes into one file",
-      "B": "Wrapping data and methods together and restricting direct access to data",
-      "C": "Executing multiple programs at once",
-      "D": "Writing code without using objects"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Combining multiple classes into one file",
+      "Wrapping data and methods together and restricting direct access to data",
+      "Executing multiple programs at once",
+      "Writing code without using objects"
+    ],
+    "correct_index": 1,
+    "explanation": "Encapsulation keeps your application state secure by wrapping variables and methods inside a class and restricting direct changes with `private` modifiers, forcing access through public getters and setters instead. Option A groups file assets, Option C describes concurrent multitasking, and Option D outlines functional programming styles."
   },
   {
-    "question_number": 112,
     "question": "What is the main purpose of inheritance in Java?",
-    "options": {
-      "A": "To delete unused objects automatically",
-      "B": "To allow a class to acquire properties and behaviors of another class",
-      "C": "To increase program execution speed",
-      "D": "To store only primitive data types"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "To delete unused objects automatically",
+      "To allow a class to acquire properties and behaviors of another class",
+      "To increase program execution speed",
+      "To store only primitive data types"
+    ],
+    "correct_index": 1,
+    "explanation": "Inheritance enables a new class to inherit attributes and methods from an existing class, promoting code reuse and establishing clear relationship hierarchies. Option A describes the role of the Garbage Collector, Option C focuses on compiler performance, and Option D relates to primitive variable storage rules."
   },
   {
-    "question_number": 113,
     "question": "Which OOP concept allows a method to have different implementations in different classes?",
-    "options": {
-      "A": "Encapsulation",
-      "B": "Polymorphism",
-      "C": "Compilation",
-      "D": "Aggregation"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Encapsulation",
+      "Polymorphism",
+      "Compilation",
+      "Aggregation"
+    ],
+    "correct_index": 1,
+    "explanation": "Polymorphism lets a single method call behave differently depending on the object execution type at runtime, usually handled through method overriding or overloading. Option A focuses on data hiding, Option C converts source text to machine byte codes, and Option D describes a part-whole object relationship."
   },
   {
-    "question_number": 114,
     "question": "A programmer writes a program using functions like add(), subtract() and passes data separately, without using objects or classes. Another program uses classes like Student and Course with methods and attributes. What is the key difference between these two approaches?",
-    "options": {
-      "A": "Both are object-oriented programming",
-      "B": "The first is OOP, the second is structural programming",
-      "C": "The first is structural programming, the second is object-oriented programming",
-      "D": "Both use inheritance"
-    },
-    "correct_answer": "C",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Both are object-oriented programming",
+      "The first is OOP, the second is structural programming",
+      "The first is structural programming, the second is object-oriented programming",
+      "Both use inheritance"
+    ],
+    "correct_index": 2,
+    "explanation": "The first approach follows structured programming principles, separating functions from data blocks. The second uses object-oriented design, packaging attributes and methods together inside classes. Options A, B, and D misclassify these fundamental design methodologies."
   },
   {
-    "question_number": 115,
     "question": "Which of the following best distinguishes object-oriented programming from structured programming?",
-    "options": {
-      "A": "OOP focuses on functions, while structured programming focuses on objects",
-      "B": "OOP organizes code around objects, while structured programming organizes code around functions",
-      "C": "Both avoid the use of data",
-      "D": "Structured programming supports inheritance, OOP does not"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "OOP focuses on functions, while structured programming focuses on objects",
+      "OOP organizes code around objects, while structured programming organizes code around functions",
+      "Both avoid the use of data",
+      "Structured programming supports inheritance, OOP does not"
+    ],
+    "correct_index": 1,
+    "explanation": "OOP bundles related state data and behaviors into self-contained objects, whereas structured programming relies on independent procedures and functions to transform passed data. Option A gets this design distinction backward, Option C is incorrect, and Option D misstates inheritance support rules."
   },
   {
-    "question_number": 116,
     "question": "What will be the output of the following Java program? (System.out.println(5 + 10))",
-    "options": {
-      "A": "510",
-      "B": "15",
-      "C": "510",
-      "D": "Error"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "510",
+      "15",
+      "510",
+      "Error"
+    ],
+    "correct_index": 1,
+    "explanation": "Pass numeric parameters directly to `System.out.println` and Java runs a standard addition operation, outputting the sum (15). If the values were wrapped in quotation marks as string literals (`\"5\" + \"10\"`), Java would run string concatenation and print 510 instead."
   },
   {
-    "question_number": 117,
     "question": "What is the most likely issue in the following Java code?",
-    "options": {
-      "A": "No class definition",
-      "B": "Variable x is not declared",
-      "C": "Missing semicolon after class",
-      "D": "Wrong method name"
-    },
-    "correct_answer": "B",
-    "points": "Will be reviewed",
-    "status": "Pending Review"
+    "options": [
+      "No class definition",
+      "Variable x is not declared",
+      "Missing semicolon after class",
+      "Wrong method name"
+    ],
+    "correct_index": 1,
+    "explanation": "Java is a statically typed language, meaning any variable must be explicitly declared with a data type (like `int`, `double`, or `String`) before you can assign values or track compilation tasks. Option A is handled by standard class code wrappers, Option C violates class structural syntax, and Option D targets method footprints."
   },
   {
-    "question_number": 118,
     "question": "Which statement correctly creates an object of class Student in Java?",
-    "options": {
-      "A": "Student s = new Student();",
-      "B": "Student = new s();",
-      "C": "new Student s();",
-      "D": "create Student s;"
-    },
-    "correct_answer": "A",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Student s = new Student();",
+      "Student = new s();",
+      "new Student s();",
+      "create Student s;"
+    ],
+    "correct_index": 0,
+    "explanation": "Instantiating an object in Java follows a strict pattern: define the Class type first, name your variable instance, use the assignment operator `=`, then call the `new` keyword alongside the class constructor method. Options B, C, and D violate basic Java syntax rules."
   },
   {
-    "question_number": 119,
     "question": "Which component is responsible for performing arithmetic and logical operations in a computer system?",
-    "options": {
-      "A": "RAM",
-      "B": "CPU",
-      "C": "Hard Disk",
-      "D": "Power Supply"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "RAM",
+      "CPU",
+      "Hard Disk",
+      "Power Supply"
+    ],
+    "correct_index": 1,
+    "explanation": "The CPU (Central Processing Unit) houses the Arithmetic Logic Unit (ALU), which executes all core mathematical operations and boolean comparisons. Option A holds temporary data buffers, Option C provides long-term non-volatile storage, and Option D supplies electrical power."
   },
   {
-    "question_number": 120,
     "question": "Which of the following is a primary storage device?",
-    "options": {
-      "A": "SSD/HDD",
-      "B": "RAM",
-      "C": "ROM",
-      "D": "Cache"
-    },
-    "correct_answer": "B",
-    "points": "0/1",
-    "status": "Incorrect"
+    "options": [
+      "SSD/HDD",
+      "RAM",
+      "ROM",
+      "Cache"
+    ],
+    "correct_index": 1,
+    "explanation": "RAM (Random Access Memory) acts as primary storage because it communicates directly with the CPU, providing high-speed, volatile workspaces for active application instructions. Option A provides secondary storage for permanent files, and Options C and D serve specialized boot firmware or processor optimization roles."
   },
   {
-    "question_number": 121,
     "question": "A technician is inspecting two desktop systems. System A has a large tower case with multiple expansion slots and better airflow. System B is a small compact case designed to fit behind a monitor with limited upgrade options. What is the main difference between these two cases?",
-    "options": {
-      "A": "System A is a laptop case, System B is a server case",
-      "B": "System A is a full tower case, System B is a small form factor case",
-      "C": "Both are identical in design and usage",
-      "D": "System A has no cooling system"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "System A is a laptop case, System B is a server case",
+      "System A is a full tower case, System B is a small form factor case",
+      "Both are identical in design and usage",
+      "System A has no cooling system"
+    ],
+    "correct_index": 1,
+    "explanation": "Full tower enclosures provide plenty of space for large motherboards, custom cooling setups, and multiple expansion cards, while small form factor (SFF) cases sacrifice upgrade flexibility to save desk space. Options A, C, and D misclassify these form factor standards."
   },
   {
-    "question_number": 122,
     "question": "A computer shuts down frequently due to overheating. The technician notices the case has very few ventilation openings and a single small fan. What type of problem is most likely occurring?",
-    "options": {
-      "A": "Software installation error",
-      "B": "Poor airflow and overheating due to case design",
-      "C": "Network failure",
-      "D": "Keyboard malfunction"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Software installation error",
+      "Poor airflow and overheating due to case design",
+      "Network failure",
+      "Keyboard malfunction"
+    ],
+    "correct_index": 1,
+    "explanation": "Without adequate ventilation mesh or intake and exhaust fans, heat builds up inside the case, triggering built-in thermal safety thresholds that force the system to shut down to prevent hardware damage. Options A, C, and D are software, peripheral, or network issues that don't affect system operating temperatures."
   },
   {
-    "question_number": 123,
     "question": "A user complains that their computer case is too large for their workspace, but it supports many upgrades and additional hardware components. What type of case is most appropriate for this description?",
-    "options": {
-      "A": "Mini tower case",
-      "B": "Full tower case",
-      "C": "Laptop case",
-      "D": "Tablet casing"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Mini tower case",
+      "Full tower case",
+      "Laptop case",
+      "Tablet casing"
+    ],
+    "correct_index": 1,
+    "explanation": "Full tower cases have a large footprint that takes up significant workspace, but their size accommodates multiple graphics cards, large storage arrays, and complex cooling systems. Option A describes a much smaller desktop profile, while Options C and D are ultra-portable mobile devices."
   },
   {
-    "question_number": 124,
     "question": "A technician compares a desktop with a slim, space-saving case and another with a bulky case designed for high-performance gaming systems. What is the correct analysis of these two cases?",
-    "options": {
-      "A": "Both are designed only for laptops",
-      "B": "Slim cases prioritize space efficiency, while bulky cases support high performance and expansion",
-      "C": "Both cases have identical hardware support",
-      "D": "Bulky cases cannot support cooling systems"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Both are designed only for laptops",
+      "Slim cases prioritize space efficiency, while bulky cases support high performance and expansion",
+      "Both cases have identical hardware support",
+      "Bulky cases cannot support cooling systems"
+    ],
+    "correct_index": 1,
+    "explanation": "Compact cases are built to save space but limit your hardware options, while large cases provide the room needed for high-end components, extensive storage arrays, and robust thermal management. Options A, C, and D misstate the design goals and cooling capabilities of desktop enclosures."
   },
   {
-    "question_number": 125,
     "question": "A computer technician finds that a desktop system is overheating due to dust accumulation inside the CPU fan. What is the best maintenance procedure to solve this problem?",
-    "options": {
-      "A": "Replace the monitor",
-      "B": "Clean internal components and fans using proper tools",
-      "C": "Reinstall the operating system",
-      "D": "Change the keyboard"
-    },
-    "correct_answer": "B",
-    "points": "1/1",
-    "status": "Correct"
+    "options": [
+      "Replace the monitor",
+      "Clean internal components and fans using proper tools",
+      "Reinstall the operating system",
+      "Change the keyboard"
+    ],
+    "correct_index": 1,
+    "explanation": "Clearing dust out of cooling fins and fan blades with compressed air restores proper airflow, allowing the heatsink to pull heat away from the processor efficiently. Options A, C, and D focus on display, OS, or input peripherals and do nothing to fix physical dust buildup inside the case."
   },
   {
-    "question_number": 126,
     "question": "A user reports that their computer is slow and frequently freezes. The technician suspects low RAM and fragmented storage. What should the technician do first as part of a proper maintenance procedure?",
-    "options": {
-      "A": "Replace the motherboard immediately",
-      "B": "Diagnose system performance and check memory usage and disk health",
-      "C": "Remove all items"
-    },
-    "correct_answer": "B",
-    "points": "Will be reviewed",
-    "status": "Pending Review"
+    "options": [
+      "Replace the motherboard immediately",
+      "Diagnose system performance and check memory usage and disk health",
+      "Remove all items"
+    ],
+    "correct_index": 1,
+    "explanation": "Best practices dictate running diagnostic tools first—checking memory allocations, analyzing task manager metrics, and checking drive health—before committing to expensive, time-consuming hardware swaps. Options A and C describe invasive, high-cost teardown steps executed without any objective performance data."
   }
 ]

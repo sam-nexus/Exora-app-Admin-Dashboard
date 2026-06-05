@@ -49,13 +49,23 @@ const Users = () => {
     try {
       const { data } = await api.get("/users");
       setUsers(data);
-      // Initialize all as locked (true) — will be updated when admin toggles
-      // Real state would require per-user fetch which is expensive at scale
-      const initialStatus = {};
-      data.forEach((u) => {
-        initialStatus[u.id] = userLockStatus[u.id] ?? true;
-      });
-      setUserLockStatus(initialStatus);
+
+      // Fetch real lock status — true = all locked, false = at least one unlocked
+      const statusMap = {};
+      await Promise.all(
+        data.map(async (u) => {
+          if (u.role !== 'user') return;
+          try {
+            const res = await api.get(`/courses/user/${u.id}`);
+            const userCourses = res.data || [];
+            const allLocked = userCourses.length === 0 || userCourses.every((uc) => uc.is_locked);
+            statusMap[u.id] = allLocked;
+          } catch {
+            statusMap[u.id] = true;
+          }
+        })
+      );
+      setUserLockStatus(statusMap);
     } catch (err) {
       console.error(err);
     } finally {
@@ -463,13 +473,13 @@ const Users = () => {
                           disabled={toggling === user.id}
                           className={`p-1.5 rounded-lg transition ${
                             userLockStatus[user.id]
-                              ? "text-orange-600 hover:bg-orange-50"
-                              : "text-green-600 hover:bg-green-50"
+                              ? "text-red-600 hover:bg-red-50"
+                              : "text-emerald-600 hover:bg-emerald-50"
                           } disabled:opacity-50`}
                           title={
                             userLockStatus[user.id]
-                              ? "Unlock all courses"
-                              : "Lock all courses"
+                              ? "Courses Locked — click to Unlock"
+                              : "Courses Unlocked — click to Lock"
                           }
                         >
                           {toggling === user.id ? (
