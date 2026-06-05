@@ -1,21 +1,55 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Bell, CheckCircle2, ArrowRight, Loader2, XCircle,
-  Filter, Send, Users, User, Megaphone, Plus, X,
+  Filter, Send, Users, User, Megaphone, Plus, X, Search, ChevronDown,
 } from "lucide-react";
 import api from "../api/axios";
 
 // ─── Send Notification Modal ──────────────────────────────────────────────────
 const SendModal = ({ users, onClose, onSent }) => {
-  const [mode, setMode]       = useState('single');   // 'single' | 'broadcast'
+  const [mode, setMode]       = useState('single');
   const [title, setTitle]     = useState('');
   const [message, setMessage] = useState('');
   const [link, setLink]       = useState('');
-  const [recipientId, setRecipientId] = useState('');
+  const [recipientId, setRecipientId]     = useState('');
+  const [recipientName, setRecipientName] = useState('');
+  const [search, setSearch]               = useState('');
+  const [dropOpen, setDropOpen]           = useState(false);
   const [recipientRole, setRecipientRole] = useState('user');
   const [sending, setSending] = useState(false);
   const [error, setError]     = useState('');
+  const dropRef = useRef(null);
+
+  // close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filteredUsers = users.filter((u) => {
+    const q = search.toLowerCase();
+    return (
+      (u.full_name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q)
+    );
+  });
+
+  const selectUser = (u) => {
+    setRecipientId(u.id);
+    setRecipientName(`${u.full_name || 'Unknown'} — ${u.email}`);
+    setSearch('');
+    setDropOpen(false);
+  };
+
+  const clearUser = () => {
+    setRecipientId('');
+    setRecipientName('');
+    setSearch('');
+  };
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -72,15 +106,61 @@ const SendModal = ({ users, onClose, onSent }) => {
 
           {/* recipient */}
           {mode === 'single' ? (
-            <div>
+            <div ref={dropRef}>
               <label className="block text-sm font-medium text-gray-700 mb-1">Recipient</label>
-              <select value={recipientId} onChange={(e) => setRecipientId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400">
-                <option value="">— Select a user —</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>{u.full_name} ({u.email})</option>
-                ))}
-              </select>
+
+              {/* selected user pill or search input */}
+              {recipientId ? (
+                <div className="flex items-center justify-between px-3 py-2.5 border border-indigo-300 bg-indigo-50 rounded-lg text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                      {recipientName.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-gray-800 font-medium truncate max-w-[300px]">{recipientName}</span>
+                  </div>
+                  <button type="button" onClick={clearUser} className="text-gray-400 hover:text-red-500 transition ml-2 shrink-0">
+                    <X size={15} />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by name or email…"
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setDropOpen(true); }}
+                    onFocus={() => setDropOpen(true)}
+                    className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition"
+                  />
+                </div>
+              )}
+
+              {/* dropdown list */}
+              {dropOpen && !recipientId && (
+                <div className="mt-1 border border-gray-200 rounded-lg shadow-lg bg-white max-h-52 overflow-y-auto z-10 relative">
+                  {filteredUsers.length === 0 ? (
+                    <div className="px-4 py-3 text-sm text-gray-400 text-center">No users found</div>
+                  ) : (
+                    filteredUsers.map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => selectUser(u)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-indigo-50 transition text-left"
+                      >
+                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                          {(u.full_name || u.email || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{u.full_name || '—'}</p>
+                          <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div>
