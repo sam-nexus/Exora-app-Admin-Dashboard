@@ -278,8 +278,8 @@ router.get('/info', authenticate, async (req: AuthRequest, res: Response) => {
     originalAmount: '100 ETB',
     discount: '50%',       // set to null to hide discount badge
     bank: 'Commercial Bank of Ethiopia (CBE)',
-    accountNumber: '100023456789',
-    accountName: 'John Dalton',
+    accountNumber: '1000544142201',
+    accountName: 'Samuel Birhanu',
   });
 });
 
