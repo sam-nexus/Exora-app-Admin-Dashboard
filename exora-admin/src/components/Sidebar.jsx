@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   FileText,
+  MessageSquare,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
