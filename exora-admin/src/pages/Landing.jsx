@@ -34,17 +34,6 @@ const Landing = () => {
         }
     }, []);
 
-    // Apply theme class to html
-    useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        }
-    }, [darkMode]);
-
     // Scroll handler
     useEffect(() => {
         const handleScroll = () => {
@@ -146,11 +135,21 @@ const Landing = () => {
                         <div className="hidden md:flex items-center gap-2 lg:gap-3">
                             {/* Theme Toggle */}
                             <button
-                                onClick={() => setDarkMode(!darkMode)}
+                                onClick={() => {
+                                    const newMode = !darkMode;
+                                    setDarkMode(newMode);
+                                    if (newMode) {
+                                        document.documentElement.classList.add('dark');
+                                        localStorage.setItem('theme', 'dark');
+                                    } else {
+                                        document.documentElement.classList.remove('dark');
+                                        localStorage.setItem('theme', 'light');
+                                    }
+                                }}
                                 className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
                                 aria-label="Toggle theme"
                             >
-                                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                                {/* //{darkMode ? <Sun size={18} /> : <Moon size={18} />} */}
                             </button>
                             <a
                                 href="/login"
@@ -169,7 +168,17 @@ const Landing = () => {
                         {/* Mobile Menu Button */}
                         <div className="flex md:hidden items-center gap-1">
                             <button
-                                onClick={() => setDarkMode(!darkMode)}
+                                onClick={() => {
+                                    const newMode = !darkMode;
+                                    setDarkMode(newMode);
+                                    if (newMode) {
+                                        document.documentElement.classList.add('dark');
+                                        localStorage.setItem('theme', 'dark');
+                                    } else {
+                                        document.documentElement.classList.remove('dark');
+                                        localStorage.setItem('theme', 'light');
+                                    }
+                                }}
                                 className="p-2 text-gray-500 dark:text-gray-400"
                                 aria-label="Toggle theme"
                             >
