@@ -190,7 +190,7 @@ const StudentLayout = () => {
   const navItems = [
     { path: "/student", icon: <LayoutDashboard size={20} />, label: "Dashboard", badge: null },
     { path: "/student/departments", icon: <BookOpen size={20} />, label: "Departments", badge: null },
-    { path: "/student/payments", icon: <CreditCard size={20} />, label: "Payments", badge: null },
+    // { path: "/student/payments", icon: <CreditCard size={20} />, label: "Payments", badge: null },
     { path: "/student/help-support", icon: <LifeBuoy size={20} />, label: "Help & Support", badge: null },
     { path: "/student/profile", icon: <User size={20} />, label: "Profile", badge: null },
   ];

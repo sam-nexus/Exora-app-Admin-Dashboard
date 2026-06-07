@@ -141,20 +141,7 @@ const StudentProfile = () => {
               </div>
             </div>
 
-            <div className="p-5">
-              <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                <BookOpen size={16} className="text-gray-400" />
-                Learning Statistics
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                <StatItem value={stats.coursesCompleted} label="Courses Done" />
-                <StatItem value={stats.totalQuestions} label="Questions" />
-                <StatItem value={`${stats.averageScore}%`} label="Avg Score" />
-                <StatItem value={stats.studyStreak} label="Day Streak" />
-                <StatItem value={stats.totalHours} label="Hours Spent" />
-                <StatItem value="Active" label="Status" />
-              </div>
-            </div>
+            
           </div>
 
           {/* Logout Card */}

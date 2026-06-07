@@ -297,18 +297,7 @@ const Landing = () => {
                                         </div>
                                     ))}
                                 </div>
-                                <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Your Progress</div>
-                                            <div className="text-xl sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">85%</div>
-                                        </div>
-                                        <div
-                                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 animate-spin"
-                                            style={{ animationDuration: '3s' }}
-                                        ></div>
-                                    </div>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>

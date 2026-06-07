@@ -679,7 +679,7 @@ const DepartmentCard = ({ department, onUnlock }) => (
       <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
         <Lock size={18} className="text-gray-600" />
       </div>
-      <span className="text-lg font-bold text-gray-800">{department.price || 500} Br</span>
+      <span className="text-lg font-bold text-gray-800">{department.price || 50} Br</span>
     </div>
     <h3 className="font-semibold text-gray-900">{department.name}</h3>
     <p className="text-xs text-gray-500 mt-0.5">{department.courseCount} Courses</p>

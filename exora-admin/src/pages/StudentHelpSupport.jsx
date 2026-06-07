@@ -156,59 +156,7 @@ const StudentHelpSupport = () => {
         {/* Left Column - Contact & Quick Actions */}
         <div className="space-y-6">
           {/* Contact Card */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gray-800 px-5 py-4">
-              <div className="flex items-center gap-2">
-                <Headphones size={18} className="text-white" />
-                <h2 className="text-base font-semibold text-white">Contact Us</h2>
-              </div>
-              <p className="text-gray-300 text-xs mt-0.5">We're here to help</p>
-            </div>
-            <div className="p-5 space-y-3">
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition">
-                <Mail size={16} className="text-gray-500 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-gray-800 truncate">
-                    {import.meta.env.VITE_SUPPORT_EMAIL || 'support@exora.com'}
-                  </p>
-                  {import.meta.env.VITE_SUPPORT_EMAIL_2 && (
-                    <p className="text-sm font-medium text-gray-600 truncate">
-                      {import.meta.env.VITE_SUPPORT_EMAIL_2}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition">
-                <Phone size={16} className="text-gray-500 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-500">Phone</p>
-                  <p className="text-sm font-medium text-gray-800">
-                    {import.meta.env.VITE_SUPPORT_PHONE || '+251-911-123456'}
-                  </p>
-                  {import.meta.env.VITE_SUPPORT_PHONE_2 && (
-                    <p className="text-sm font-medium text-gray-600">
-                      {import.meta.env.VITE_SUPPORT_PHONE_2}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition">
-                <MessageCircle size={16} className="text-gray-500 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-500">Telegram</p>
-                  <p className="text-sm font-medium text-gray-800">
-                    {import.meta.env.VITE_SUPPORT_TELEGRAM || '@exora_mobile'}
-                  </p>
-                  {import.meta.env.VITE_SUPPORT_TELEGRAM_2 && (
-                    <p className="text-sm font-medium text-gray-600">
-                      {import.meta.env.VITE_SUPPORT_TELEGRAM_2}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+         
 
           {/* Quick Actions Card */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -220,13 +168,7 @@ const StudentHelpSupport = () => {
               <Ticket size={15} />
               Open Support 
             </button>
-            <button
-              onClick={() => window.open(import.meta.env.VITE_TELEGRAM_LINK)}
-              className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition"
-            >
-              <MessageCircle size={15} />
-              Chat on Telegram
-            </button>
+            
           </div>
 
           {/* Support Hours */}

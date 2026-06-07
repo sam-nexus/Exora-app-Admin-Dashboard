@@ -123,33 +123,7 @@ const StudentDepartments = () => {
         <p className="text-sm text-gray-500 mt-0.5">Select a department to start learning</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard
-          icon={<Layers size={16} />}
-          label="Total"
-          value={departments.length}
-          color="gray"
-        />
-        <StatCard
-          icon={<Unlock size={16} />}
-          label="Unlocked"
-          value={unlockedCount}
-          color="green"
-        />
-        <StatCard
-          icon={<Lock size={16} />}
-          label="Locked"
-          value={lockedCount}
-          color="orange"
-        />
-        <StatCard
-          icon={<Award size={16} />}
-          label="Completed"
-          value={completedCount}
-          color="purple"
-        />
-      </div>
+      
 
       {/* Search and Filter Bar */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -185,7 +159,7 @@ const StudentDepartments = () => {
         </div>
 
         {/* Filter Chips */}
-        <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-gray-100">
+        {/* <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-gray-100">
           <Filter size={14} className="text-gray-400 mr-1 self-center hidden sm:block" />
           {[
             { key: 'all', label: 'All', icon: '📋' },
@@ -206,7 +180,7 @@ const StudentDepartments = () => {
               {filter.label}
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Departments Grid */}
