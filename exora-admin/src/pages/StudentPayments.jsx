@@ -1,5 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Upload, CheckCircle, Clock, AlertCircle, CreditCard, Wallet, Lock, Unlock, Download, Eye, X, Search, Filter, ChevronDown } from 'lucide-react';
+import { 
+  Upload, CheckCircle, Clock, AlertCircle, CreditCard, Wallet, 
+  Lock, Unlock, X, Search, Filter, ChevronDown,
+  TrendingUp, Calendar, Tag, Shield, Sparkles,
+  ArrowUpRight, Info, DollarSign, Receipt, FileText, Loader2
+} from 'lucide-react';
 import api from '../api/axios';
 
 const StudentPayments = () => {
@@ -10,14 +15,16 @@ const StudentPayments = () => {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [receiptFile, setReceiptFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedBank, setSelectedBank] = useState('cbe');
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('history');
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
-  // Search, Filter, Sort States
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('date_desc'); // date_desc = latest first
+  const [sortBy, setSortBy] = useState('date_desc');
 
   useEffect(() => {
     fetchPayments();
@@ -31,7 +38,6 @@ const StudentPayments = () => {
       const { data } = await api.get('/student/payments', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Sort by date (latest first)
       const sortedData = (data || []).sort((a, b) => 
         new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
       );
@@ -62,10 +68,12 @@ const StudentPayments = () => {
     setUploading(true);
     const formData = new FormData();
     formData.append('receipt', receiptFile);
-    // When coming from Unlock tab: selectedPayment.id = department id
-    // When coming from History tab (re-upload): selectedPayment.department_id = department id
     const deptId = selectedPayment.department_id || selectedPayment.id;
     formData.append('paymentId', deptId);
+    // Send the amount so it gets stored in the database
+    if (selectedPayment.amount) {
+      formData.append('amount', String(selectedPayment.amount));
+    }
 
     try {
       const token = localStorage.getItem('token');
@@ -75,14 +83,18 @@ const StudentPayments = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      alert('Receipt uploaded successfully! Admin will verify it soon.');
+      setSuccessMessage('Receipt uploaded successfully! Admin will verify it soon.');
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 5000);
       setShowUploadModal(false);
       setReceiptFile(null);
+      setSelectedBank('cbe');
       fetchPayments();
       fetchLockedDepartments();
     } catch (err) {
       console.error('Upload error:', err);
-      alert(err.response?.data?.error || 'Error uploading receipt.');
+      setError(err.response?.data?.error || 'Error uploading receipt.');
+      setTimeout(() => setError(''), 5000);
     } finally {
       setUploading(false);
     }
@@ -92,40 +104,55 @@ const StudentPayments = () => {
     switch (status) {
       case 'verified':
       case 'approved':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-            <CheckCircle size={12} /> Verified
-          </span>
-        );
+        return {
+          bg: 'bg-emerald-50',
+          text: 'text-emerald-700',
+          border: 'border-emerald-200',
+          icon: <CheckCircle size={12} className="text-emerald-600" />,
+          label: 'Verified'
+        };
       case 'pending':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">
-            <Clock size={12} /> Pending
-          </span>
-        );
+        return {
+          bg: 'bg-amber-50',
+          text: 'text-amber-700',
+          border: 'border-amber-200',
+          icon: <Clock size={12} className="text-amber-600" />,
+          label: 'Pending'
+        };
       case 'declined':
       case 'failed':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-            <AlertCircle size={12} /> Declined
-          </span>
-        );
+        return {
+          bg: 'bg-red-50',
+          text: 'text-red-700',
+          border: 'border-red-200',
+          icon: <AlertCircle size={12} className="text-red-600" />,
+          label: 'Declined'
+        };
       default:
-        return <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">{status}</span>;
+        return {
+          bg: 'bg-gray-50',
+          text: 'text-gray-700',
+          border: 'border-gray-200',
+          icon: null,
+          label: status
+        };
     }
   };
 
   const formatDate = (value) => {
     if (!value) return '—';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString();
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
-  // Filter and Search Logic
   const filteredPayments = useMemo(() => {
     let filtered = [...payments];
     
-    // Search by department name
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(p => 
@@ -133,12 +160,10 @@ const StudentPayments = () => {
       );
     }
     
-    // Filter by status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(p => p.status === statusFilter);
     }
     
-    // Filter by date range
     if (dateFilter !== 'all') {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -154,7 +179,6 @@ const StudentPayments = () => {
       });
     }
     
-    // Sort
     if (sortBy === 'date_desc') {
       filtered.sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
     } else if (sortBy === 'date_asc') {
@@ -179,8 +203,8 @@ const StudentPayments = () => {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading payment history...</p>
+          <Loader2 size={32} className="animate-spin text-gray-400 mx-auto" />
+          <p className="mt-3 text-gray-500 text-sm">Loading payment history...</p>
         </div>
       </div>
     );
@@ -188,94 +212,120 @@ const StudentPayments = () => {
 
   return (
     <div className="space-y-6">
+      {/* Success Toast */}
+      {showSuccessToast && (
+        <div className="fixed top-20 right-4 z-50 animate-slideInRight">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 shadow-lg">
+            <div className="flex items-center gap-2">
+              <CheckCircle size={16} className="text-emerald-600" />
+              <p className="text-emerald-700 text-sm">{successMessage}</p>
+              <button onClick={() => setShowSuccessToast(false)} className="text-emerald-600 ml-2">
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Toast */}
+      {error && (
+        <div className="fixed top-20 right-4 z-50 animate-slideInRight">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 shadow-lg">
+            <div className="flex items-center gap-2">
+              <AlertCircle size={16} className="text-red-600" />
+              <p className="text-red-700 text-sm">{error}</p>
+              <button onClick={() => setError('')} className="text-red-600 ml-2">
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          Payments
-        </h1>
-        <p className="text-gray-500 mt-1">Manage your payments and unlock departments</p>
+      <div className="border-b border-gray-200 pb-4">
+        <h1 className="text-2xl font-semibold text-gray-900">Payments</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Manage payments and unlock departments</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">Total Spent</p>
-              <p className="text-2xl font-bold text-gray-800">{totalSpent} Birr</p>
-            </div>
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-              <CreditCard size={20} className="text-indigo-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">Verified Payments</p>
-              <p className="text-2xl font-bold text-green-600">{verifiedCount}</p>
-            </div>
-            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-              <CheckCircle size={20} className="text-green-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">Pending</p>
-              <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
-            </div>
-            <div className="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center">
-              <Clock size={20} className="text-yellow-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">Locked Depts</p>
-              <p className="text-2xl font-bold text-red-600">{lockedDepartments.length}</p>
-            </div>
-            <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
-              <Lock size={20} className="text-red-600" />
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard
+          icon={<DollarSign size={16} />}
+          value={`${totalSpent} Br`}
+          label="Total Spent"
+          sublabel="Lifetime"
+          color="blue"
+        />
+        <StatCard
+          icon={<CheckCircle size={16} />}
+          value={verifiedCount}
+          label="Verified"
+          sublabel="Completed"
+          color="green"
+        />
+        <StatCard
+          icon={<Clock size={16} />}
+          value={pendingCount}
+          label="Pending"
+          sublabel="Awaiting"
+          color="orange"
+        />
+        <StatCard
+          icon={<Lock size={16} />}
+          value={lockedDepartments.length}
+          label="Locked"
+          sublabel="Departments"
+          color="red"
+        />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab('history')}
-          className={`px-5 py-2.5 rounded-t-lg font-medium text-sm transition ${
-            activeTab === 'history'
-              ? 'bg-white text-indigo-600 border-t border-l border-r border-gray-200'
-              : 'text-gray-500 hover:text-indigo-600'
-          }`}
-        >
-          Payment History
-        </button>
-        <button
-          onClick={() => setActiveTab('unlock')}
-          className={`px-5 py-2.5 rounded-t-lg font-medium text-sm transition ${
-            activeTab === 'unlock'
-              ? 'bg-white text-indigo-600 border-t border-l border-r border-gray-200'
-              : 'text-gray-500 hover:text-indigo-600'
-          }`}
-        >
-          Unlock Departments
-        </button>
+      <div className="border-b border-gray-200">
+        <div className="flex gap-1">
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-5 py-2.5 rounded-t-lg text-sm font-medium transition ${
+              activeTab === 'history'
+                ? 'bg-white text-indigo-600 border-t border-l border-r border-gray-200'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              <Receipt size={14} />
+              Payment History
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('unlock')}
+            className={`px-5 py-2.5 rounded-t-lg text-sm font-medium transition ${
+              activeTab === 'unlock'
+                ? 'bg-white text-indigo-600 border-t border-l border-r border-gray-200'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              <Unlock size={14} />
+              Unlock Departments
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Unlock Departments Tab */}
       {activeTab === 'unlock' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Wallet size={20} className="text-indigo-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Available Departments</h2>
+        <div className="bg-white rounded-xl border border-gray-200">
+          <div className="border-b border-gray-100 px-5 py-4">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-gray-100 rounded-lg">
+                <Wallet size={16} className="text-gray-600" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900">Available Departments</h2>
+                <p className="text-xs text-gray-500">Purchase access to departments</p>
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mb-5">Purchase access to departments you want to study</p>
           
           {lockedDepartments.length === 0 ? (
             <div className="text-center py-10">
@@ -299,110 +349,96 @@ const StudentPayments = () => {
                       setSelectedPayment({ id: dept.id, departmentName: dept.name });
                       setShowUploadModal(true);
                     }}
-                    className="mt-4 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-xl font-medium hover:shadow-lg hover:shadow-indigo-200 transition"
-                  >
-                    <Unlock size={16} />
-                    Unlock Now
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Payment History Tab */}
       {activeTab === 'history' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {/* Search and Filter Bar */}
-          <div className="p-5 border-b border-gray-100 bg-gray-50">
-            <div className="flex flex-col md:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1 relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div className="p-4 border-b border-gray-100 bg-gray-50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by department name..."
+                  placeholder="Search departments..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gray-400 focus:ring-1 focus:ring-gray-400 outline-none bg-white"
                 />
               </div>
               
-              {/* Status Filter */}
               <div className="relative">
-                <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="pl-9 pr-8 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-7 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-400 appearance-none cursor-pointer"
                 >
                   <option value="all">All Status</option>
                   <option value="verified">Verified</option>
                   <option value="pending">Pending</option>
                   <option value="declined">Declined</option>
                 </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
               
-              {/* Date Filter */}
               <div className="relative">
-                <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <select
                   value={dateFilter}
                   onChange={(e) => setDateFilter(e.target.value)}
-                  className="pl-9 pr-8 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-7 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-400 appearance-none cursor-pointer"
                 >
                   <option value="all">All Time</option>
                   <option value="today">Today</option>
                   <option value="week">Last 7 Days</option>
                   <option value="month">Last 30 Days</option>
                 </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
               
-              {/* Sort By */}
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Sort:</span>
+                <TrendingUp size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="pl-12 pr-8 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-7 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-400 appearance-none cursor-pointer"
                 >
                   <option value="date_desc">Latest First</option>
                   <option value="date_asc">Oldest First</option>
                   <option value="amount_desc">Highest Amount</option>
                   <option value="amount_asc">Lowest Amount</option>
                 </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
             </div>
             
-            {/* Active Filters Display */}
+            {/* Active Filters */}
             {(searchTerm || statusFilter !== 'all' || dateFilter !== 'all') && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                <span className="text-xs text-gray-500">Active filters:</span>
+              <div className="flex flex-wrap items-center gap-2 mt-3 pt-2">
+                <span className="text-xs text-gray-500">Filters:</span>
                 {searchTerm && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs">
-                    Search: {searchTerm}
-                    <button onClick={() => setSearchTerm('')} className="hover:text-indigo-900">×</button>
-                  </span>
+                  <FilterChip label={`Search: ${searchTerm}`} onRemove={() => setSearchTerm('')} />
                 )}
                 {statusFilter !== 'all' && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs">
-                    Status: {statusFilter}
-                    <button onClick={() => setStatusFilter('all')} className="hover:text-indigo-900">×</button>
-                  </span>
+                  <FilterChip label={`Status: ${statusFilter}`} onRemove={() => setStatusFilter('all')} />
                 )}
                 {dateFilter !== 'all' && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs">
-                    Date: {dateFilter === 'today' ? 'Today' : dateFilter === 'week' ? 'Last 7 Days' : 'Last 30 Days'}
-                    <button onClick={() => setDateFilter('all')} className="hover:text-indigo-900">×</button>
-                  </span>
+                  <FilterChip 
+                    label={`Date: ${dateFilter === 'today' ? 'Today' : dateFilter === 'week' ? 'Last 7 Days' : 'Last 30 Days'}`} 
+                    onRemove={() => setDateFilter('all')} 
+                  />
                 )}
                 <button 
                   onClick={() => { setSearchTerm(''); setStatusFilter('all'); setDateFilter('all'); setSortBy('date_desc'); }}
-                  className="text-xs text-red-500 hover:text-red-700"
+                  className="text-xs text-gray-500 hover:text-gray-700"
                 >
                   Clear all
                 </button>
@@ -410,64 +446,66 @@ const StudentPayments = () => {
             )}
           </div>
 
-          {error && (
-            <div className="p-4 bg-red-50 text-red-700 border-b border-red-100 text-sm">
-              {error}
-            </div>
-          )}
-
+          {/* Payment Table */}
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
+            <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Department</th>
-                  <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Action</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredPayments.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-500">
+                    <td colSpan={5} className="px-5 py-10 text-center">
                       <div className="flex flex-col items-center gap-2">
-                        <CreditCard size={32} className="text-gray-300" />
-                        <p>No payment records found</p>
-                        <p className="text-xs text-gray-400">Try adjusting your search or filters</p>
+                        <Receipt size={32} className="text-gray-300" />
+                        <p className="text-gray-500">No payment records found</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  filteredPayments.map((payment) => (
-                    <tr key={payment.id} className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-4 text-gray-600 text-sm">{formatDate(payment.date || payment.created_at)}</td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{payment.departmentName || payment.department || 'Department'}</td>
-                      <td className="px-6 py-4 text-gray-600">{payment.amount ?? '—'} Birr</td>
-                      <td className="px-6 py-4">{getStatusBadge(payment.status)}</td>
-                      <td className="px-6 py-4">
-                        {payment.status === 'pending' ? (
-                          <button
-                            onClick={() => {
-                              setSelectedPayment(payment);
-                              setShowUploadModal(true);
-                            }}
-                            className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-                          >
-                            <Upload size={14} />
-                            Upload Receipt
-                          </button>
-                        ) : payment.status === 'verified' || payment.status === 'approved' ? (
-                          <span className="inline-flex items-center gap-1.5 text-green-600 text-sm">
-                            <CheckCircle size={14} />
-                            Unlocked
+                  filteredPayments.map((payment) => {
+                    const status = getStatusBadge(payment.status);
+                    return (
+                      <tr key={payment.id} className="hover:bg-gray-50 transition">
+                        <td className="px-5 py-3 text-gray-600">{formatDate(payment.date || payment.created_at)}</td>
+                        <td className="px-5 py-3 font-medium text-gray-900">{payment.departmentName || payment.department || 'Department'}</td>
+                        <td className="px-5 py-3 font-semibold text-gray-800">{payment.amount ?? '—'} Br</td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text} border ${status.border}`}>
+                            {status.icon}
+                            {status.label}
                           </span>
-                        ) : (
-                          <span className="text-gray-400 text-sm">Contact Support</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="px-5 py-3">
+                          {payment.status === 'pending' ? (
+                            <button
+                              onClick={() => {
+                                setSelectedPayment(payment);
+                                setShowUploadModal(true);
+                              }}
+                              className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 text-sm"
+                            >
+                              <Upload size={13} />
+                              Upload
+                            </button>
+                          ) : payment.status === 'verified' || payment.status === 'approved' ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-600 text-sm">
+                              <CheckCircle size={13} />
+                              Unlocked
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-sm">Contact Support</span>
+                          )}
+                        </td>
+                       </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -475,7 +513,7 @@ const StudentPayments = () => {
           
           {/* Results Summary */}
           {filteredPayments.length > 0 && (
-            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 text-xs text-gray-500">
+            <div className="px-5 py-2 border-t border-gray-100 bg-gray-50 text-xs text-gray-500">
               Showing {filteredPayments.length} of {payments.length} payments
             </div>
           )}
@@ -485,80 +523,123 @@ const StudentPayments = () => {
       {/* Upload Receipt Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center">
+          <div className="w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden">
+            <div className="bg-gray-800 px-5 py-4 flex justify-between items-center">
               <div>
-                <h3 className="text-xl font-bold text-white">Upload Payment Receipt</h3>
-                <p className="text-indigo-100 text-sm mt-0.5">Submit your payment proof</p>
+                <h3 className="text-lg font-semibold text-white">Upload Payment Receipt</h3>
+                <p className="text-gray-300 text-sm">Submit payment proof for verification</p>
               </div>
               <button
                 onClick={() => {
                   setShowUploadModal(false);
                   setReceiptFile(null);
+                  setSelectedBank('cbe');
                 }}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition"
+                className="text-white/70 hover:text-white"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
             
-            <div className="p-6">
-              <div className="bg-yellow-50 rounded-xl p-4 mb-5">
-                <p className="text-sm text-yellow-800">
-                  <strong>Department:</strong> {selectedPayment?.departmentName || selectedPayment?.name || 'Selected Department'}
-                </p>
-                <p className="text-sm text-yellow-800 mt-1">
-                  <strong>Amount:</strong> {selectedPayment?.amount || 500} Birr
-                </p>
+            <div className="p-5">
+              <div className="bg-gray-50 rounded-lg p-3 mb-4 border border-gray-200">
+                <div className="flex items-start gap-2">
+                  <Tag size={14} className="text-gray-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">
+                      {selectedPayment?.departmentName || selectedPayment?.name || 'Selected Department'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Amount: <span className="font-semibold">{selectedPayment?.amount || 500} Birr</span></p>
+                  </div>
+                </div>
               </div>
 
-              <label className="block text-sm font-medium text-gray-700 mb-2">Receipt File</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-500 transition cursor-pointer">
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
-                  className="hidden"
-                  id="receipt-upload"
-                />
-                <label htmlFor="receipt-upload" className="cursor-pointer block">
-                  <Upload size={32} className="mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-400 mt-1">PNG, JPG, PDF (max 5MB)</p>
-                </label>
+              {/* Bank Account Info */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <p className="text-xs font-medium text-amber-700 mb-2 flex items-center gap-1">
+                  <CreditCard size={12} /> Transfer Payment To
+                </p>
+
+                <select
+                  value={selectedBank}
+                  onChange={(e) => setSelectedBank(e.target.value)}
+                  className="w-full px-2 py-1.5 bg-white border border-amber-300 rounded-md text-sm focus:ring-1 focus:ring-amber-400 mb-2"
+                >
+                  <option value="cbe">Commercial Bank of Ethiopia (CBE)</option>
+                  <option value="awash">Awash Bank</option>
+                  <option value="dashen">Dashen Bank</option>
+                  <option value="telebirr">Telebirr</option>
+                </select>
+
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-amber-600">Account Number:</span>
+                    <span className="font-mono font-medium select-all">
+                      {selectedBank === 'cbe'     && (import.meta.env.VITE_PAYMENT_CBE_NUMBER     || 'Not configured')}
+                      {selectedBank === 'awash'   && (import.meta.env.VITE_PAYMENT_AWASH_NUMBER   || 'Not configured')}
+                      {selectedBank === 'dashen'  && (import.meta.env.VITE_PAYMENT_DASHEN_NUMBER  || 'Not configured')}
+                      {selectedBank === 'telebirr'&& (import.meta.env.VITE_PAYMENT_TELEBIRR_NUMBER|| 'Not configured')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-amber-600">Account Name:</span>
+                    <span className="font-medium">{import.meta.env.VITE_PAYMENT_ACCOUNT_NAME || 'Exora Educational Services'}</span>
+                  </div>
+                </div>
               </div>
 
-              {receiptFile && (
-                <p className="mt-3 text-sm text-green-600 flex items-center gap-1">
-                  <CheckCircle size={14} />
-                  Selected: {receiptFile.name}
-                </p>
-              )}
+              {/* File Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Upload Receipt</label>
+                <div className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition
+                  ${receiptFile ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-gray-400'}`}>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+                    className="hidden"
+                    id="receipt-upload"
+                  />
+                  <label htmlFor="receipt-upload" className="cursor-pointer block">
+                    {receiptFile ? (
+                      <>
+                        <FileText size={28} className="mx-auto text-emerald-500 mb-1" />
+                        <p className="text-sm text-emerald-600">{receiptFile.name}</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={28} className="mx-auto text-gray-400 mb-1" />
+                        <p className="text-sm text-gray-600">Click to upload</p>
+                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, PDF (max 5MB)</p>
+                      </>
+                    )}
+                  </label>
+                </div>
+              </div>
 
-              <div className="mt-6 flex gap-3">
+              <div className="flex gap-2 mt-5">
                 <button
-                  type="button"
                   onClick={() => {
                     setShowUploadModal(false);
                     setReceiptFile(null);
+                    setSelectedBank('cbe');
                   }}
-                  className="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                  className="flex-1 border border-gray-300 rounded-lg py-2 text-sm font-medium hover:bg-gray-50 transition"
                 >
                   Cancel
                 </button>
                 <button
-                  type="button"
                   onClick={handleUploadReceipt}
                   disabled={!receiptFile || uploading}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gray-800 text-white rounded-lg py-2 text-sm font-medium hover:bg-gray-900 transition disabled:opacity-50"
                 >
                   {uploading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span className="flex items-center justify-center gap-1">
+                      <Loader2 size={14} className="animate-spin" />
                       Uploading...
                     </span>
                   ) : (
-                    'Upload Receipt'
+                    'Submit Receipt'
                   )}
                 </button>
               </div>
@@ -566,8 +647,65 @@ const StudentPayments = () => {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(100%); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-slideInRight { animation: slideInRight 0.3s ease-out; }
+      `}</style>
     </div>
   );
 };
+
+// Helper Components
+const StatCard = ({ icon, value, label, sublabel, color }) => {
+  const colors = {
+    blue: 'bg-blue-100 text-blue-600',
+    green: 'bg-green-100 text-green-600',
+    orange: 'bg-orange-100 text-orange-600',
+    red: 'bg-red-100 text-red-600',
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-3">
+      <div className="flex items-center justify-between mb-1">
+        <div className={`w-8 h-8 ${colors[color]} rounded-lg flex items-center justify-center`}>
+          {icon}
+        </div>
+        <span className="text-xl font-bold text-gray-800">{value}</span>
+      </div>
+      <p className="text-xs font-medium text-gray-700">{label}</p>
+      <p className="text-[10px] text-gray-400">{sublabel}</p>
+    </div>
+  );
+};
+
+const DepartmentCard = ({ department, onUnlock }) => (
+  <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+    <div className="flex items-start justify-between mb-2">
+      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+        <Lock size={18} className="text-gray-600" />
+      </div>
+      <span className="text-lg font-bold text-gray-800">{department.price || 500} Br</span>
+    </div>
+    <h3 className="font-semibold text-gray-900">{department.name}</h3>
+    <p className="text-xs text-gray-500 mt-0.5">{department.courseCount} Courses</p>
+    <button
+      onClick={onUnlock}
+      className="mt-3 w-full flex items-center justify-center gap-1 bg-gray-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-900 transition"
+    >
+      <Unlock size={13} /> Unlock Now
+    </button>
+  </div>
+);
+
+const FilterChip = ({ label, onRemove }) => (
+  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+    {label}
+    <button onClick={onRemove} className="hover:text-gray-900">×</button>
+  </span>
+);
 
 export default StudentPayments;

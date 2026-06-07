@@ -11,59 +11,57 @@ const NotificationBell = ({ to = '/notifications' }) => {
   // Get user ID from localStorage
   useEffect(() => {
     const id = localStorage.getItem('userId');
-    if (id) {
-      setUserId(id);
-    }
+    if (id) setUserId(id);
   }, []);
 
-  // Set up Firebase real-time listener
+  // Initial fetch from backend — this also syncs count to Firebase
+  useEffect(() => {
+    if (!userId) return;
+    api.get('/notifications?unread=true')
+      .then(({ data }) => {
+        setUnreadCount(Array.isArray(data) ? data.length : 0);
+      })
+      .catch(() => {});
+  }, [userId]);
+
+  // Real-time Firebase listener — updates bell instantly when backend writes to Firebase
   useEffect(() => {
     if (!userId) return;
 
-    let unsubscribe = () => {};
     let retryCount = 0;
-    const maxRetries = 3;
+    let pollingInterval = null;
 
-    const setupFirebaseListener = async () => {
+    const setupFirebaseListener = () => {
       try {
-        unsubscribe = listenToUnreadNotifications(userId, (count) => {
+        const unsubscribe = listenToUnreadNotifications(userId, (count) => {
           setUnreadCount(count);
         });
-        retryCount = 0; // Reset retry count on success
+        return unsubscribe;
       } catch (err) {
-        console.warn('Firebase listener error, falling back to polling:', err);
-        // Fallback to polling if Firebase fails
-        if (retryCount < maxRetries) {
-          retryCount++;
-          setTimeout(setupFirebaseListener, 3000);
-        } else {
-          setupPolling();
-        }
+        console.warn('Firebase listener failed, falling back to polling:', err);
+        // Fallback: poll every 10s
+        pollingInterval = setInterval(() => {
+          api.get('/notifications?unread=true')
+            .then(({ data }) => setUnreadCount(Array.isArray(data) ? data.length : 0))
+            .catch(() => {});
+        }, 10000);
+        return () => {};
       }
     };
 
-    const setupPolling = () => {
-      const interval = setInterval(async () => {
-        try {
-          const { data } = await api.get('/notifications?unread=true');
-          setUnreadCount(Array.isArray(data) ? data.length : 0);
-        } catch (err) {
-          console.error('Unable to load notification count', err);
-        }
-      }, 5000);
-
-      return () => clearInterval(interval);
-    };
-
-    setupFirebaseListener();
+    const unsubscribe = setupFirebaseListener();
 
     return () => {
-      if (unsubscribe) unsubscribe();
+      unsubscribe();
+      if (pollingInterval) clearInterval(pollingInterval);
     };
   }, [userId]);
 
   return (
-    <Link to={to} className="relative inline-flex items-center justify-center text-slate-600 hover:text-indigo-700 transition">
+    <Link
+      to={to}
+      className="relative inline-flex items-center justify-center text-slate-600 hover:text-indigo-700 transition"
+    >
       <Bell size={20} />
       {unreadCount > 0 && (
         <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-semibold text-white">

@@ -100,30 +100,27 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
     
     // Update Firebase Realtime Database with unread count for each recipient
     if (admin.apps.length > 0) {
-      const database = admin.database();
-      
-      for (const recipientId of recipientIds) {
-        try {
-          // Get current unread count from Firebase
-          const snapshot = await database
-            .ref(`notifications/${recipientId}/unread_count`)
-            .get();
-          
-          const currentCount = snapshot.val() || 0;
-          const newCount = currentCount + 1;
-          
-          // Update unread count in Firebase
-          await database
-            .ref(`notifications/${recipientId}/unread_count`)
-            .set(newCount);
-          
-          // Also trigger a timestamp update to force listener updates
-          await database
-            .ref(`notifications/${recipientId}/last_updated`)
-            .set(new Date().toISOString());
-        } catch (firebaseError) {
-          console.error('Firebase update error:', firebaseError);
+      try {
+        const database = admin.database();
+        for (const recipientId of recipientIds) {
+          try {
+            const snapshot = await database
+              .ref(`notifications/${recipientId}/unread_count`)
+              .get();
+            const currentCount = snapshot.val() || 0;
+            await database
+              .ref(`notifications/${recipientId}/unread_count`)
+              .set(currentCount + 1);
+            await database
+              .ref(`notifications/${recipientId}/last_updated`)
+              .set(new Date().toISOString());
+          } catch (firebaseError) {
+            console.error('Firebase update error:', firebaseError);
+          }
         }
+      } catch (dbInitError) {
+        // Firebase Realtime Database not configured — non-fatal, notification still saved
+        console.warn('Firebase Database unavailable, skipping real-time count update:', (dbInitError as any)?.message);
       }
     }
 

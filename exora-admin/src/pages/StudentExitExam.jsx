@@ -421,36 +421,38 @@ const StudentExitExam = () => {
   // ── submit ──
   const submitExam = async () => {
     setLoading(true);
+    const timeSpent = enableTimer && totalTime > 0 ? totalTime - timeLeft : null;
     try {
-      let data;
-      try {
-        const res = await api.post('/student/exit-exam/submit', { departmentId: deptId, answers });
-        data = res.data;
-      } catch (err) {
-        // Client-side scoring fallback
-        console.warn('Submit endpoint unavailable — scoring client-side');
-        let totalCorrect = 0;
-        const results = questions.map((q) => {
-          const userLetter = answers[q.id] ?? '';
-          const isCorrect  = userLetter === optionLabel(q.correct_index ?? 0);
-          if (isCorrect) totalCorrect++;
-          return {
-            id: q.id, text: q.question_text,
-            userAnswer: userLetter,
-            correctAnswer: optionLabel(q.correct_index ?? 0),
-            isCorrect,
-            explanation: q.explanation,
-          };
-        });
-        const score = totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0;
-        data = { score, correctCount: totalCorrect, totalCount: totalQs, results };
-      }
-      setResult(data);
+      const res = await api.post('/student/exit-exam/submit', {
+        departmentId: deptId,
+        courseId:     courseId || undefined,
+        answers,
+        mode,
+        timeTaken: timeSpent,
+      });
+      setResult(res.data);
       setScreen('result');
       setConfirmSubmit(false);
-    } catch (e) {
-      console.error(e);
-      alert('Submission failed. Please try again.');
+    } catch (err) {
+      // Client-side scoring fallback (if backend unreachable)
+      console.warn('Submit endpoint unavailable — scoring client-side');
+      let totalCorrect = 0;
+      const results = questions.map((q) => {
+        const userLetter = answers[q.id] ?? '';
+        const isCorrect  = userLetter === optionLabel(q.correct_index ?? 0);
+        if (isCorrect) totalCorrect++;
+        return {
+          id: q.id, text: q.question_text,
+          userAnswer: userLetter,
+          correctAnswer: optionLabel(q.correct_index ?? 0),
+          isCorrect,
+          explanation: q.explanation,
+        };
+      });
+      const score = totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0;
+      setResult({ score, correctCount: totalCorrect, totalCount: totalQs, results });
+      setScreen('result');
+      setConfirmSubmit(false);
     } finally {
       setLoading(false);
     }

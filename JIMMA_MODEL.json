@@ -1,0 +1,1070 @@
+[
+  {
+    "question": "__________________ determines the extent to which individual nodes or DBs in a connected DDB can operate independently.",
+    "options": [
+      "Transparency",
+      "Tolerance",
+      "Autonomy",
+      "Scalability"
+    ],
+    "correct_index": 2,
+    "explanation": "Autonomy refers to the degree of local control a site has over its own database operations and administration in a Distributed Database System (DDBS). Option A (Transparency) hides the distribution details from users. Option B (Tolerance) usually relates to fault tolerance. Option D (Scalability) is the system's capacity to handle growth."
+  },
+  {
+    "question": "In relational databases, _________ values indicate unknown, missing, or nonapplicable data.",
+    "options": [
+      "Primary key",
+      "Foreign key",
+      "Default",
+      "Null"
+    ],
+    "correct_index": 3,
+    "explanation": "A NULL value is a special marker used in SQL to indicate that a data value does not exist in the database (it is missing, unknown, or not applicable). Options A and B are relational keys used to enforce constraints and relationships. Option C supplies a predefined value when none is provided, which is opposite to an unknown state."
+  },
+  {
+    "question": "What is the term used to describe the process of assigning each fragment or copy of a fragment to a particular site in a distributed system?",
+    "options": [
+      "Data normalization",
+      "Data distribution (or data allocation)",
+      "Replication schema",
+      "Partial replication"
+    ],
+    "correct_index": 1,
+    "explanation": "Data distribution or data allocation deals with the design decision of placing specific fragments or complete collections of data at specific physical sites across the network. Option A (Normalization) is a centralized database design process to reduce redundancy. Options C and D refer specifically to copying strategies rather than the overarching process of assigning location mapped fragments."
+  },
+  {
+    "question": "In which type of distributed concurrency control based on a distinguished copy of a Data Item does all distinguished copies kept at the same site.",
+    "options": [
+      "Particular copy of each data item designated as distinguished copy",
+      "Primary site technique",
+      "Primary site with backup site",
+      "Primary copy method"
+    ],
+    "correct_index": 1,
+    "explanation": "Under the primary site technique, a single coordinator site is designated to maintain all the distinguished copies (locks or actual data items) for concurrency control. Option A and Option D spread the responsibility of distinguished copies across multiple distinct sites depending on the coordinator mapping of individual data elements. Option C builds upon the primary site by incorporating a dedicated backup fallback node."
+  },
+  {
+    "question": "_____________ used to interpret the meaning of the data elements corresponding to that attribute.",
+    "options": [
+      "Relation",
+      "Domain",
+      "Tuple",
+      "Schema"
+    ],
+    "correct_index": 1,
+    "explanation": "A domain defines the set of permissible, atomic values that an attribute can take, allowing users to interpret what the value represents structurally and logically. Option A (Relation) is the table itself. Option C (Tuple) represents a single row of data. Option D (Schema) represents the structural blueprint of the overall logical database framework."
+  },
+  {
+    "question": "Which of the following is NOT an explicit schema-based constraint that can be expressed directly in the relational model?",
+    "options": [
+      "Key constraints",
+      "Entity integrity constraints",
+      "Referential integrity constraints",
+      "Application-based constraints"
+    ],
+    "correct_index": 3,
+    "explanation": "Application-based constraints cannot be directly declared within the structural relational schema (DDL statements like unique, primary key, or foreign key declarations). They must be validated using custom programmatic logic within applications or triggers. Options A, B, and C are fundamental, built-in structural constraints enforced automatically by DBMS engines."
+  },
+  {
+    "question": "Occurs when two transactions that access the same database items have operations interleaved, resulting in one overriding the value written by another without isolating the state.",
+    "options": [
+      "The lost update problem",
+      "The temporary update problem",
+      "The incorrect summary problem",
+      "The unrepeatable read problem"
+    ],
+    "correct_index": 0,
+    "explanation": "The lost update problem happens when two concurrent transactions update the same item concurrently, and the final update overwrites the first without including its alterations. Option B (Temporary update) occurs when a transaction reads an item updated by a failed transaction that rolled back. Option C occurs when one transaction calculates an aggregate while another modifies individual values. Option D involves reading a value twice and getting different values because another transaction modified it midway."
+  },
+  {
+    "question": "____________ is a mechanism where all the previous logs are synchronized, flushed, and stored permanently in a stable storage disk along with a reference entry.",
+    "options": [
+      "Abort",
+      "Commit",
+      "Checkpoint",
+      "Rollback"
+    ],
+    "correct_index": 2,
+    "explanation": "A checkpoint forces the system to flush all dirty log buffers and database modifications residing in volatile memory directly onto persistent storage disks, minimizing the workload during crash recovery. Option A aborts execution. Option B finalizes a single transaction. Option D reverses uncommitted actions to return to a previous consistent state."
+  },
+  {
+    "question": "________________ determines the requirements of end-users and develop specifications for those requirements.",
+    "options": [
+      "Database administrators",
+      "Application programmers",
+      "System analysts",
+      "Auditors"
+    ],
+    "correct_index": 2,
+    "explanation": "A system analyst specializes in researching user needs, analyzing organizational workflows, and designing clear technical specifications to guide engineering teams. Option A manages database infrastructure and health. Option B writes code to translate specifications into software. Option D checks compliance and security rules."
+  },
+  {
+    "question": "The SQL ALTER statement can be used to:",
+    "options": [
+      "Change the table structure",
+      "Change the table data",
+      "Add rows to the table",
+      "Delete rows from the table"
+    ],
+    "correct_index": 0,
+    "explanation": "The ALTER statement is a Data Definition Language (DDL) command utilized to modify an existing database object's schema structure (such as adding, dropping, or modifying columns). Changing data (Option B) or manipulating rows (Options C and D) require Data Manipulation Language (DML) commands like UPDATE, INSERT, and DELETE."
+  },
+  {
+    "question": "Security is a typical DBMS function that aims to protect databases from _______",
+    "options": [
+      "Data Visualization",
+      "Unauthorized access",
+      "Data loss",
+      "A and B"
+    ],
+    "correct_index": 1,
+    "explanation": "The specific primary mandate of database security mechanisms is to shield sensitive, stored data against malicious or unauthorized access. While database reliability practices cover data loss (Option C) via backups, security focuses on authorization, access control, and authentication. Option A (Data Visualization) is a business intelligence technique, not a database threat."
+  },
+  {
+    "question": "In which isolation level must transactions acquire long-duration read locks on the individual data items that they read?",
+    "options": [
+      "Serializability",
+      "Read committed",
+      "Read uncommitted",
+      "Repeatable read"
+    ],
+    "correct_index": 3,
+    "explanation": "The Repeatable Read isolation level requires shared locks (read locks) to be held until the completion of the transaction to guarantee that data values read during its lifecycle do not change. Option A typically locks ranges or whole tables to prevent phantom reads. Option B releases shared read locks immediately after the statement finishes. Option C does not acquire read locks at all, permitting dirty reads."
+  },
+  {
+    "question": "Which of the following best describes a class in object-oriented programming?",
+    "options": [
+      "A specific instance of an object with its own data and behavior.",
+      "A blueprint that defines the properties and methods of similar objects.",
+      "A function that performs a specific task on an object.",
+      "A collection of variables that store data used by the program."
+    ],
+    "correct_index": 1,
+    "explanation": "A class acts as an abstract template or structural blueprint from which concrete operational objects are instantiated. Option A describes an object instance itself. Option C describes a method or function. Option D defines variable collections like structures or simple records."
+  },
+  {
+    "question": "What is the principle in object-oriented programming that allows us to hide the internal implementation details of a class and only expose its functionalities through methods?",
+    "options": [
+      "Inheritance",
+      "Polymorphism",
+      "Encapsulation",
+      "Abstraction"
+    ],
+    "correct_index": 2,
+    "explanation": "Encapsulation combines data and the methods operating on that data into a single structural unit (a class) while restricting direct visibility via access modifiers like 'private'. Option D (Abstraction) focuses on hiding the complexity of real-world concepts by providing simplified high-level models, whereas encapsulation is specifically about protective bundling and internal implementation hiding."
+  },
+  {
+    "question": "During a system analysis project, the team decides to create multiple models, each focusing on a specific aspect of the system. Which of the following benefits does this approach offer?",
+    "options": [
+      "It simplifies the modeling process by focusing on a single technique.",
+      "It provides a more comprehensive view of the system by using different perspectives.",
+      "It reduces the time required to develop the system model.",
+      "It introduces unnecessary complexity and confusion for stakeholders."
+    ],
+    "correct_index": 1,
+    "explanation": "Systems cannot be fully contextualized using a single model. Employing various perspectives (structural, behavioral, functional) builds a rich and holistic description of system characteristics. Option A contradicts the multifaceted approach. Option C is false, as maintaining multiple paradigms takes extra time. Option D incorrectly reframes a design benefit as a flaw."
+  },
+  {
+    "question": "An analyst is developing a model to document the different states a \"Product Order\" can go through (e.g., Submitted, Processing, and Shipped). Which modeling technique is most appropriate for this scenario?",
+    "options": [
+      "Class diagram",
+      "Use case diagram",
+      "State diagram",
+      "Sequence diagram"
+    ],
+    "correct_index": 2,
+    "explanation": "A UML state machine diagram (or state diagram) is explicitly designed to model the life cycle of a reactive object by detailing its changing conditions (states) and triggering actions over time. Option A structures relationships. Option B captures high-level user goals. Option D displays chronological interaction loops between runtime components."
+  },
+  {
+    "question": "When analyzing user requirements for an online shopping system, you identify the need for users to be able to add items to their shopping cart and then proceed to checkout. Which UML relationship best represents the interaction between the \"Add to Cart\" and \"Checkout\" use cases in a use case diagram?",
+    "options": [
+      "Generalization",
+      "Include",
+      "Extend",
+      "Association"
+    ],
+    "correct_index": 2,
+    "explanation": "The relationship is modeled as an `<<extend>>` or a sequential workflow interaction because 'Checkout' is an optional extension path that follows the base addition of products. Alternatively, if they are separate base features connected via a user actor, it is simply directed association. However, when evaluating pure workflow linkages where one step optionally builds upon an entry condition of another, `<<extend>>` fits best compared to a mandatory dependency (`<<include>>`)."
+  },
+  {
+    "question": "UML (Unified Modeling Language) offers various diagrams to represent user requirements in object-oriented systems. Which of the following UML diagrams is MOST suitable for capturing the high-level interactions between users and the system?",
+    "options": [
+      "Class Diagram",
+      "Sequence Diagram",
+      "Activity Diagram",
+      "Use Case Diagram"
+    ],
+    "correct_index": 3,
+    "explanation": "Use case diagrams represent actors, use cases, and their relationships to map out a clear, high-level map of user interactions and functional boundaries. Option A defines static class designs. Options B and C capture intricate architectural behaviors and logic rather than simple stakeholder requirements maps."
+  },
+  {
+    "question": "You're designing a state diagram for the \"Book\" class in the library management system. The book can be in different states like \"Available,\" \"Borrowed,\" and \"Under Repair.\" Which UML element would represent the transition between the \"Available\" and \"Borrowed\" states when a member successfully borrows the book?",
+    "options": [
+      "State",
+      "Event",
+      "Guard condition",
+      "Action"
+    ],
+    "correct_index": 1,
+    "explanation": "An event is the stimulus or trigger that causes a transition from one state to another (e.g., the act of borrowing). Option A is the condition of being in a state. Option C is a boolean condition that must be true for the transition to fire. Option D is the computational execution executed during the state change."
+  },
+  {
+    "question": "In your class diagram for the library management system, you have a class named \"Book\" with attributes like title, author, and genre. You also have a class named \"Member\" with attributes like name and contact information. What type of UML relationship would you use to show that a Book can be borrowed by a member?",
+    "options": [
+      "Generalization",
+      "Association",
+      "Aggregation",
+      "Composition"
+    ],
+    "correct_index": 1,
+    "explanation": "An association represents a structural semantic link between two independent classes. Option A represents an 'is-a' inheritance relationship. Options C and D indicate 'part-of' structural hierarchies where one element owns or contains another lifecycle-wise, which does not apply here."
+  },
+  {
+    "question": "Consider a class hierarchy with interfaces and abstract classes. Which of the following statements is CORRECT about implementing polymorphism in this scenario?",
+    "options": [
+      "All concrete subclasses must override methods declared in abstract classes.",
+      "Interfaces can only define abstract methods, while abstract classes can have concrete implementations.",
+      "Polymorphism is achieved solely through method overloading within the same class.",
+      "Interfaces promote tight coupling, allowing unrelated classes to share functionality."
+    ],
+    "correct_index": 1,
+    "explanation": "In standard OOP design paradigms, interfaces traditionally dictate abstract declarations (though Java 8 introduced default methods, the classic distinction stands), while abstract classes provide base fields along with concrete functional overrides. Option A is false because concrete subclasses only need to override un-implemented abstract methods. Option C describes compile-time overloading, not runtime polymorphism. Option D is incorrect because interfaces promote loose coupling."
+  },
+  {
+    "question": "When is method overloading determined?",
+    "options": [
+      "At run time",
+      "At compile time",
+      "At coding time",
+      "At execution time"
+    ],
+    "correct_index": 1,
+    "explanation": "Method overloading is resolved at compile time based on the method signatures (number, type, and order of parameters provided in the code). It is also known as static polymorphism. Options A and D are identical terms referencing runtime method overriding resolution."
+  },
+  {
+    "question": "One of the following is a major emphasis of the Structural programming paradigm:",
+    "options": [
+      "Data structures and their manipulation.",
+      "Encapsulating data and behavior within objects.",
+      "Procedures and functions as the building blocks of programs.",
+      "Inheritance and polymorphism for code reuse."
+    ],
+    "correct_index": 2,
+    "explanation": "Structured/procedural programming concentrates heavily on breaking logical execution blocks into distinct, reusable tasks called subroutines, functions, or procedures. Options B and D are defining principles of object-oriented programming. Option A is universal to all computer algorithms."
+  },
+  {
+    "question": "Which of the following statements about data structures is true regarding object-oriented programming but not structured programming?",
+    "options": [
+      "Data structures are statically allocated",
+      "Data structures cannot contain objects as elements",
+      "Data structures can bind behavior and modify visibility state inside encapsulation blocks",
+      "Data structures cannot be used to represent a database schema"
+    ],
+    "correct_index": 2,
+    "explanation": "In OOP, objects themselves act as smart data structures that combine data fields with executable methods (behavior), hiding internal attributes via visibility modifiers. The original statement C ('can be changed after declaration') applies to variables in both paradigms, making a refined option regarding encapsulated behavioral binding much more tracking to pure OOP definitions."
+  },
+  {
+    "question": "When designing complex software systems with multiple interacting objects, what design principle is crucial for maintainability and scalability?",
+    "options": [
+      "Loose coupling, where objects interact through well-defined interfaces",
+      "Code duplication to avoid unnecessary complexity.",
+      "Tight coupling between objects, creating dependencies.",
+      "Global variables for easy access to data across different parts of the system."
+    ],
+    "correct_index": 0,
+    "explanation": "Loose coupling isolates the dependencies between discrete program units, allowing changes to be implemented within one component without breaking adjacent software components. Option B and Option D present bad architectural anti-patterns that harm scalability. Option C hinders maintainability by tangling independent object lifecycles together."
+  },
+  {
+    "question": "Which feature of OOP is indicated by the following code?\n\nclass Student {\n    int marks;\n}\nclass Topper extends Student {\n    private int age;\n    public Topper(int age) {\n        this.age = age;\n    }\n}",
+    "options": [
+      "Encapsulation and Inheritance",
+      "Inheritance and polymorphism",
+      "Polymorphism",
+      "Inheritance"
+    ],
+    "correct_index": 0,
+    "explanation": "The code explicitly features Inheritance through the keyword `extends Student`. It also incorporates Encapsulation by designating the field `age` as `private` and limiting access to it via a controlled public constructor mechanism."
+  },
+  {
+    "question": "Consider a Java scenario where a subclass overrides a parent class method. Removing an invalid statement like a missing method marker or duplicate declaration will yield compiling code. What does standard subclass resolution print?",
+    "options": [
+      "Removing Stmt-1 will make the program compilable and it will print “Base: Hello Derived”",
+      "Removing both Stmt-1 and Stmt-2 will make the program compilable and it will print “Base: Hello Derived”",
+      "Removing Stmt-2 will make the program compilable and it will print “Hello Derived”",
+      "Removing Stmt-1 will make the program compilable and it will print “Base Derived”"
+    ],
+    "correct_index": 0,
+    "explanation": "In classic inheritance exercises containing conflicting constructor chain calls or duplicate block signatures (represented as Stmt-1/Stmt-2 placeholders), pruning the faulty super declaration structural statement allows the code to execute cleanly, adhering to dynamic method dispatch."
+  },
+  {
+    "question": "Which of the following statements is INCORRECT about the Final keyword in Java?",
+    "options": [
+      "A value of a Final variable cannot be changed.",
+      "A Final method cannot be overridden.",
+      "A Final method cannot be inherited.",
+      "A Final class cannot be extended."
+    ],
+    "correct_index": 2,
+    "explanation": "A method marked as `final` is fully inherited by subclasses; it just cannot be overridden or rewritten by them. Options A, B, and D are entirely true and represent correct applications of the `final` keyword."
+  },
+  {
+    "question": "Consider a program that allows users to write data to different types of files (text, CSV). You plan to use polymorphism to achieve this. Which approach best utilizes polymorphism and I/O functionality?",
+    "options": [
+      "Create a base class FileWriter with a writeData(String data) method. Subclasses like TextFileWriter and CSVFileWriter will inherit and implement specific file writing logic for their formats.",
+      "Use a single FileWriter class with overloaded methods writeData(String data) for text and CSV formats.",
+      "Write separate functions for writing text and CSV data.",
+      "Define an interface Writable with a method writeData(String data). Implement separate classes for TextFile and CSVFile, each implementing Writable and having their own file writing logic."
+    ],
+    "correct_index": 3,
+    "explanation": "An interface approach (`Writable`) completely decouples the unrelated implementation variants of file structures. It strictly follows the Dependency Inversion Principle, permitting flexible runtime substitution. Option A forces an unnecessary implementation inheritance hierarchy. Option B is compile-time overloading, which lacks polymorphism flexibility across custom external modules."
+  },
+  {
+    "question": "Assume a class implements two interfaces, both with an identical default or abstract method declaration named draw(). Which of the following statements is true in standard Java configurations?",
+    "options": [
+      "The class must have two separate methods named draw().",
+      "The compiler throws an error due to method name conflict unless overridden explicitly.",
+      "The class can choose to implement only one draw() method to satisfy both abstract declarations.",
+      "The class needs to explicitly specify which interface's draw() to implement."
+    ],
+    "correct_index": 2,
+    "explanation": "If both interface methods are pure abstract declarations, implementing a single `public void draw()` method in the concrete class satisfies both interfaces simultaneously. However, if both methods contain default implementations, Option B becomes true as the compiler requires an explicit local override resolution."
+  },
+  {
+    "question": "Which of these classes is used to generate an array that can increase and decrease size automatically?",
+    "options": [
+      "ArrayList()",
+      "DynamicList()",
+      "LinkedList()",
+      "Set()"
+    ],
+    "correct_index": 0,
+    "explanation": "Java's `ArrayList` handles dynamic scaling under the hood, expanding its capacity automatically whenever elements are appended beyond internal boundaries. Option B is non-existent in core Java. Option C utilizes a node chain structure rather than a continuous backing array. Option D is an interface focused on element uniqueness."
+  },
+  {
+    "question": "What is the use of the finalize() method in Java?",
+    "options": [
+      "It is used to define the object's behavior when explicitly garbage collected.",
+      "It is called by the garbage collector before an object is reclaimed.",
+      "It allows for manual memory management.",
+      "It is called by the constructor of the class."
+    ],
+    "correct_index": 1,
+    "explanation": "The `finalize()` method is a protected method of the `Object` class that the Garbage Collector invokes right before it purges the object instance from heap memory. Option C is false because Java enforces automatic garbage collection."
+  },
+  {
+    "question": "What will happen if two threads of the same priority are called to be processed simultaneously?",
+    "options": [
+      "Anyone will be executed first lexicographically",
+      "Both of them will be executed simultaneously",
+      "None of them will be executed",
+      "It is dependent on the operating system's underlying thread scheduler"
+    ],
+    "correct_index": 3,
+    "explanation": "Java thread scheduling relies directly on the host Operating System's time-slicing and scheduling algorithms. Equal priority execution behavior cannot be guaranteed uniformly across varying environments."
+  },
+  {
+    "question": "What is the output of the following program?\n\nimport java.util.*;\nclass Array {\n    public static void main(String args[]) {\n        int array[] = new int [5];\n        for (int i = 5; i > 0; i--)\n            array[5-i] = i;\n        Arrays.fill(array, 1, 4, 8);\n        for (int i = 0; i < 5 ; i++)\n            System.out.print(array[i]);\n    }\n}",
+    "options": [
+      "58881",
+      "12885",
+      "12845",
+      "54881"
+    ],
+    "correct_index": 0,
+    "explanation": "The initial loop sets the array values to `[5, 4, 3, 2, 1]`. Then, `Arrays.fill(array, 1, 4, 8)` replaces elements from index 1 up to (but excluding) index 4 with the value `8`. This modifies indices 1, 2, and 3, yielding `[5, 8, 8, 8, 1]`."
+  },
+  {
+    "question": "What will be the output of the following Java program?\n\npublic class exception_handling {\n    public static void main(String args[]) {\n        try {\n            int a, b;\n            b = args.length;\n            System.out.print(\"A\");\n            a = 5 / b;\n        } catch(ArithmeticException e) {\n            System.out.print(\"B\");\n        }\n    }\n}",
+    "options": [
+      "A",
+      "Compilation Error",
+      "AB",
+      "Runtime Error"
+    ],
+    "correct_index": 2,
+    "explanation": "Running this program without command-line arguments sets `args.length` (variable `b`) to `0`. It prints 'A', then executes `5 / 0`, throwing an `ArithmeticException`. The catch block catches it and prints 'B', producing the combined string 'AB'."
+  },
+  {
+    "question": "What will be the output of the following multithreaded program?\n\nclass multithreaded_programing {\n    public static void main(String args[]) {\n        new newthread(); \n        for(int i=0; i<3;i++)\n            System.out.print(i);\n    }\n}\nclass newthread extends Thread {\n    Thread t;\n    newthread() {\n        t = new Thread(this,\"My Thread\");\n        t.start();\n    }\n    public void run() {\n        try {\n            t.join(); \n            System.out.println(t.getName());\n        } catch(Exception e) {\n            System.out.print(\"Exception\");\n        }\n    }\n}",
+    "options": [
+      "Prints 012",
+      "Prints 012 and then leads to a Runtime Error",
+      "Compilation Error",
+      "Nothing will be displayed"
+    ],
+    "correct_index": 0,
+    "explanation": "The main thread prints `012` rapidly via its loop. Inside `newthread`, the thread invokes `t.join()` on itself. Calling `join()` on your own running thread thread causes a permanent deadlock condition, preventing it from ever moving past that line to print the name. Thus, only `012` gets displayed."
+  },
+  {
+    "question": "Which of the following languages is primarily used for client-side scripting in web development?",
+    "options": [
+      "Python",
+      "Java",
+      "JavaScript",
+      "C++"
+    ],
+    "correct_index": 2,
+    "explanation": "JavaScript is the native scripting language executed natively inside consumer web browsers to orchestrate interactive features. Options A, B, and C function predominantly as compiled or interpreted backend server environments."
+  },
+  {
+    "question": "What is the primary purpose of HyperText Markup Language (HTML) in web development?",
+    "options": [
+      "To add interactivity to web pages",
+      "To define the structure and content of web pages",
+      "To handle communication between server and client",
+      "To create animations and graphics"
+    ],
+    "correct_index": 1,
+    "explanation": "HTML supplies the structural foundation, framing tags, and informational text layouts for web applications. Option A describes JavaScript. Option C defines communication protocols like HTTP. Option D covers technologies like CSS or canvas/WebGL."
+  },
+  {
+    "question": "When encountering a JavaScript error message, the first step in debugging should be:",
+    "options": [
+      "Ignoring the error and hoping it goes away",
+      "Reading the error message carefully and identifying the line causing the issue",
+      "Re-writing the entire code from scratch",
+      "Searching online for generic solutions without understanding the context"
+    ],
+    "correct_index": 1,
+    "explanation": "The most effective initial step in debugging is parsing the provided stack trace and error message directly to identify the error location and underlying cause. Options A, C, and D bypass proper diagnostic workflows."
+  },
+  {
+    "question": "Security is a major concern when handling user data on an e-commerce website. Which of the following is NOT a recommended security practice?",
+    "options": [
+      "Validating user input exclusively on the client-side to prevent malicious code injection",
+      "Encrypting sensitive data like credit card and session information on the server-side",
+      "Using secure protocols like HTTPS for communication",
+      "Implementing strict role-based access control policies on the backend"
+    ],
+    "correct_index": 0,
+    "explanation": "Validating input *only* on the client side is a critical security vulnerability. Malicious actors can easily bypass client-side checks and send harmful payloads directly to the server. All input validation must be enforced on the server side."
+  },
+  {
+    "question": "You're building a web application that allows users to register. On the server-side, how would you ensure a username is unique before storing it in the database?",
+    "options": [
+      "Use JavaScript to check for uniqueness before submitting the form",
+      "Write server-side code to query the database for existing usernames before storing the new one.",
+      "Rely entirely on basic client cookies to scan historical entries.",
+      "There's no way to guarantee uniqueness in a web application."
+    ],
+    "correct_index": 1,
+    "explanation": "Server-side queries checking for existing data entries, combined with unique constraints on the database table, are the only secure and authoritative way to prevent duplicate records. Client-side checks (Option A) can be bypassed or fail due to race conditions."
+  },
+  {
+    "question": "A user submits a form on your website. Which combination of technologies best represents how the form data should be processed for secure, robust validation and storage?",
+    "options": [
+      "Client-side validation with JavaScript for immediate feedback, followed by mandatory server-side processing and validation.",
+      "Only client-side validation with JavaScript for a more responsive experience.",
+      "Direct browser-to-database connections using inline embedded scripts.",
+      "Client-side validation with JavaScript, but storing data directly in the browser for security reasons."
+    ],
+    "correct_index": 0,
+    "explanation": "Using client-side validation provides a responsive user experience, but it must always be backed by robust server-side validation to ensure security and prevent data tampering."
+  },
+  {
+    "question": "A user clicks a button on your webpage. How can you use client-side scripting (JavaScript) to enhance the user experience without requiring a full page reload?",
+    "options": [
+      "The button should submit a standard synchronous HTML form to the server for processing.",
+      "Use JavaScript to handle the button click event and perform asynchronous actions or update elements dynamically.",
+      "Re-render the entire page structure using hard page reloads via target links.",
+      "Client-side scripting cannot handle button clicks without server interaction."
+    ],
+    "correct_index": 1,
+    "explanation": "JavaScript intercepts interaction events (like clicks) and updates the Document Object Model (DOM) dynamically or dispatches asynchronous requests (AJAX/Fetch) without full page reloads. Option B from the original prompt incorrectly suggested re-rendering required a hard reload."
+  },
+  {
+    "question": "You're designing a website for a local museum with a vast collection of artifacts. Users should be able to search for specific artifacts based on criteria like category, date, or artist. Which approach would be most effective in managing this content for efficient searching and display?",
+    "options": [
+      "Create individual web pages for each artifact, making searching cumbersome.",
+      "Store all artifact information in a single, long webpage, leading to poor user experience.",
+      "Develop a database to store artifact information and use server-side scripting to dynamically generate search results.",
+      "Rely solely on static client-side search files hosted locally within the asset folder."
+    ],
+    "correct_index": 2,
+    "explanation": "A dynamic relational database linked with server-side processing allows for scalable indexing, complex querying, and on-demand UI rendering. Options A and B scale poorly and break usability."
+  },
+  {
+    "question": "A client wants a website showcasing their photography portfolio. They have hundreds of high-resolution images. How would you optimize the website's content management and user experience for these images?",
+    "options": [
+      "Display all images in full resolution on a single page, potentially causing slow loading times.",
+      "Use a single, large image file containing all photos.",
+      "Implement a database to manage image information and utilize thumbnails for browsing with options to view full-size versions on demand.",
+      "Upload all images directly into HTML code."
+    ],
+    "correct_index": 2,
+    "explanation": "Generating compressed image thumbnails drastically minimizes initial payload transfer sizes, which optimizes page load performance while keeping full-resolution files available upon request."
+  },
+  {
+    "question": "You're tasked with creating a website for a news organization with daily content updates. How would you ensure efficient content management and user experience for readers?",
+    "options": [
+      "Create static HTML pages for each news article, requiring manual updates for new content.",
+      "Develop a content management system (CMS) allowing for easy content creation, editing, and organization for a dynamic website.",
+      "Rely on users to submit news articles directly through HTML forms, leading to potential quality and security issues.",
+      "Use a single, long webpage with all news articles listed chronologically, making navigation challenging for older content."
+    ],
+    "correct_index": 1,
+    "explanation": "A Content Management System (CMS) decouples structural web display code from news text storage, empowering editorial staff to publish articles immediately through an administrative interface."
+  },
+  {
+    "question": "When designing a client-server system with multiple clients accessing the server concurrently, what concurrency control mechanism would be most effective in preventing data inconsistencies?",
+    "options": [
+      "No concurrency controls",
+      "Locks or Semaphores: Mechanisms for controlling synchronized structural access to shared resources.",
+      "Cookies: Used for client-side state management.",
+      "Hyperlinks: Used for linking web pages"
+    ],
+    "correct_index": 1,
+    "explanation": "Locks, Mutexes, and Semaphores are classic synchronization primitives used to control access to shared memory segments or records, preventing concurrent processes from causing data corruption. Cookies (Option C) track stateless HTTP data across client visits, not system concurrency."
+  },
+  {
+    "question": "During the evaluation phase of a client-server system, you identify performance bottlenecks. Which approach is the MOST effective for analyzing and improving concurrency issues?",
+    "options": [
+      "Increase server hardware resources without understanding the root cause of the problem.",
+      "Use profiling and diagnostic tools to identify sections of code causing concurrency bottlenecks and optimize them.",
+      "Limit the number of concurrent clients accessing the server, potentially impacting user experience.",
+      "Rewrite the entire system from scratch without a clear understanding of the existing issues."
+    ],
+    "correct_index": 1,
+    "explanation": "Profiling code identifies hot spots, deadlock conditions, or lock contention issues, allowing developers to target optimizations rather than blindly scaling hardware (Option A)."
+  },
+  {
+    "question": "When designing the communication protocol for a client-server system, which element is MOST crucial for ensuring data integrity and security?",
+    "options": [
+      "Using clear and concise language in the protocol specifications.",
+      "Defining the format and structure of data messages.",
+      "Implementing data encryption and authentication mechanisms to protect sensitive information.",
+      "Specifying error codes for various communication failures."
+    ],
+    "correct_index": 2,
+    "explanation": "Encryption (like TLS) ensures confidentiality and integrity by preventing eavesdropping and data tampering, while authentication mechanisms verify the identity of the communicating parties."
+  },
+  {
+    "question": "One of the following is the main process of quality management to identifying which quality standards are relevant to the project and how to satisfy them; a metric is a standard of measurement.",
+    "options": [
+      "Planning quality",
+      "Quality assurance",
+      "Perform quality control",
+      "Statistical analysis"
+    ],
+    "correct_index": 0,
+    "explanation": "Quality Planning identifies relevant quality standards and defines operational metrics to measure compliance. Option B (Quality Assurance) focuses on auditing process execution. Option C (Quality Control) monitors specific project deliverables to ensure they meet requirements."
+  },
+  {
+    "question": "As a project manager, Dawit is so happy that all expected project deliverables have been accomplished by his team. What is the next step for his project to proceed in order to verify the project scope by his client?",
+    "options": [
+      "Ask his client to pay for the completed project deliverables.",
+      "Award all of his project team members for such a great accomplishment.",
+      "Offer a party for his project team and client to celebrate the success of the project.",
+      "Ask his client to conduct an inspection on all of the completed project deliverables."
+    ],
+    "correct_index": 3,
+    "explanation": "Scope validation requires formal inspection by the client or key stakeholders to confirm that deliverables meet the agreed acceptance criteria. This formal review must precede financial invoicing (Option A) and closing out milestones."
+  },
+  {
+    "question": "As a project manager, you would identify new risks in which of the following main processes of risk management?",
+    "options": [
+      "Risks Response",
+      "Risk Identification",
+      "Qualitative Risk Analysis",
+      "Risks Monitor and control"
+    ],
+    "correct_index": 3,
+    "explanation": "While initial risks are uncovered during the Risk Identification phase, *new* or emergent risks that surface during project execution are continually discovered and assessed during the Monitor and Control Risks process."
+  },
+  {
+    "question": "What is the purpose of a project charter in software development?",
+    "options": [
+      "To document the resources and budget for a project",
+      "To formally authorize the project and define its high-level scope, objectives, and stakeholders",
+      "To identify and mitigate risks associated with a project",
+      "To schedule the tasks required for a project"
+    ],
+    "correct_index": 1,
+    "explanation": "The project charter formally authorizes a project's existence and provides the project manager with the organizational authority to apply resources to project activities. While it mentions high-level budgets, Option B gives the complete definition."
+  },
+  {
+    "question": "While assessing your project processes for quality tools, you have identified some uncontrolled random or non-random process variations. Which of the following would be the appropriate chart you may use for this purpose?",
+    "options": [
+      "Pareto diagram",
+      "PERT chart",
+      "Control chart",
+      "HR personnel chart"
+    ],
+    "correct_index": 2,
+    "explanation": "A control chart tracks process stability over time by plotting operational data points against upper and lower control limits, allowing teams to isolate random common-cause variation from non-random special-cause variations. Option A displays frequency rank ordering."
+  },
+  {
+    "question": "A company has a network address of 192.168.1.64 with a subnet mask of 255.255.255.192 (/26). The company wants to create two subnetworks that can accommodate at least 10 hosts and 18 hosts respectively. Which combination of subnets satisfies this requirement?",
+    "options": [
+      "192.168.1.64/27 and 192.168.1.96/28",
+      "192.168.1.16/28 and 192.168.1.64/27",
+      "192.168.1.64/27 and 192.168.1.128/27",
+      "192.168.1.96/28 and 192.168.1.192/28"
+    ],
+    "correct_index": 0,
+    "explanation": "The starting base block is 192.168.1.64/26. We can divide this into smaller blocks. A /27 subnet provides 30 usable host addresses ($2^5 - 2$), which fits the 18-host requirement (e.g., 192.168.1.64/27 covers IPs .64 to .95). A /28 subnet provides 14 usable host addresses ($2^4 - 2$), which fits the 10-host requirement (e.g., 192.168.1.96/28 covers IPs .96 to .111). Both subnets sit cleanly inside the parent .64/26 allocation. Option B lists an address (.16) outside the company's network range."
+  },
+  {
+    "question": "Which layer in the TCP/IP model handles formatting, compressing, and encrypting data?",
+    "options": [
+      "Internetwork",
+      "Session",
+      "Application",
+      "Presentation"
+    ],
+    "correct_index": 2,
+    "explanation": "In the standard 4-layer TCP/IP model, the Application layer combines the functions of the Application, Presentation, and Session layers from the 7-layer OSI model. Therefore, formatting, compression, and encryption happen at the TCP/IP Application layer. (Note: In the OSI model, this would be the Presentation layer, but the question explicitly asks for the TCP/IP model layer)."
+  },
+  {
+    "question": "When is UDP (User Datagram Protocol) preferred over TCP (Transmission Control Protocol)?",
+    "options": [
+      "When a client sends a segment to a server",
+      "When all the data must be fully received before any part of it is considered useful",
+      "When an application values speed and can tolerate some data loss during transmission",
+      "When segments must arrive in a very specific sequence to be processed successfully"
+    ],
+    "correct_index": 2,
+    "explanation": "UDP is a connectionless, lightweight protocol that does not guarantee delivery or packet ordering. It is ideal for real-time applications like voice, video streaming, or gaming, where speed is critical and minor data loss is acceptable."
+  },
+  {
+    "question": "Which two flags in the TCP header are used in a TCP three-way handshake to establish connectivity between two network devices?",
+    "options": [
+      "ACK and SYN",
+      "PSH and RST",
+      "ACK and FIN",
+      "SYN and URG"
+    ],
+    "correct_index": 0,
+    "explanation": "The TCP three-way handshake sequence relies on the SYN (Synchronize) and ACK (Acknowledgment) flags: first a SYN is sent, followed by a SYN-ACK, and finally an ACK to establish the connection. Option C (FIN) is used to terminate a connection."
+  },
+  {
+    "question": "A web client is sending a request for a webpage to a web server. From the perspective of the client, what is the correct order of the protocol stack (top to bottom) used to encapsulate the request for transmission?",
+    "options": [
+      "HTTP, IP, TCP, Ethernet",
+      "HTTP, TCP, IP, Ethernet",
+      "Ethernet, TCP, IP, HTTP",
+      "Ethernet, IP, TCP, HTTP"
+    ],
+    "correct_index": 1,
+    "explanation": "Encapsulation moves from the top layer down: it begins at the Application layer (HTTP), down to the Transport layer (TCP), down to the Network layer (IP), and finishes at the Data Link/Physical layer (Ethernet)."
+  },
+  {
+    "question": "What command can be used on a Windows PC to display its current IP configuration?",
+    "options": [
+      "ping",
+      "ipconfig",
+      "show interfaces",
+      "show ip interface brief"
+    ],
+    "correct_index": 1,
+    "explanation": "`ipconfig` is the native Windows command-line utility used to view network adapter addresses, subnet masks, and default gateways. Options C and D are Cisco IOS commands."
+  },
+  {
+    "question": "Which of the following guided transmission media is best suited for high-speed, long-distance communication?",
+    "options": [
+      "Coaxial Cable",
+      "Twisted Pair Cable",
+      "Satellite",
+      "Fiber Optic"
+    ],
+    "correct_index": 3,
+    "explanation": "Fiber optic cables transmit data as light pulses through glass fibers, providing incredibly low attenuation, high bandwidth, and long-distance capabilities. Option C is an unguided (wireless) medium."
+  },
+  {
+    "question": "What method can be used by two computers to ensure that packets are not dropped because too much data is being sent too quickly?",
+    "options": [
+      "Encapsulation",
+      "Flow control",
+      "Access method",
+      "Response timeout"
+    ],
+    "correct_index": 1,
+    "explanation": "Flow control mechanisms (such as TCP sliding windows) regulate the data transmission rate between a sender and receiver, preventing a fast sender from overwhelming a slower receiver's buffers."
+  },
+  {
+    "question": "What benefit does DHCP provide for a given network?",
+    "options": [
+      "Hosts always have the same IP address and are therefore always reachable.",
+      "DHCP allows users to refer to locations by a name rather than an IP address.",
+      "Hosts can connect to the network and configure their IP settings automatically.",
+      "Duplicate addresses cannot occur on a network that issues dynamic addresses using DHCP and has static assignments."
+    ],
+    "correct_index": 2,
+    "explanation": "DHCP (Dynamic Host Configuration Protocol) automates the assignment of IP addresses, subnet masks, default gateways, and DNS settings, removing the need for manual network configuration. Option B describes DNS."
+  },
+  {
+    "question": "Refer to the exhibit. A network administrator is configuring a Message of the Day (MOTD) banner on switch SW2. What is the primary purpose of this configuration?",
+    "options": [
+      "To display a legal or informational message when a user accesses the switch interface",
+      "To configure switch SW2 so that only the users in the admin group can telnet into SW2",
+      "To force users of the admin group to enter a password for authentication",
+      "To configure switch SW2 so that the message will display when a user enters the enable command"
+    ],
+    "correct_index": 0,
+    "explanation": "The MOTD banner displays a standard informational or legal warning message immediately when a user attempts an interactive login session on the switch (via console, Telnet, or SSH)."
+  },
+  {
+    "question": "Which device performs the function of determining the path that messages should take through internetworks?",
+    "options": [
+      "A router",
+      "A firewall",
+      "A web server",
+      "A DSL modem"
+    ],
+    "correct_index": 0,
+    "explanation": "Routers operate at Layer 3 (Network Layer) of the OSI model and inspect destination IP addresses to route packets along the most efficient path across networks. Option B filters traffic, and Option C hosts content."
+  },
+  {
+    "question": "Why is the router-on-a-stick configuration recommended for inter-VLAN communication?",
+    "options": [
+      "Because a single router interface is assigned for a single VLAN as a default gateway.",
+      "Because a single physical router interface can route traffic for multiple VLANs using 802.1Q subinterfaces.",
+      "Because multiple router interface is assigned for a single VLAN as a backup path.",
+      "Because multiple router interface is assigned for a single VLAN by using encapsulation dot1q."
+    ],
+    "correct_index": 1,
+    "explanation": "Router-on-a-stick uses a single physical interface split into multiple logical subinterfaces, each configured with IEEE 802.1Q encapsulation, saving physical router ports while routing traffic between different VLANs."
+  },
+  {
+    "question": "Which of the following is considered a common network monitoring tool?",
+    "options": [
+      "Ping and traceroute",
+      "SNMP and NetFlow",
+      "Wireshark and tcpdump",
+      "All of the above"
+    ],
+    "correct_index": 3,
+    "explanation": "All listed tools are fundamental for network diagnostics. Ping/traceroute test basic connectivity, SNMP/NetFlow gather traffic metrics, and Wireshark/tcpdump capture raw packets for deep inspection."
+  },
+  {
+    "question": "A network administrator configures syslog with a level 2 trap. Which of the following types of logs would be generated?",
+    "options": [
+      "Alerts, and Critical",
+      "Alerts, Errors and, Emergency",
+      "Critical, Alert, and Emergency",
+      "Critical, Error, and Emergency"
+    ],
+    "correct_index": 2,
+    "explanation": "Syslog severity levels range from 0 (Emergency) to 7 (Debug). Setting a trap to Level 2 (Critical) configures the system to log everything at that level and higher severity: Level 0 (Emergency), Level 1 (Alert), and Level 2 (Critical)."
+  },
+  {
+    "question": "Which network security device is primarily used to monitor and filter incoming and outgoing network traffic based on an organization's previously established security policies?",
+    "options": [
+      "Firewall",
+      "Router",
+      "Switch",
+      "Transparent Bridge"
+    ],
+    "correct_index": 0,
+    "explanation": "A firewall enforces perimeter security rules, inspecting packet headers and connection states to block unauthorized access while permitting legitimate traffic. Routers and switches focus primarily on routing and forwarding data."
+  },
+  {
+    "question": "Which command will back up the configuration that is currently stored in NVRAM to a remote TFTP server?",
+    "options": [
+      "copy running-config tftp",
+      "copy tftp running-config",
+      "copy startup-config tftp",
+      "copy tftp startup-config"
+    ],
+    "correct_index": 2,
+    "explanation": "The configurations in NVRAM are saved as the `startup-config`. The `copy startup-config tftp` command pushes this persistent configuration to an external TFTP backup server. Option A backs up volatile RAM (`running-config`)."
+  },
+  {
+    "question": "Which of the following access methods is commonly used to manage network devices when there is no working network connectivity?",
+    "options": [
+      "Telnet",
+      "SSH",
+      "VPN",
+      "Console"
+    ],
+    "correct_index": 3,
+    "explanation": "A console connection provides dedicated out-of-band management access via a physical cable plugged directly into the network device, completely independent of working network connectivity. Options A, B, and C all require functional in-band network routing."
+  },
+  {
+    "question": "What is the primary purpose of the Spanning Tree Protocol (STP) in a switched network?",
+    "options": [
+      "To prevent Layer 2 loops and ensure network path redundancy",
+      "To route network traffic to intended destinations",
+      "To encrypt network traffic for security purposes",
+      "To increase network speed"
+    ],
+    "correct_index": 0,
+    "explanation": "STP prevents broadcast storms and MAC table corruption by blocking redundant paths in a switched network, maintaining a loop-free topology while leaving backup links available if a primary link fails."
+  },
+  {
+    "question": "Which switch port mode is used to connect end devices, such as desktop computers or local network printers, to a switch?",
+    "options": [
+      "Trunk mode",
+      "Access mode",
+      "Native mode",
+      "VLAN mode"
+    ],
+    "correct_index": 1,
+    "explanation": "An access port carries traffic for only one specific assigned VLAN and is used to connect end devices. Trunk ports (Option A) carry multiplexed traffic for multiple VLANs simultaneously, typically between switches or routers."
+  },
+  {
+    "question": "Which of the following is NOT one of the core architectural component classes of an Android application framework?",
+    "options": [
+      "Activity",
+      "Service",
+      "Content Provider",
+      "Layout"
+    ],
+    "correct_index": 3,
+    "explanation": "The four fundamental entry points for an Android app are Activity, Service, Broadcast Receiver, and Content Provider. A Layout is an XML resource file used to define user interface structures, not a core application framework component."
+  },
+  {
+    "question": "Which Android Activity life cycle method is responsible for bringing an activity to the foreground, making it visible and interactive for the user?",
+    "options": [
+      "onCreate()",
+      "onResume()",
+      "onDestroy()",
+      "onPause()"
+    ],
+    "correct_index": 1,
+    "explanation": "`onResume()` is called right before the activity starts interacting with the user, placing it at the top of the activity stack. `onCreate()` handles initial static setup, while `onPause()` runs when the activity loses focus."
+  },
+  {
+    "question": "Which of the following code snippets correctly displays the Toast message \"Hello mock\" when button `bt` is clicked?",
+    "options": [
+      "bt.setOnClickListener(new View.OnClickListener() {\n    Toast.makeText(context, \"Hello mock\", Toast.LENGTH_LONG).show();\n    @Override public void onClick(View view) {}\n});",
+      "bt.setOnClickListener(new View.OnClickListener() {\n    @Override public void onClick(View view) {\n        Toast.makeText(\"Hello mock\", context, Toast.LENGTH_LONG).show();\n    }\n});",
+      "bt.setOnClickListener(new View.OnClickListener() {\n    @Override public void onClick(View view) {\n        Toast.makeText(context, \"Hello mock\", Toast.LENGTH_LONG).show();\n    }\n});",
+      "None of the above"
+    ],
+    "correct_index": 2,
+    "explanation": "Option C correctly overrides the `onClick(View view)` method and provides the proper parameter signature for `Toast.makeText()`: `Toast.makeText(Context, CharSequence, int)`. Option B uses incorrect argument ordering."
+  },
+  {
+    "question": "Which of the following Android classes is used as a hosting canvas surface for custom drawing operations?",
+    "options": [
+      "Media player",
+      "Canvas",
+      "Drawer",
+      "None"
+    ],
+    "correct_index": 1,
+    "explanation": "The `Canvas` class contains the raw drawing API methods (like `drawBitmap`, `drawText`, `drawCircle`) used to render structural pixels onto a backing interface."
+  },
+  {
+    "question": "Which of the following Android classes is used to manage color, style, and font configurations for drawing primitives?",
+    "options": [
+      "Canvas",
+      "Paint",
+      "MediaEncoder",
+      "None"
+    ],
+    "correct_index": 1,
+    "explanation": "The `Paint` class defines the color, style, stroke geometry, and font configurations used when drawing primitives on a `Canvas` object."
+  },
+  {
+    "question": "Which of the following Android framework classes is used to manage the playback of audio and video assets?",
+    "options": [
+      "Media encoder",
+      "MediaPlayer",
+      "Audioplayer",
+      "VideoPlayer"
+    ],
+    "correct_index": 1,
+    "explanation": "The `MediaPlayer` class provides a unified interface to control the playback of audio/video files and streams. Option A manages media encoding/compression."
+  },
+  {
+    "question": "Which of the following statements is NOT true regarding the standard directory layout of an Android Studio project?",
+    "options": [
+      "The Drawable folder is located inside the res directory.",
+      "Color resource XML files are stored within the values directory.",
+      "Source Java/Kotlin files are placed directly inside the res directory.",
+      "Both Java/Kotlin source code and resource folders reside within the main directory framework."
+    ],
+    "correct_index": 2,
+    "explanation": "Source code files (`.java` or `.kt`) are located in the `src/main/java` directory, completely separate from resource files which live inside the `src/main/res` directory. Resource files cannot contain raw Java source files."
+  },
+  {
+    "question": "Which of the following UI widgets is designed to efficiently display a scrollable list of data items sourced from an array or data adapter?",
+    "options": [
+      "TextView",
+      "ImageView",
+      "ListView",
+      "EditText"
+    ],
+    "correct_index": 2,
+    "explanation": "A `ListView` (or `RecyclerView`) acts as a structural container that relies on an Adapter to bind data arrays to a scrollable list UI. Options A, B, and D are basic static widgets."
+  },
+  {
+    "question": "Which of the following is a network design method used to isolate and group devices logically based on function or department, rather than physical location?",
+    "options": [
+      "NAT",
+      "VPN",
+      "DMZ",
+      "VLAN"
+    ],
+    "correct_index": 3,
+    "explanation": "A VLAN (Virtual Local Area Network) segments a physical switch infrastructure into distinct logical broadcast domains, grouping endpoints by function rather than location. Option A translates addresses, and Option B encrypts connections over public paths."
+  },
+  {
+    "question": "Which of the following actions assigns full administrative privileges to a user account on a Windows operating system?",
+    "options": [
+      "Adding the user account to the built-in Administrators group",
+      "Changing their account password reset schedule",
+      "Enabling the Remote Desktop connection profile",
+      "None of the above"
+    ],
+    "correct_index": 0,
+    "explanation": "Adding a user account to the local or domain `Administrators` group grants them the administrative security tokens required to make system-wide changes. Options B and C do not alter account permissions."
+  },
+  {
+    "question": "Which of the following commands can be used to modify group memberships for a user in a Linux environment?",
+    "options": [
+      "groupmod",
+      "usermod",
+      "passwd",
+      "chown"
+    ],
+    "correct_index": 1,
+    "explanation": "The `usermod` command (using flags like `-aG`) alters user account attributes, including group memberships. `groupmod` modifies group definitions themselves, while `chown` alters file ownership."
+  },
+  {
+    "question": "Which of the following administrative options is typically used to recover a complete machine state from a system image backup in Windows?",
+    "options": [
+      "Using the System Configuration tool (msconfig)",
+      "Using the standard System Restore feature points",
+      "Using the Network Command Prompt utilities",
+      "Using the Backup and Restore (Windows 7) tool interface"
+    ],
+    "correct_index": 3,
+    "explanation": "The Backup and Restore utility handles complete bare-metal recovery from a system image backup. Standard System Restore (Option B) only rolls back system files and registry keys, without restoring a full partition image."
+  },
+  {
+    "question": "Which utility is built into Windows to provide an administrative graphical user interface for managing a remote computer over the network?",
+    "options": [
+      "Remote Desktop Connection",
+      "Terminal",
+      "SSH",
+      "Telnet"
+    ],
+    "correct_index": 0,
+    "explanation": "Remote Desktop Connection uses the Remote Desktop Protocol (RDP) to provide full GUI access to a remote Windows machine. Options C and D are text-based, command-line interfaces."
+  },
+  {
+    "question": "A flaw or weakness in system design, implementation, operational procedures, or internal controls that can be exploited to violate a security policy is known as a: ______?",
+    "options": [
+      "Security policy",
+      "Threat",
+      "Attack",
+      "Vulnerability"
+    ],
+    "correct_index": 3,
+    "explanation": "A vulnerability is an inherent flaw or weakness within a system. A threat (Option B) represents a potential danger that might exploit that vulnerability, and an attack (Option C) is the intentional action of doing so."
+  },
+  {
+    "question": "Which type of network attack or threat explicitly aims to make network resources or services unavailable to legitimate users?",
+    "options": [
+      "Reconnaissance",
+      "Denial of Service (DoS)",
+      "Man-in-the-middle",
+      "Direct-access"
+    ],
+    "correct_index": 1,
+    "explanation": "A Denial of Service (DoS) attack floods systems with traffic or exploits software bugs to exhaust resources, making services unavailable to legitimate users. Option A focuses on information gathering."
+  },
+  {
+    "question": "An organizational mandate stating that \"every employee must change or update their password every 60 days\" is an example of a:",
+    "options": [
+      "Security requirement",
+      "Security control",
+      "Security policy",
+      "Security objective"
+    ],
+    "correct_index": 2,
+    "explanation": "A security policy is a high-level organizational statement or directive that defines rules governing data protection and user behavior. Requirements and controls implement the directives specified in the policy."
+  },
+  {
+    "question": "Which modern motherboard expansion slot architecture provides the highest interface performance for dedicated graphics cards?",
+    "options": [
+      "PCI",
+      "SCSI",
+      "AGP",
+      "PCI Express (PCI-e)"
+    ],
+    "correct_index": 3,
+    "explanation": "PCI Express (PCI-e) replaced older standards like AGP and PCI, providing significantly higher data transfer rates through high-speed serial lanes ($x16$). SCSI is a storage interface, not an expansion slot protocol for video."
+  },
+  {
+    "question": "A client wants to purchase laptops that can easily connect to permanent external desktop ports, monitors, and storage networks via a single master hardware connection. Which device meets this requirement?",
+    "options": [
+      "Port replicator",
+      "USB hub",
+      "Mobile PCI Express Module",
+      "Docking station"
+    ],
+    "correct_index": 3,
+    "explanation": "A docking station extends a laptop's capabilities, letting it function like a desktop computer by connecting to power, displays, networks, and peripherals through a single proprietary or Thunderbolt connection."
+  },
+  {
+    "question": "What is a highly recommended baseline maintenance method for preventing hardware overheating in a computer system?",
+    "options": [
+      "Regularly defragmenting the mechanical hard drive",
+      "Ensuring proper physical ventilation and cleaning dust off internal cooling fans",
+      "Installing a high-quality antivirus program",
+      "Upgrading the system RAM capacities"
+    ],
+    "correct_index": 1,
+    "explanation": "Dust buildup blocks airflow and traps heat inside computer components. Regular cleaning and maintaining clear external ventilation allow cooling systems to regulate operating temperatures efficiently."
+  },
+  {
+    "question": "Which hardware component of a computer system is responsible for rendering and sending visual output to an external monitor?",
+    "options": [
+      "Graphics Card",
+      "CPU",
+      "Motherboard",
+      "Power Supply Unit"
+    ],
+    "correct_index": 0,
+    "explanation": "The graphics card (or integrated GPU) processes graphical data and converts it into the signal streams sent to connected display monitors. The CPU handles general computational logic."
+  },
+  {
+    "question": "Which class of fire extinguisher is specifically rated and suitable for extinguishing combustible metal fires (e.g., magnesium, titanium)?",
+    "options": [
+      "Class A",
+      "Class B",
+      "Class ABC",
+      "Class D"
+    ],
+    "correct_index": 4,
+    "explanation": "Class D fire extinguishers are specifically engineered to smother combustible metal fires using dry powder agents. Using standard Class A or water-based extinguishers on hot metal can cause violent, explosive reactions."
+  },
+  {
+    "question": "Which password configuration can be set within the BIOS/UEFI settings interface to restrict regular end-users from altering firmware configuration parameters?",
+    "options": [
+      "System Password",
+      "User Password",
+      "Supervisor/Administrator Password",
+      "Local Password"
+    ],
+    "correct_index": 2,
+    "explanation": "The Supervisor or Administrator password restricts access to the BIOS/UEFI setup utility itself, preventing unauthorized configuration changes. A User or System password (Option A) typically prompts for authentication before loading the operating system."
+  },
+  {
+    "question": "What is the correct method call syntax to populate data into a DataSet called CustomerDataset using a DataAdapter object named CustomerDataAdapter?",
+    "options": [
+      "CustomerDataset.Fill(CustomerDataAdapter)",
+      "CustomerDataAdapter.Fill(CustomerDataset)",
+      "CustomerDataset.Load(CustomerDataAdapter)",
+      "CustomerDataAdapter.Load(CustomerDataset)"
+    ],
+    "correct_index": 1,
+    "explanation": "In standard ADO.NET design patterns, the `DataAdapter` object acts as the operational agent that executes data retrieval commands, using its `.Fill()` method to populate a target `DataSet` or `DataTable` object passed as an argument."
+  },
+  {
+    "question": "What is the key structural difference between standard sequential/procedural programming and event-driven programming architectures?",
+    "options": [
+      "Standard programming only works with text-based interfaces.",
+      "Event-driven programming doesn't require user input values.",
+      "Standard programming is inherently faster under any resource scenario.",
+      "Event-driven program flow is determined by external triggers (such as user clicks or sensor inputs), whereas standard programming follows a predetermined sequential path."
+    ],
+    "correct_index": 3,
+    "explanation": "Procedural programs follow a predictable, top-down execution path dictated by the developer's code. Event-driven programs operate on a continuous loop that waits for asynchronous triggers (events), executing specific callback routines when those events occur."
+  }
+]
+
