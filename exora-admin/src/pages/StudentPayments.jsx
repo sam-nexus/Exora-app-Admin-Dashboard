@@ -2,8 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { 
   Upload, CheckCircle, Clock, AlertCircle, CreditCard, Wallet, 
   Lock, Unlock, X, Search, Filter, ChevronDown,
-  TrendingUp, Calendar, Tag, Shield, Sparkles,
-  ArrowUpRight, Info, DollarSign, Receipt, FileText, Loader2
+  TrendingUp, Calendar, Tag, DollarSign, Receipt, FileText, Loader2
 } from 'lucide-react';
 import api from '../api/axios';
 
@@ -70,7 +69,6 @@ const StudentPayments = () => {
     formData.append('receipt', receiptFile);
     const deptId = selectedPayment.department_id || selectedPayment.id;
     formData.append('paymentId', deptId);
-    // Send the amount so it gets stored in the database
     if (selectedPayment.amount) {
       formData.append('amount', String(selectedPayment.amount));
     }
@@ -334,26 +332,19 @@ const StudentPayments = () => {
               <p className="text-sm text-gray-400 mt-1">You have access to all departments</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
               {lockedDepartments.map((dept) => (
-                <div key={dept.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{dept.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">{dept.courseCount} Courses</p>
-                    </div>
-                    <span className="text-lg font-bold text-indigo-600">{dept.price || 50} Birr</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSelectedPayment({ id: dept.id, departmentName: dept.name });
-                      setShowUploadModal(true);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+                <DepartmentCard
+                  key={dept.id}
+                  department={dept}
+                  onUnlock={() => {
+                    setSelectedPayment({ id: dept.id, departmentName: dept.name, amount: dept.price });
+                    setShowUploadModal(true);
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -503,7 +494,7 @@ const StudentPayments = () => {
                             <span className="text-gray-400 text-sm">Contact Support</span>
                           )}
                         </td>
-                       </tr>
+                      </tr>
                     );
                   })
                 )}
