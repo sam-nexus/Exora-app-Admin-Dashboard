@@ -226,11 +226,10 @@ const Courses = () => {
         {filteredDepts.map((dept) => (
           <div
             key={dept.id}
-            className={`group bg-white rounded-xl shadow-sm border cursor-pointer transition-all hover:shadow-md ${
-              selectedDept?.id === dept.id
-                ? "border-indigo-500 ring-2 ring-indigo-200"
-                : "border-gray-100 hover:border-indigo-200"
-            }`}
+            className={`group bg-white rounded-xl shadow-sm border cursor-pointer transition-all hover:shadow-md ${selectedDept?.id === dept.id
+              ? "border-indigo-500 ring-2 ring-indigo-200"
+              : "border-gray-100 hover:border-indigo-200"
+              }`}
             onClick={() => handleViewDept(dept)}
           >
             <div className="p-5">
@@ -369,6 +368,15 @@ const Courses = () => {
                 <option value="exit">🎓 Exit Exam</option>
               </select>
             </div>
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="checkbox"
+                checked={isFree}
+                onChange={(e) => setIsFree(e.target.checked)}
+                id="is_free"
+              />
+              <label htmlFor="is_free" className="text-sm">Free Course (unlocked for all new users)</label>
+            </div>
             <div className="flex justify-end gap-3 pt-4">
               <button
                 type="button"
@@ -429,6 +437,15 @@ const Courses = () => {
                 <option value="mock">📝 Mock Exam</option>
                 <option value="exit">🎓 Exit Exam</option>
               </select>
+            </div>
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="checkbox"
+                checked={isFree}
+                onChange={(e) => setIsFree(e.target.checked)}
+                id="is_free"
+              />
+              <label htmlFor="is_free" className="text-sm">Free Course (unlocked for all new users)</label>
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <button

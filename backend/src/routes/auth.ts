@@ -39,14 +39,32 @@ router.post('/register', async (req, res) => {
       .insert({ id: authUser.id, full_name: fullName, email, role: 'user' });
     if (profileError) throw profileError;
 
-    const { data: courses } = await supabaseAdmin.from('courses').select('id');
+    // 3. Lock every course for the new user (except free courses)
+    const { data: courses } = await supabaseAdmin.from('courses').select('id, is_free');
     if (courses && courses.length > 0) {
-      const locks = courses.map(c => ({
-        user_id: authUser.id,
-        course_id: c.id,
-        is_locked: true,
-      }));
-      await supabaseAdmin.from('user_courses').insert(locks);
+      const locks = courses
+        .filter(c => !c.is_free) // ← skip free courses
+        .map(c => ({
+          user_id: authUser.id,
+          course_id: c.id,
+          is_locked: true,
+        }));
+
+      // Insert free courses as unlocked
+      const freeLocks = courses
+        .filter(c => c.is_free)
+        .map(c => ({
+          user_id: authUser.id,
+          course_id: c.id,
+          is_locked: false, // ← free courses are unlocked
+        }));
+
+      if (locks.length > 0) {
+        await supabaseAdmin.from('user_courses').insert(locks);
+      }
+      if (freeLocks.length > 0) {
+        await supabaseAdmin.from('user_courses').insert(freeLocks);
+      }
     }
 
     const { data: admins, error: adminFetchError } = await supabaseAdmin

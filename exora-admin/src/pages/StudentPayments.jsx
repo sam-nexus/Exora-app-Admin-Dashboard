@@ -327,23 +327,26 @@ const StudentPayments = () => {
             </div>
           </div>
           
-          <div className="p-5">
-            {lockedDepartments.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Unlock size={24} className="text-emerald-600" />
-                </div>
-                <p className="font-medium text-gray-800">All departments unlocked!</p>
-                <p className="text-sm text-gray-500 mt-1">You have full access</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {lockedDepartments.map((dept) => (
-                  <DepartmentCard
-                    key={dept.id}
-                    department={dept}
-                    onUnlock={() => {
-                      setSelectedPayment({ id: dept.id, departmentName: dept.name, amount: dept.price || 500 });
+          {lockedDepartments.length === 0 ? (
+            <div className="text-center py-10">
+              <Unlock size={40} className="text-green-500 mx-auto mb-3" />
+              <p className="text-gray-600 font-medium">All departments unlocked!</p>
+              <p className="text-sm text-gray-400 mt-1">You have access to all departments</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {lockedDepartments.map((dept) => (
+                <div key={dept.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{dept.name}</h3>
+                      <p className="text-sm text-gray-500 mt-1">{dept.courseCount} Courses</p>
+                    </div>
+                    <span className="text-lg font-bold text-indigo-600">{dept.price || 50} Birr</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedPayment({ id: dept.id, departmentName: dept.name });
                       setShowUploadModal(true);
                     }}
                   />
