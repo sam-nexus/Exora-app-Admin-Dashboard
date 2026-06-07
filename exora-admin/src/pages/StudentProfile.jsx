@@ -3,15 +3,15 @@ import { clearSession, getUserId, getUserEmail, getUserFullName } from "../utils
 import api from "../api/axios";
 import {
   Loader2,
-  BadgeCheck,
   Mail,
   User2,
-  Camera,
   GraduationCap,
   BookOpen,
-  Award,
   LogOut,
   Save,
+  Phone,
+  Shield,
+  ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -33,6 +33,7 @@ const StudentProfile = () => {
     totalQuestions: 0,
     averageScore: 0,
     studyStreak: 0,
+    totalHours: 0,
   });
 
   useEffect(() => {
@@ -42,10 +43,7 @@ const StudentProfile = () => {
 
   const fetchProfileData = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const { data } = await api.get(`/student/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await api.get(`/student/profile`);
       setUniversity(data.university || "");
       setStudentId(data.studentId || "");
       setDepartment(data.department || "");
@@ -58,11 +56,14 @@ const StudentProfile = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const { data } = await api.get(`/student/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const { data } = await api.get(`/student/stats`);
+      setStats({
+        coursesCompleted: data.coursesCompleted || 0,
+        totalQuestions: data.totalQuestions || 0,
+        averageScore: data.averageScore || 0,
+        studyStreak: data.studyStreak || 0,
+        totalHours: data.totalHours || 0,
       });
-      setStats(data);
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
@@ -78,20 +79,19 @@ const StudentProfile = () => {
       await api.put(`/users/${userId}`, {
         full_name: fullName,
       });
-      // Save extra profile fields to the student profile endpoint
       await api.put(`/users/${userId}/profile`, {
         university,
         student_id: studentId,
         department,
         year_of_study: yearOfStudy,
         phone,
-      }).catch(() => {
-        // profile fields endpoint may not exist yet — ignore silently
-      });
+      }).catch(() => {});
       localStorage.setItem("fullName", fullName);
       setSuccess("Profile updated successfully.");
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.response?.data?.error || "Unable to update profile");
+      setTimeout(() => setError(""), 3000);
     } finally {
       setLoading(false);
     }
@@ -109,147 +109,115 @@ const StudentProfile = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          My Profile
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Manage your personal and academic information
-        </p>
+      <div className="border-b border-gray-200 pb-4">
+        <h1 className="text-2xl font-semibold text-gray-900">Profile</h1>
+        <p className="text-sm text-gray-500 mt-1">Manage your personal and academic information</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Left Column - Profile Info & Stats */}
         <div className="space-y-6">
           {/* Profile Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-6">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      {getInitials()}
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="border-b border-gray-100 px-6 py-5">
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
+                  <span className="text-xl font-semibold text-gray-700">
+                    {getInitials()}
+                  </span>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">{fullName || "Student"}</h2>
+                  <p className="text-sm text-gray-500">{email}</p>
+                  <div className="flex gap-2 mt-1.5">
+                    <span className="text-xs text-gray-500 border border-gray-200 rounded-full px-2 py-0.5">
+                      Active Student
+                    </span>
+                    <span className="text-xs text-gray-500 border border-gray-200 rounded-full px-2 py-0.5">
+                      Beginner
                     </span>
                   </div>
-                  <button className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow-md hover:bg-gray-50 transition">
-                    <Camera size={14} className="text-gray-600" />
-                  </button>
-                </div>
-                <div className="text-white">
-                  <h2 className="text-xl font-bold">{fullName || "Student"}</h2>
-                  <p className="text-indigo-100 text-sm">{email}</p>
-                  <span className="inline-flex items-center gap-1 mt-2 bg-white/20 rounded-full px-2 py-0.5 text-xs">
-                    <BadgeCheck size={12} /> Active Student
-                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                Study Statistics
+            <div className="p-5">
+              <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <BookOpen size={16} className="text-gray-400" />
+                Learning Statistics
               </h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-indigo-50 rounded-xl p-3 text-center">
-                  <BookOpen
-                    size={18}
-                    className="text-indigo-600 mx-auto mb-1"
-                  />
-                  <p className="text-xl font-bold text-indigo-600">
-                    {stats.coursesCompleted}
-                  </p>
-                  <p className="text-xs text-gray-600">Courses Done</p>
-                </div>
-                <div className="bg-green-50 rounded-xl p-3 text-center">
-                  <Award size={18} className="text-green-600 mx-auto mb-1" />
-                  <p className="text-xl font-bold text-green-600">
-                    {stats.totalQuestions}
-                  </p>
-                  <p className="text-xs text-gray-600">Questions</p>
-                </div>
-                <div className="bg-purple-50 rounded-xl p-3 text-center">
-                  <GraduationCap
-                    size={18}
-                    className="text-purple-600 mx-auto mb-1"
-                  />
-                  <p className="text-xl font-bold text-purple-600">
-                    {stats.averageScore}%
-                  </p>
-                  <p className="text-xs text-gray-600">Avg Score</p>
-                </div>
-                <div className="bg-orange-50 rounded-xl p-3 text-center">
-                  <BadgeCheck
-                    size={18}
-                    className="text-orange-600 mx-auto mb-1"
-                  />
-                  <p className="text-xl font-bold text-orange-600">
-                    {stats.studyStreak}
-                  </p>
-                  <p className="text-xs text-gray-600">Day Streak</p>
-                </div>
+              <div className="grid grid-cols-3 gap-3">
+                <StatItem value={stats.coursesCompleted} label="Courses Done" />
+                <StatItem value={stats.totalQuestions} label="Questions" />
+                <StatItem value={`${stats.averageScore}%`} label="Avg Score" />
+                <StatItem value={stats.studyStreak} label="Day Streak" />
+                <StatItem value={stats.totalHours} label="Hours Spent" />
+                <StatItem value="Active" label="Status" />
               </div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            {/* <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3> */}
-            <div className="space-y-2">
-              
-             
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-50 hover:bg-red-100 transition group"
-              >
-                <LogOut size={18} className="text-red-600" />
-                <span className="text-sm text-red-600 font-medium">Logout</span>
-              </button>
-            </div>
+          {/* Logout Card */}
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+              <Shield size={16} className="text-gray-400" />
+              Account
+            </h3>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+            >
+              <div className="flex items-center gap-2">
+                <LogOut size={16} className="text-gray-500" />
+                <span className="text-sm text-gray-700">Logout</span>
+              </div>
+              <ChevronRight size={14} className="text-gray-400" />
+            </button>
           </div>
         </div>
 
         {/* Right Column - Edit Form */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
-              <User2 size={20} className="text-indigo-600" />
-              <h3 className="font-semibold text-gray-900">
-                Personal Information
-              </h3>
+        <div className="bg-white border border-gray-200 rounded-lg">
+          <div className="border-b border-gray-100 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <User2 size={16} className="text-gray-500" />
+              <h3 className="font-medium text-gray-900">Edit Profile</h3>
             </div>
+          </div>
 
+          <form onSubmit={handleSubmit} className="p-5 space-y-4">
             {success && (
-              <div className="rounded-xl bg-green-50 p-3 text-green-700 border border-green-100 text-sm">
+              <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-green-700 text-sm">
                 {success}
               </div>
             )}
             {error && (
-              <div className="rounded-xl bg-red-50 p-3 text-red-700 border border-red-100 text-sm">
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-700 text-sm">
                 {error}
               </div>
             )}
 
             {/* Email (Read Only) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Email Address
               </label>
-              <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-500">
-                <Mail size={16} />
+              <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-500">
+                <Mail size={14} className="text-gray-400" />
                 <span className="text-sm">{email || "No email available"}</span>
               </div>
             </div>
 
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Full Name
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
                 required
                 placeholder="Enter your full name"
               />
@@ -257,34 +225,38 @@ const StudentProfile = () => {
 
             {/* Phone Number */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Phone Number
               </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition"
-                placeholder="+251-911-123456"
-              />
+              <div className="relative">
+                <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 transition"
+                  placeholder="+251-911-123456"
+                />
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2 pb-3 border-b border-gray-100">
-              <GraduationCap size={20} className="text-indigo-600" />
-              <h3 className="font-semibold text-gray-900">
-                Academic Information
-              </h3>
+            <div className="border-t border-gray-100 my-2"></div>
+
+            {/* Academic Information Section */}
+            <div className="flex items-center gap-2">
+              <GraduationCap size={16} className="text-gray-500" />
+              <h3 className="font-medium text-gray-900">Academic Information</h3>
             </div>
 
             {/* University */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 University
               </label>
               <select
                 value={university}
                 onChange={(e) => setUniversity(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
               >
                 <option value="">Select University</option>
                 <option>Addis Ababa University</option>
@@ -302,27 +274,27 @@ const StudentProfile = () => {
 
             {/* Student ID */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Student ID
               </label>
               <input
                 type="text"
                 value={studentId}
                 onChange={(e) => setStudentId(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                 placeholder="e.g., ATR/1234/12"
               />
             </div>
 
             {/* Department */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Department
               </label>
               <select
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
               >
                 <option value="">Select Department</option>
                 <option>Information Technology</option>
@@ -336,13 +308,13 @@ const StudentProfile = () => {
 
             {/* Year of Study */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Year of Study
               </label>
               <select
                 value={yearOfStudy}
                 onChange={(e) => setYearOfStudy(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
               >
                 <option value="">Select Year</option>
                 <option>1st Year</option>
@@ -357,14 +329,12 @@ const StudentProfile = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition ${
-                loading
-                  ? "bg-indigo-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-lg hover:shadow-indigo-200"
+              className={`w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium text-white transition ${
+                loading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-800 hover:bg-gray-900"
               }`}
             >
-              {loading && <Loader2 size={18} className="animate-spin" />}
-              <Save size={16} />
+              {loading && <Loader2 size={14} className="animate-spin" />}
+              <Save size={14} />
               {loading ? "Saving..." : "Save Changes"}
             </button>
           </form>
@@ -373,5 +343,13 @@ const StudentProfile = () => {
     </div>
   );
 };
+
+// Helper Component
+const StatItem = ({ value, label }) => (
+  <div className="text-center p-2 rounded-lg border border-gray-100 bg-gray-50">
+    <p className="text-lg font-semibold text-gray-800">{value}</p>
+    <p className="text-xs text-gray-500">{label}</p>
+  </div>
+);
 
 export default StudentProfile;

@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import api from '../api/axios';
-import { registerForPushNotifications } from '../firebase-messaging';
 
-const Login = () => {
+const Signup = () => {
   const [email, setEmail]               = useState('');
   const [password, setPassword]         = useState('');
+  const [fullName, setFullName]         = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
@@ -17,24 +17,10 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/login', { email, password });
-      localStorage.setItem('token',    data.token);
-      localStorage.setItem('role',     data.user.role);
-      localStorage.setItem('userId',   data.user.id);
-      localStorage.setItem('email',    email);
-      localStorage.setItem('fullName', data.user.full_name || '');
-
-      try {
-        const fcmToken = await registerForPushNotifications();
-        if (fcmToken) await api.post('/devices/register', { token: fcmToken, platform: 'web' });
-      } catch {
-        // non-fatal
-      }
-
-      if (data.user.role === 'admin') navigate('/');
-      else navigate('/student');
+      await api.post('/auth/register', { email, password, fullName });
+      navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.error || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -51,8 +37,8 @@ const Login = () => {
           from { opacity: 0; transform: scale(0.6) rotate(-10deg); }
           to   { opacity: 1; transform: scale(1)   rotate(0deg);   }
         }
-        .card-enter  { animation: cardIn  0.5s cubic-bezier(.22,1,.36,1) both; }
-        .logo-enter  { animation: logoIn  0.6s cubic-bezier(.22,1,.36,1) 0.1s both; }
+        .card-enter { animation: cardIn 0.5s cubic-bezier(.22,1,.36,1) both; }
+        .logo-enter { animation: logoIn 0.6s cubic-bezier(.22,1,.36,1) 0.1s both; }
       `}</style>
 
       <div
@@ -79,8 +65,8 @@ const Login = () => {
               </div>
             </div>
 
-            <h2 className="text-3xl font-extrabold text-gray-800 text-center">Exora Login</h2>
-            <p className="text-gray-500 text-sm text-center mt-1 mb-7">Sign in to your Exora account</p>
+            <h2 className="text-3xl font-extrabold text-gray-800 text-center">Exora Sign Up</h2>
+            <p className="text-gray-500 text-sm text-center mt-1 mb-7">Create your student account</p>
 
             {error && (
               <div className="mb-5 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
@@ -90,6 +76,20 @@ const Login = () => {
                 {error}
               </div>
             )}
+
+            {/* Full Name */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <input
+                type="text"
+                placeholder="Your full name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                required
+                disabled={loading}
+              />
+            </div>
 
             {/* Email */}
             <div className="mb-4">
@@ -102,7 +102,7 @@ const Login = () => {
                 </div>
                 <input
                   type="email"
-                  placeholder="admin@exora.com"
+                  placeholder="student@exora.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
@@ -148,22 +148,19 @@ const Login = () => {
                 ${loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'}`}
             >
               {loading && <Loader2 size={20} className="animate-spin" />}
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'Creating account…' : 'Sign Up'}
             </button>
 
-            {/* Links */}
+            {/* Link back to login */}
             <p className="text-center text-sm text-gray-500 mt-5">
-              <Link to="/forgot-password" className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
-                Forgot your password?
-              </Link>
-              {' | '}
+              Already have an account?{' '}
               <Link
-                to="/signup"
+                to="/login"
                 className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors
                   relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0
                   after:bg-indigo-600 hover:after:w-full after:transition-all after:duration-300"
               >
-                Sign Up
+                Sign In
               </Link>
             </p>
           </form>
@@ -173,4 +170,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;

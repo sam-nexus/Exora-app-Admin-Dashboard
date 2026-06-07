@@ -20,13 +20,16 @@ import {
   Send,
   XCircle,
   MessageCircle,
+  Brain,
+  Target,
+  Clock,
+  BarChart3,
+  HelpCircle
 } from "lucide-react";
 import api from "../api/axios";
 
-const getPracticeCacheKey = (courseIdValue) =>
-  `practice-cache:${courseIdValue}`;
-const getPracticeProgressKey = (courseIdValue) =>
-  `practice-progress:${courseIdValue}`;
+const getPracticeCacheKey = (courseIdValue) => `practice-cache:${courseIdValue}`;
+const getPracticeProgressKey = (courseIdValue) => `practice-progress:${courseIdValue}`;
 
 const loadPracticeCache = (courseIdValue) => {
   if (!courseIdValue) return null;
@@ -48,7 +51,7 @@ const savePracticeCache = (courseIdValue, courseData, questionData) => {
         course: courseData,
         questions: questionData,
         savedAt: new Date().toISOString(),
-      }),
+      })
     );
   } catch (err) {
     console.error("Failed to save cached practice data:", err);
@@ -71,7 +74,7 @@ const savePracticeProgress = (courseIdValue, progressState) => {
   try {
     localStorage.setItem(
       getPracticeProgressKey(courseIdValue),
-      JSON.stringify({ ...progressState, savedAt: new Date().toISOString() }),
+      JSON.stringify({ ...progressState, savedAt: new Date().toISOString() })
     );
   } catch (err) {
     console.error("Failed to save practice progress:", err);
@@ -102,7 +105,7 @@ const StudentPracticeMode = () => {
   const [fetchError, setFetchError] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  // AI Agent States
+  // AI Assistant States
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [aiQuestion, setAiQuestion] = useState("");
   const [aiResponse, setAiResponse] = useState("");
@@ -137,11 +140,8 @@ const StudentPracticeMode = () => {
           setMarkedForReview(persistedProgress?.markedForReview || {});
           setCurrentIndex(
             typeof persistedProgress?.currentIndex === "number"
-              ? Math.min(
-                  persistedProgress.currentIndex,
-                  cached.questions.length - 1,
-                )
-              : 0,
+              ? Math.min(persistedProgress.currentIndex, cached.questions.length - 1)
+              : 0
           );
           setSelectedAnswer(persistedProgress?.selectedAnswer || null);
           setShowResult(persistedProgress?.showResult || false);
@@ -156,7 +156,7 @@ const StudentPracticeMode = () => {
           params: { department_id: deptId },
         });
         const foundCourse = (courseRes.data || []).find(
-          (item) => item.id.toString() === courseId,
+          (item) => item.id.toString() === courseId
         );
 
         const questionsRes = await api.get("/questions", {
@@ -186,11 +186,8 @@ const StudentPracticeMode = () => {
         setMarkedForReview(persistedProgress?.markedForReview || {});
         setCurrentIndex(
           typeof persistedProgress?.currentIndex === "number"
-            ? Math.min(
-                persistedProgress.currentIndex,
-                normalizedQuestions.length - 1,
-              )
-            : 0,
+            ? Math.min(persistedProgress.currentIndex, normalizedQuestions.length - 1)
+            : 0
         );
         setSelectedAnswer(persistedProgress?.selectedAnswer || null);
         setShowResult(persistedProgress?.showResult || false);
@@ -200,7 +197,7 @@ const StudentPracticeMode = () => {
         console.error("Error loading practice data:", error);
         if (!restoreFromCache()) {
           setFetchError(
-            "Unable to load practice questions. Connect to the internet and try again.",
+            "Unable to load practice questions. Connect to the internet and try again."
           );
         }
       } finally {
@@ -215,15 +212,14 @@ const StudentPracticeMode = () => {
   const totalQuestions = questions.length;
   const answeredCount = Object.keys(answerStatus).length;
   const correctCount = Object.values(answerStatus).filter(
-    (item) => item.isCorrect,
+    (item) => item.isCorrect
   ).length;
   const incorrectCount = answeredCount - correctCount;
 
   const handleAnswerSelect = (answer) => {
     if (showResult) return;
     setSelectedAnswer(answer);
-    
-    // Auto-check answer when selected
+
     if (currentQuestion) {
       const isCorrect = answer === currentQuestion.correctAnswer;
       const nextAnswerStatus = {
@@ -240,8 +236,6 @@ const StudentPracticeMode = () => {
     }
   };
 
-
-
   const saveCurrentProgress = useCallback(
     (overrides = {}) => {
       if (!courseId) return;
@@ -251,7 +245,6 @@ const StudentPracticeMode = () => {
       const selectedAnswerValue = overrides.selectedAnswer ?? selectedAnswer;
       const showResultValue = overrides.showResult ?? showResult;
       const currentIndexValue = overrides.currentIndex ?? currentIndex;
-      const questionCountValue = overrides.questionCount ?? questions.length;
 
       savePracticeProgress(courseId, {
         currentIndex: currentIndexValue,
@@ -259,25 +252,15 @@ const StudentPracticeMode = () => {
         markedForReview: markedForReviewValue,
         selectedAnswer: selectedAnswerValue,
         showResult: showResultValue,
-        questionCount: questionCountValue,
+        questionCount: questions.length,
         answeredCount: Object.keys(answerStatusValue).length,
       });
     },
-    [
-      courseId,
-      answerStatus,
-      markedForReview,
-      selectedAnswer,
-      showResult,
-      currentIndex,
-      questions.length,
-    ],
+    [courseId, answerStatus, markedForReview, selectedAnswer, showResult, currentIndex, questions.length]
   );
 
   const handleClearProgress = () => {
-    if (
-      confirm("Are you sure you want to clear all progress for this course?")
-    ) {
+    if (confirm("Are you sure you want to clear all progress for this course?")) {
       clearPracticeProgress(courseId);
       setAnswerStatus({});
       setMarkedForReview({});
@@ -325,24 +308,22 @@ const StudentPracticeMode = () => {
     saveCurrentProgress({ markedForReview: nextMarked });
   };
 
-  // AI Agent Functions (Mock Data)
   const handleAskAI = async () => {
     if (!aiQuestion.trim()) return;
 
     setAiLoading(true);
     setAiResponse("");
 
+    // Simulate AI response - In production, replace with actual API call
     setTimeout(() => {
       const mockResponses = [
-        "💡 This question is about the history of the Internet. ARPANET was the first packet-switching network developed by DOD in 1969. NSFNET later expanded it for academic use in 1986.",
-        "🎯 The correct answer is B. ARPANET was military/research, NSFNET expanded access to universities and research institutions before commercialization.",
-        "📚 Think about it: ARPANET came first (1969), then NSFNET (1986) connected supercomputers. The key difference is who funded them and who could use them.",
-        "🔍 TCP/IP became standard in 1983. Both ARPANET and NSFNET eventually used TCP/IP, so option D is incorrect.",
-        "✅ Simple explanation: ARPANET = Military/Research (DOD). NSFNET = Academic/Educational (Universities). They worked together to create today's Internet.",
+        `💡 This question is about ${currentQuestion?.text?.substring(0, 50)}... The correct answer is ${currentQuestion?.correctAnswer}. ${currentQuestion?.explanation || "This concept is important for understanding the topic."}`,
+        `📚 Let me explain: ${currentQuestion?.options?.[currentQuestion?.correctAnswer?.charCodeAt(0) - 65] || "The correct option"} is the right choice because ${currentQuestion?.explanation?.toLowerCase() || "it accurately describes the concept"}.`,
+        `🎯 Think about it this way: ${currentQuestion?.explanation || "The explanation focuses on the key distinction between the options"}. That's why ${currentQuestion?.correctAnswer} is correct.`,
+        `💪 Great question! ${currentQuestion?.correctAnswer} is correct because ${currentQuestion?.explanation?.toLowerCase() || "it matches the definition perfectly"}. Would you like me to explain further?`,
       ];
 
-      const randomResponse =
-        mockResponses[Math.floor(Math.random() * mockResponses.length)];
+      const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
       setAiResponse(randomResponse);
 
       setAiHistory((prev) =>
@@ -353,11 +334,11 @@ const StudentPracticeMode = () => {
             timestamp: new Date(),
           },
           ...prev,
-        ].slice(0, 5),
+        ].slice(0, 5)
       );
 
       setAiLoading(false);
-    }, 1500);
+    }, 1000);
   };
 
   const clearAI = () => {
@@ -379,17 +360,15 @@ const StudentPracticeMode = () => {
     return "unanswered";
   };
 
-  const progress =
-    totalQuestions === 0 ? 0 : ((currentIndex + 1) / totalQuestions) * 100;
+  const progress = totalQuestions === 0 ? 0 : ((currentIndex + 1) / totalQuestions) * 100;
+  const overallScore = totalQuestions === 0 ? 0 : Math.round((correctCount / totalQuestions) * 100);
 
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-3 text-gray-500 text-sm">
-            Loading practice questions...
-          </p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-800 mx-auto"></div>
+          <p className="mt-3 text-gray-500 text-sm">Loading practice questions...</p>
         </div>
       </div>
     );
@@ -398,30 +377,15 @@ const StudentPracticeMode = () => {
   if (fetchError && questions.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-200 p-6 text-center">
           <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-7 h-7 text-red-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
+            <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Unable to Load Practice
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Practice</h3>
           <p className="text-sm text-gray-500 mb-5">{fetchError}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 transition"
-          >
+          <button onClick={() => window.location.reload()} className="bg-gray-800 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-gray-900 transition">
             Try Again
           </button>
         </div>
@@ -430,51 +394,58 @@ const StudentPracticeMode = () => {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <button
           onClick={() => navigate(`/student/departments/${deptId}/courses`)}
-          className="flex items-center gap-1.5 text-gray-500 hover:text-indigo-600 transition text-sm w-fit"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition group"
         >
-          <ArrowLeft size={16} />
-          <span>Back to Courses</span>
+          <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition" />
+          Back to Courses
         </button>
-        <button
-          onClick={handleClearProgress}
-          className="flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-red-600 transition"
-        >
-          <Trash2 size={14} />
-          Clear progress
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleClearProgress}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-red-600 transition rounded-lg hover:bg-red-50"
+          >
+            <Trash2 size={13} />
+            Clear Progress
+          </button>
+        </div>
       </div>
 
       {/* Title */}
-      <div>
-        <h1 className="text-2xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          Practice Mode
-        </h1>
-        <p className="text-gray-500 text-sm mt-0.5">
-          Answer questions one by one to prepare for your exam
-        </p>
+      <div className="border-b border-gray-200 pb-3">
+        <h1 className="text-2xl font-semibold text-gray-900">Practice Mode</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Answer questions and learn with instant feedback</p>
       </div>
 
       {/* Online/Offline Status */}
-      <div
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${isOnline ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}
-      >
-        {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
-        <span>
-          {isOnline
-            ? "You are online. Progress is being saved."
-            : "You are offline. Progress is saved locally."}
-        </span>
+      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${isOnline ? "bg-gray-100 text-gray-600" : "bg-amber-50 text-amber-700"}`}>
+        {isOnline ? <Wifi size={13} className="text-gray-500" /> : <WifiOff size={13} />}
+        <span>{isOnline ? "Online — Progress saved automatically" : "Offline — Progress saved locally"}</span>
+      </div>
+
+      {/* Tip + CTA bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 bg-indigo-50 border border-indigo-100 rounded-xl text-xs text-indigo-700">
+        <span>💡 Practice tip — try to answer without looking at options first, then confirm your choice.</span>
+        <div className="flex items-center gap-3 shrink-0">
+          <a href={import.meta.env.VITE_TELEGRAM_LINK} target="_blank" rel="noreferrer"
+            className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline whitespace-nowrap">
+            📣 Join Channel
+          </a>
+          <span className="text-indigo-300">|</span>
+          <a href={import.meta.env.VITE_APP_STORE_LINK} target="_blank" rel="noreferrer"
+            className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline whitespace-nowrap">
+            📱 Get App
+          </a>
+        </div>
       </div>
 
       {offlineMode && !isOnline && (
-        <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-xs">
-          Using cached questions. Your answers will sync when you're back
-          online.
+        <div className="bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-xs border border-gray-200">
+          Using cached questions. Your answers will sync when you're back online.
         </div>
       )}
 
@@ -483,49 +454,50 @@ const StudentPracticeMode = () => {
         {/* Question Area */}
         <div className="flex-1">
           {/* Progress Bar */}
-          <div className="bg-white rounded-xl border border-gray-100 p-4 mb-5 shadow-sm">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-5 shadow-sm">
             <div className="flex justify-between text-sm mb-2">
               <div>
-                <span className="text-gray-500">{course?.title}</span>
+                <span className="font-medium text-gray-700">{course?.title}</span>
                 <p className="text-xs text-gray-400 mt-0.5">
                   Question {currentIndex + 1} of {totalQuestions}
                 </p>
               </div>
               <div className="text-right">
                 <span className="text-gray-500 text-xs">Progress</span>
-                <p className="text-indigo-600 font-semibold">
-                  {Math.round(progress)}%
-                </p>
+                <p className="font-semibold text-gray-800">{Math.round(progress)}%</p>
               </div>
             </div>
             <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-indigo-600 rounded-full transition-all"
+                className="h-full bg-gray-800 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
           </div>
 
           {/* Question Card */}
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700">
-                Question {currentIndex + 1}
-              </span>
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-700 font-medium text-xs">{currentIndex + 1}</span>
+                </div>
+                <span className="text-xs text-gray-500">of {totalQuestions}</span>
+              </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsAIOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition bg-purple-100 text-purple-700 hover:bg-purple-200"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition bg-gray-100 text-gray-700 hover:bg-gray-200"
                   title="Ask AI Assistant"
                 >
                   <Bot size={12} />
-                  AI
+                  AI Help
                 </button>
                 <button
                   onClick={handleMarkForReview}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition ${
                     markedForReview[currentQuestion?.id]
-                      ? "bg-yellow-100 text-yellow-700"
+                      ? "bg-amber-100 text-amber-700"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -550,37 +522,30 @@ const StudentPracticeMode = () => {
               <div className="space-y-2.5 mb-5">
                 {["A", "B", "C", "D"].map((opt) => {
                   const isSelected = selectedAnswer === opt;
-                  const isCorrect =
-                    showResult && opt === currentQuestion?.correctAnswer;
-                  const isWrong =
-                    showResult &&
-                    selectedAnswer === opt &&
-                    opt !== currentQuestion?.correctAnswer;
+                  const isCorrect = showResult && opt === currentQuestion?.correctAnswer;
+                  const isWrong = showResult && selectedAnswer === opt && opt !== currentQuestion?.correctAnswer;
                   const optIndex = opt.charCodeAt(0) - 65;
                   const optText = currentQuestion?.options?.[optIndex] || "";
-                  const hasCode =
-                    optText.includes("function") ||
-                    optText.includes("{") ||
-                    optText.includes("<");
+                  const hasCode = optText.includes("function") || optText.includes("{") || optText.includes("<");
 
                   return (
                     <button
                       key={opt}
                       onClick={() => handleAnswerSelect(opt)}
                       disabled={showResult}
-                      className={`w-full text-left p-3 rounded-xl border transition-all ${
+                      className={`w-full text-left p-3 rounded-lg border transition-all ${
                         isSelected && !showResult
-                          ? "border-indigo-400 bg-indigo-50"
+                          ? "border-gray-800 bg-gray-50"
                           : isCorrect
-                            ? "border-green-400 bg-green-50"
+                            ? "border-emerald-500 bg-emerald-50"
                             : isWrong
                               ? "border-red-400 bg-red-50"
-                              : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/30"
+                              : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
                       }`}
                     >
                       <div className="flex gap-3">
                         <span
-                          className={`font-medium text-sm w-6 ${isCorrect ? "text-green-600" : isWrong ? "text-red-600" : isSelected ? "text-indigo-600" : "text-gray-500"}`}
+                          className={`font-medium text-sm w-6 ${isCorrect ? "text-emerald-600" : isWrong ? "text-red-600" : isSelected ? "text-gray-800" : "text-gray-500"}`}
                         >
                           {opt}.
                         </span>
@@ -590,151 +555,107 @@ const StudentPracticeMode = () => {
                               {optText}
                             </pre>
                           ) : (
-                            <span className="text-gray-700 text-sm">
-                              {optText}
-                            </span>
+                            <span className="text-gray-700 text-sm">{optText}</span>
                           )}
                         </div>
-                        {isCorrect && (
-                          <Check
-                            size={16}
-                            className="text-green-500 shrink-0"
-                          />
-                        )}
-                        {isWrong && (
-                          <X size={16} className="text-red-500 shrink-0" />
-                        )}
+                        {isCorrect && <Check size={16} className="text-emerald-500 shrink-0" />}
+                        {isWrong && <X size={16} className="text-red-500 shrink-0" />}
                       </div>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Feedback */}
+              {/* Feedback Card */}
               {showResult && (
-                <div
-                  className={`p-5 rounded-xl mb-5 border-2 ${selectedAnswer === currentQuestion?.correctAnswer ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}
-                >
-                  {/* Result Status */}
-                  <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        selectedAnswer === currentQuestion?.correctAnswer
-                          ? "bg-green-100"
-                          : "bg-red-100"
-                      }`}
-                    >
+                <div className={`p-4 rounded-lg border mb-5 ${selectedAnswer === currentQuestion?.correctAnswer ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedAnswer === currentQuestion?.correctAnswer ? "bg-emerald-100" : "bg-red-100"}`}>
                       {selectedAnswer === currentQuestion?.correctAnswer ? (
-                        <Check size={20} className="text-green-600" />
+                        <Check size={16} className="text-emerald-600" />
                       ) : (
-                        <X size={20} className="text-red-600" />
+                        <X size={16} className="text-red-600" />
                       )}
                     </div>
-                    <div>
-                      <h3
-                        className={`font-bold text-lg ${
-                          selectedAnswer === currentQuestion?.correctAnswer
-                            ? "text-green-700"
-                            : "text-red-700"
-                        }`}
-                      >
-                        {selectedAnswer === currentQuestion?.correctAnswer
-                          ? "🎉 Correct!"
-                          : "❌ Incorrect"}
-                      </h3>
-                    </div>
+                    <h3 className={`font-semibold ${selectedAnswer === currentQuestion?.correctAnswer ? "text-emerald-700" : "text-red-700"}`}>
+                      {selectedAnswer === currentQuestion?.correctAnswer ? "Correct!" : "Incorrect"}
+                    </h3>
                   </div>
 
-                  {/* Explanation Section */}
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      📖 Explanation
-                    </p>
-                    <p className="text-gray-700 text-sm leading-relaxed bg-white bg-opacity-50 p-3 rounded-lg">
+                  {/* Explanation */}
+                  <div className="mb-3">
+                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">Explanation</p>
+                    <p className="text-gray-700 text-sm leading-relaxed bg-white/50 p-2 rounded">
                       {currentQuestion?.explanation || "No explanation provided."}
                     </p>
                   </div>
 
                   {/* Correct Answer */}
-                  <div className="bg-white bg-opacity-60 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      ✓ Correct Answer
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-green-100 rounded-lg px-3 py-2 min-w-fit">
-                        <span className="font-bold text-green-700 text-lg">
-                          {currentQuestion?.correctAnswer}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-700">
-                        {currentQuestion?.options?.[
-                          currentQuestion?.correctAnswer?.charCodeAt(0) - 65
-                        ] || ""}
-                      </p>
+                  <div className="bg-white/60 rounded p-2 mb-2">
+                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">Correct Answer</p>
+                    <div className="flex items-center gap-2">
+                      <span className="bg-emerald-100 rounded px-2 py-1 text-sm font-semibold text-emerald-700">
+                        {currentQuestion?.correctAnswer}
+                      </span>
+                      <span className="text-sm text-gray-700">
+                        {currentQuestion?.options?.[currentQuestion?.correctAnswer?.charCodeAt(0) - 65] || ""}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Your Answer */}
+                  {/* Your Answer (if wrong) */}
                   {selectedAnswer !== currentQuestion?.correctAnswer && (
-                    <div className="mt-3 bg-white bg-opacity-60 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                        ✗ Your Answer
-                      </p>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-red-100 rounded-lg px-3 py-2 min-w-fit">
-                          <span className="font-bold text-red-700 text-lg">
-                            {selectedAnswer}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-700">
-                          {currentQuestion?.options?.[
-                            selectedAnswer?.charCodeAt(0) - 65
-                          ] || ""}
-                        </p>
+                    <div className="bg-white/60 rounded p-2">
+                      <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">Your Answer</p>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-red-100 rounded px-2 py-1 text-sm font-semibold text-red-700">
+                          {selectedAnswer}
+                        </span>
+                        <span className="text-sm text-gray-700">
+                          {currentQuestion?.options?.[selectedAnswer?.charCodeAt(0) - 65] || ""}
+                        </span>
                       </div>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Buttons */}
+              {/* Navigation Buttons */}
               <div className="flex gap-3">
                 {!showResult ? (
-                  <div className="text-center w-full py-3 text-indigo-600 font-medium">
-                    👆 Click an answer to see result
+                  <div className="text-center w-full py-2 text-gray-500 text-sm border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                    Click an answer to see explanation
                   </div>
                 ) : (
                   <>
                     <button
                       onClick={handlePrevious}
                       disabled={currentIndex === 0}
-                      className="px-5 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50"
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition"
                     >
-                      <ChevronLeft size={18} />
+                      <ChevronLeft size={16} />
                     </button>
                     <button
                       onClick={handleNext}
                       disabled={currentIndex === totalQuestions - 1}
-                      className="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl font-medium text-sm hover:bg-indigo-700 disabled:opacity-50"
+                      className="flex-1 bg-gray-800 text-white py-2 rounded-lg font-medium text-sm hover:bg-gray-900 disabled:opacity-40 transition"
                     >
-                      Next <ChevronRight size={14} className="inline ml-1" />
+                      Next Question <ChevronRight size={14} className="inline ml-1" />
                     </button>
                   </>
                 )}
               </div>
 
-              {/* Stats */}
-              <div className="mt-5 pt-3 border-t border-gray-100 flex justify-between text-sm">
+              {/* Stats Summary */}
+              <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between text-sm">
                 <div className="flex gap-4">
                   <div>
                     <span className="text-gray-400 text-xs">Answered</span>
-                    <p className="font-medium">
-                      {answeredCount}/{totalQuestions}
-                    </p>
+                    <p className="font-medium text-gray-800">{answeredCount}/{totalQuestions}</p>
                   </div>
                   <div>
                     <span className="text-gray-400 text-xs">Correct</span>
-                    <p className="font-medium text-green-600">{correctCount}</p>
+                    <p className="font-medium text-emerald-600">{correctCount}</p>
                   </div>
                   <div>
                     <span className="text-gray-400 text-xs">Incorrect</span>
@@ -742,71 +663,62 @@ const StudentPracticeMode = () => {
                   </div>
                 </div>
                 <div>
-                  <span className="text-gray-400 text-xs">Score</span>
-                  <p className="font-medium text-indigo-600">
-                    {totalQuestions
-                      ? Math.round((correctCount / totalQuestions) * 100)
-                      : 0}
-                    %
-                  </p>
+                  <span className="text-gray-400 text-xs">Overall Score</span>
+                  <p className="font-medium text-gray-800">{overallScore}%</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Sidebar - Question Navigator Only */}
+        {/* Right Sidebar - Question Navigator */}
         <div className="w-full xl:w-80 space-y-4">
-          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-            <h3 className="font-medium text-gray-800 mb-0.5 text-sm">
-              Question Navigator
-            </h3>
-            <p className="text-xs text-gray-400 mb-3">Click to jump</p>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 size={16} className="text-gray-500" />
+              <h3 className="font-medium text-gray-800">Question Navigator</h3>
+            </div>
 
-            <div className="grid grid-cols-4 gap-1.5 mb-4 pb-3 border-b border-gray-100 text-center text-xs">
-              <div className="bg-gray-50 rounded-lg py-1.5">
+            {/* Stats Summary Cards */}
+            <div className="grid grid-cols-4 gap-2 mb-4 pb-3 border-b border-gray-100 text-center text-xs">
+              <div className="bg-gray-100 rounded-lg py-1.5">
                 <span className="text-gray-500">Total</span>
-                <p className="font-semibold">{totalQuestions}</p>
+                <p className="font-semibold text-gray-800">{totalQuestions}</p>
               </div>
-              <div className="bg-green-50 rounded-lg py-1.5">
-                <span className="text-green-600">Correct</span>
-                <p className="font-semibold text-green-700">{correctCount}</p>
+              <div className="bg-emerald-50 rounded-lg py-1.5">
+                <span className="text-emerald-600">Correct</span>
+                <p className="font-semibold text-emerald-700">{correctCount}</p>
               </div>
               <div className="bg-red-50 rounded-lg py-1.5">
                 <span className="text-red-600">Incorrect</span>
                 <p className="font-semibold text-red-700">{incorrectCount}</p>
               </div>
-              <div className="bg-yellow-50 rounded-lg py-1.5">
-                <span className="text-yellow-600">Left</span>
-                <p className="font-semibold text-yellow-700">
-                  {totalQuestions - answeredCount}
-                </p>
+              <div className="bg-amber-50 rounded-lg py-1.5">
+                <span className="text-amber-600">Marked</span>
+                <p className="font-semibold text-amber-700">{Object.keys(markedForReview).length}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-5 gap-1.5 max-h-72 overflow-y-auto pb-1 pr-1">
+            {/* Question Grid */}
+            <div className="grid grid-cols-5 gap-1.5 max-h-64 overflow-y-auto pb-1 pr-1">
               {questions.map((_, idx) => {
                 const status = getQuestionStatus(idx);
                 const isCorrect = answerStatus[questions[idx]?.id]?.isCorrect;
-                let bg = "bg-gray-100 text-gray-600";
-                if (status === "answered")
-                  bg = isCorrect
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700";
-                else if (status === "marked")
-                  bg = "bg-yellow-100 text-yellow-700";
+                let bgClass = "bg-gray-100 text-gray-600";
+                if (status === "answered") {
+                  bgClass = isCorrect ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700";
+                } else if (status === "marked") {
+                  bgClass = "bg-amber-100 text-amber-700";
+                }
                 return (
                   <button
                     key={idx}
                     onClick={() => {
                       setCurrentIndex(idx);
-                      setSelectedAnswer(
-                        answerStatus[questions[idx]?.id]?.selectedAnswer ||
-                          null,
-                      );
+                      setSelectedAnswer(answerStatus[questions[idx]?.id]?.selectedAnswer || null);
                       setShowResult(!!answerStatus[questions[idx]?.id]);
                     }}
-                    className={`w-8 h-8 rounded-lg text-xs font-medium transition ${currentIndex === idx ? "ring-2 ring-indigo-500 ring-offset-1 bg-indigo-600 text-white" : bg} hover:opacity-80`}
+                    className={`w-8 h-8 rounded-lg text-xs font-medium transition ${currentIndex === idx ? "ring-2 ring-gray-800 ring-offset-1 bg-gray-800 text-white" : bgClass} hover:opacity-80`}
                   >
                     {idx + 1}
                   </button>
@@ -814,181 +726,116 @@ const StudentPracticeMode = () => {
               })}
             </div>
 
-            <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500 flex flex-wrap gap-3">
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>{" "}
-                Correct
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>{" "}
-                Incorrect
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>{" "}
-                Marked
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-gray-300"></span>{" "}
-                Unanswered
-              </span>
+            {/* Legend */}
+            <div className="mt-3 pt-2 border-t border-gray-100 text-xs text-gray-500 flex flex-wrap gap-3">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Correct</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500"></span> Incorrect</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Marked</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-gray-300"></span> Unanswered</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* AI Assistant Floating Modal - z-index overlay */}
+      {/* AI Assistant Modal */}
       {isAIOpen && (
         <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setIsAIOpen(false)}
-          />
-
-          {/* Modal */}
+          <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsAIOpen(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-            <div className="bg-linear-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200 shadow-2xl w-full max-w-lg pointer-events-auto animate-in fade-in zoom-in duration-200">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-lg pointer-events-auto">
               {/* Header */}
-              <div className="flex items-center justify-between p-5 border-b border-purple-200 bg-linear-to-r from-purple-500 to-indigo-500 rounded-t-2xl">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 rounded-t-xl">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
-                    <Sparkles size={16} className="text-white" />
+                  <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
+                    <Bot size={16} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-base">
-                      AI Study Assistant
-                    </h3>
-                    <p className="text-purple-100 text-xs">
-                      Powered by Exora AI
-                    </p>
+                    <h3 className="font-semibold text-gray-900">AI Study Assistant</h3>
+                    <p className="text-gray-500 text-xs">Ask about this question</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setIsAIOpen(false)}
-                  className="text-white/80 hover:text-white transition p-1"
-                >
+                <button onClick={() => setIsAIOpen(false)} className="text-gray-400 hover:text-gray-600 transition">
                   <XCircle size={20} />
                 </button>
               </div>
 
               {/* Body */}
-              <div className="p-5 max-h-[60vh] overflow-y-auto">
-                <p className="text-xs text-gray-500 mb-4 flex items-center gap-1">
-                  <MessageCircle size={12} />
-                  Ask me to explain this question in a simpler way!
-                </p>
-
+              <div className="p-4 max-h-[60vh] overflow-y-auto">
                 {/* Current Question Context */}
-                <div className="bg-white rounded-xl p-3 mb-4 text-sm text-gray-700 border border-purple-100 shadow-sm">
-                  <span className="font-semibold text-purple-600">
-                    📖 Current Question:
-                  </span>
-                  <p className="mt-1 text-gray-600">{currentQuestion?.text}</p>
+                <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm text-gray-700 border border-gray-200">
+                  <p className="font-medium text-gray-800 mb-1">Current Question:</p>
+                  <p className="text-gray-600">{currentQuestion?.text}</p>
                 </div>
 
                 {/* Chat History */}
                 {aiHistory.length > 0 && (
-                  <div className="mb-4 space-y-2 max-h-32 overflow-y-auto">
-                    <p className="text-xs font-medium text-gray-500">
-                      Recent Questions
-                    </p>
+                  <div className="mb-4 space-y-2 max-h-28 overflow-y-auto">
+                    <p className="text-xs font-medium text-gray-500">Recent Questions</p>
                     {aiHistory.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-white rounded-lg p-2 text-xs border border-purple-100"
-                      >
-                        <p className="text-purple-600 font-medium">
-                          Q: {item.question.substring(0, 60)}...
-                        </p>
-                        <p className="text-gray-600 mt-1">
-                          A: {item.answer.substring(0, 80)}...
-                        </p>
+                      <div key={idx} className="bg-gray-50 rounded-lg p-2 text-xs border border-gray-200">
+                        <p className="text-gray-700 font-medium">Q: {item.question.substring(0, 60)}...</p>
+                        <p className="text-gray-500 mt-1">A: {item.answer.substring(0, 80)}...</p>
                       </div>
                     ))}
                   </div>
                 )}
 
                 {/* Input Area */}
-                <div className="flex gap-2 mb-4">
+                <div className="flex gap-2 mb-3">
                   <input
                     type="text"
                     value={aiQuestion}
                     onChange={(e) => setAiQuestion(e.target.value)}
-                    placeholder="Type your question here..."
-                    className="flex-1 px-4 py-2.5 text-sm border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    placeholder="Ask about this question..."
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-800 focus:border-gray-800 outline-none bg-white"
                     onKeyPress={(e) => e.key === "Enter" && handleAskAI()}
                     autoFocus
                   />
                   <button
                     onClick={handleAskAI}
                     disabled={aiLoading || !aiQuestion.trim()}
-                    className="px-4 py-2.5 bg-linear-to-r from-purple-500 to-indigo-500 text-white rounded-xl text-sm font-medium hover:shadow-lg transition disabled:opacity-50"
+                    className="px-3 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-900 transition disabled:opacity-50"
                   >
-                    {aiLoading ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Send size={16} />
-                    )}
+                    {aiLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                   </button>
                 </div>
 
                 {/* AI Response */}
                 {aiLoading && (
-                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                        <Bot
-                          size={16}
-                          className="text-purple-500 animate-pulse"
-                        />
+                      <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
+                        <Bot size={12} className="text-gray-500" />
                       </div>
                       <div className="flex-1">
-                        <div className="h-2 bg-purple-200 rounded-full w-3/4 animate-pulse mb-2"></div>
-                        <div className="h-2 bg-purple-200 rounded-full w-1/2 animate-pulse"></div>
+                        <div className="h-2 bg-gray-200 rounded-full w-3/4 animate-pulse mb-1"></div>
+                        <div className="h-2 bg-gray-200 rounded-full w-1/2 animate-pulse"></div>
                       </div>
                     </div>
-                    <p className="text-xs text-purple-600 mt-2">
-                      AI is thinking...
-                    </p>
+                    <p className="text-xs text-gray-500 mt-2">Thinking...</p>
                   </div>
                 )}
 
                 {aiResponse && !aiLoading && (
-                  <div className="bg-linear-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-linear-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center shrink-0">
-                        <Bot size={14} className="text-white" />
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div className="flex items-start gap-2">
+                      <div className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center shrink-0">
+                        <Bot size={12} className="text-white" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800 mb-1">
-                          AI Assistant says:
-                        </p>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {aiResponse}
-                        </p>
+                        <p className="text-sm text-gray-800 leading-relaxed">{aiResponse}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={clearAI}
-                      className="mt-3 text-xs text-purple-500 hover:text-purple-700 transition"
-                    >
-                      Clear response
+                    <button onClick={clearAI} className="mt-2 text-xs text-gray-500 hover:text-gray-700 transition">
+                      Clear
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Footer */}
-              <div className="px-5 py-3 border-t border-purple-200 bg-white/50 rounded-b-2xl flex justify-between items-center">
-                <p className="text-xs text-gray-400">
-                  💡 Tip: Ask "Why is this answer correct?"
-                </p>
-                <button
-                  onClick={() => setIsAIOpen(false)}
-                  className="text-xs text-purple-600 hover:text-purple-700 font-medium"
-                >
-                  Close
-                </button>
+              <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                <p className="text-xs text-gray-500">💡 Tip: Ask "Why is this answer correct?"</p>
               </div>
             </div>
           </div>

@@ -96,7 +96,16 @@ const Questions = () => {
   const fetchQuestionsForCourse = async (courseId) => {
     try {
       const { data } = await api.get(`/questions?course_id=${courseId}`);
-      setQuestions(data);
+      // Normalize options — Supabase may return JSONB as a string
+      const normalized = (data || []).map((q) => ({
+        ...q,
+        options: Array.isArray(q.options)
+          ? q.options
+          : typeof q.options === 'string'
+          ? JSON.parse(q.options)
+          : [],
+      }));
+      setQuestions(normalized);
     } catch (err) {
       console.error(err);
     }
@@ -504,12 +513,17 @@ const Questions = () => {
                       <div className="flex gap-1 flex-shrink-0">
                         <button onClick={() => {
                           setSelectedQuestion(q);
+                          const opts = Array.isArray(q.options)
+                            ? q.options
+                            : typeof q.options === 'string'
+                            ? JSON.parse(q.options)
+                            : ['', '', '', ''];
                           setForm({
                             question_text: q.question_text,
-                            optionA: q.options[0] || '',
-                            optionB: q.options[1] || '',
-                            optionC: q.options[2] || '',
-                            optionD: q.options[3] || '',
+                            optionA: opts[0] || '',
+                            optionB: opts[1] || '',
+                            optionC: opts[2] || '',
+                            optionD: opts[3] || '',
                             correct_answer: q.correct_index,
                             explanation: q.explanation || '',
                           });

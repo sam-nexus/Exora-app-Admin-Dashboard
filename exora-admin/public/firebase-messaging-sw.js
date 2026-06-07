@@ -1,31 +1,36 @@
-importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+// Bypass ESLint environment overrides by explicitly pulling from the global 'self' scope
+const { importScripts, clients } = self;
 
-// Firebase config is hardcoded here because service workers
-// cannot access Vite env vars (import.meta.env is not available in SW scope)
-firebase.initializeApp({
-  apiKey: 'AIzaSyBsGVkP4xOGVmQzX1Y2Z3A4B5C6D7E8F9G0',
-  authDomain: 'avian-brand-47460-g8.firebaseapp.com',
-  projectId: 'avian-brand-47460-g8',
-  storageBucket: 'avian-brand-47460-g8.appspot.com',
-  messagingSenderId: '523456789012',
-  appId: '1:523456789012:web:a1b2c3d4e5f6g7h8i9j0',
+importScripts(
+  "https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js",
+);
+importScripts(
+  "https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js",
+);
+
+self.firebase.initializeApp({
+  apiKey: "AIzaSyCgublnE7Lw55C9odsKXH2YITud__FUbwg",
+  authDomain: "avian-brand-474607-g8.firebaseapp.com",
+  projectId: "avian-brand-474607-g8",
+  storageBucket: "avian-brand-474607-g8.firebasestorage.app",
+  messagingSenderId: "455487033561",
+  appId: "1:455487033561:web:84f7b81f25c6f6f5f82ec8",
+  databaseURL: "https://avian-brand-474607-g8-default-rtdb.firebaseio.com",
 });
 
-// Use compat API — NOT firebase.getMessaging(), that's the modular API
-const messaging = firebase.messaging();
+const messaging = self.firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || 'New notification';
+  const title = payload.notification?.title || "New notification";
   const options = {
-    body: payload.notification?.body || '',
-    icon: '/logoIcon.png',
+    body: payload.notification?.body || "",
+    icon: "/logoIcon.png",
     data: payload.data || {},
   };
   self.registration.showNotification(title, options);
 });
 
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   if (event.notification.data?.link) {
     event.waitUntil(clients.openWindow(event.notification.data.link));

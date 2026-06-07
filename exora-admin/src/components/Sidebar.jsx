@@ -87,8 +87,8 @@ const Sidebar = () => {
           className={`p-5 border-b border-gray-100 ${isCollapsed ? "lg:px-3" : ""}`}
         >
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-indigo-200">
-              <img src="/logoIcon.png" alt="Exora" className="w-7 h-7 object-contain" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md ring-2 ring-white/60 flex-shrink-0">
+              <img src="/logoIcon.png" alt="Exora" className="w-full h-full object-cover" />
             </div>
             {!isCollapsed && (
               <div>
