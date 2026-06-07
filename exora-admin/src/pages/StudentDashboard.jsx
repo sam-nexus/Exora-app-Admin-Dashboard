@@ -220,38 +220,7 @@ const StudentDashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard
-          icon={<BookOpen size={16} />}
-          value={dashboardData.totalCourses}
-          label="Courses"
-          sublabel="Assigned"
-          color="blue"
-        />
-        <StatCard
-          icon={<Sparkles size={16} />}
-          value={dashboardData.unlockedCount}
-          label="Unlocked"
-          sublabel="Available"
-          color="green"
-          trend="positive"
-        />
-        <StatCard
-          icon={<Lock size={16} />}
-          value={dashboardData.lockedCount}
-          label="Locked"
-          sublabel="Need unlock"
-          color="orange"
-        />
-        <StatCard
-          icon={<TrendingUp size={16} />}
-          value={`${dashboardData.completionRate}%`}
-          label="Completion"
-          sublabel={`${dashboardData.unlockedCount}/${dashboardData.totalCourses}`}
-          color="purple"
-          progress={dashboardData.completionRate}
-        />
-      </div>
+      
 
       {/* Quick Actions Grid */}
       <div className="grid gap-4 md:grid-cols-2">

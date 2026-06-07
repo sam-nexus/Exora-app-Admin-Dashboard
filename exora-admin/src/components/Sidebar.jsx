@@ -28,7 +28,7 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { path: "/", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+    { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { path: "/users", icon: <Users size={20} />, label: "Users" },
     {
       path: "/departments",

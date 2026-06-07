@@ -41,7 +41,7 @@ function App() {
 
         <Route element={<PrivateRoute allowedRoles={['admin']} />}>
           <Route element={<Layout />}>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/users" element={<Users />} />
             <Route path="/departments" element={<Departments />} />
             <Route path="/courses" element={<Courses />} />

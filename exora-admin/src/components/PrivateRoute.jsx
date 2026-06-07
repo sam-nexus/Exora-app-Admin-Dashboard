@@ -14,7 +14,7 @@ const PrivateRoute = ({ allowedRoles = [] }) => {
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    return <Navigate to={role === 'admin' ? '/' : '/student'} replace />;
+    return <Navigate to={role === 'admin' ? '/dashboard' : '/student'} replace />;
   }
 
   return <Outlet />;
