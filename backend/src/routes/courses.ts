@@ -20,14 +20,15 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 
 // Add a new course
 router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
-  const { department_id, name, type } = req.body;
+  const { department_id, name, type, is_free } = req.body;
   const courseType = type || 'regular';
+  const isFree = is_free || false;
 
   try {
     // 1. Create the course
     const { data: course, error: insertError } = await supabaseAdmin
       .from('courses')
-      .insert({ department_id, name, type: courseType })
+      .insert({ department_id, name, type: courseType, is_free: isFree })
       .select('id')
       .single();
 
@@ -39,41 +40,16 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
       .select('id');
     if (usersError) throw usersError;
 
+    // 3. Insert user_courses rows – free courses are unlocked, paid are locked
     if (users && users.length > 0) {
-      // 3. For each user, determine if their existing courses are unlocked
-      const userRows = [];
-
-      for (const user of users) {
-        // Check if this user has any existing courses and their lock status
-        const { data: existingCourses } = await supabaseAdmin
-          .from('user_courses')
-          .select('is_locked')
-          .eq('user_id', user.id);
-
-        // Determine lock status for the new course:
-        // - If user has NO existing courses → lock the new course (default)
-        // - If user has any EXISTING course that is UNLOCKED → unlock the new course
-        // - If ALL existing courses are LOCKED → lock the new course
-        let isLocked = true; // default: locked
-
-        if (existingCourses && existingCourses.length > 0) {
-          const anyUnlocked = existingCourses.some(uc => uc.is_locked === false);
-          if (anyUnlocked) {
-            isLocked = false; // user already has unlocked courses, so unlock the new one
-          }
-        }
-
-        userRows.push({
-          user_id: user.id,
-          course_id: course.id,
-          is_locked: isLocked,
-        });
-      }
-
-      // 4. Insert all user_courses rows
+      const locks = users.map(u => ({
+        user_id: u.id,
+        course_id: course.id,
+        is_locked: !isFree, // free courses are unlocked (false), paid are locked (true)
+      }));
       const { error: lockError } = await supabaseAdmin
         .from('user_courses')
-        .insert(userRows);
+        .insert(locks);
       if (lockError) throw lockError;
     }
 
@@ -83,20 +59,21 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
   }
 });
 
-
 // Edit a course
 router.put('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const { name, department_id, type } = req.body;
+  const { name, department_id, type, is_free } = req.body;
   const updates: any = {};
   if (name !== undefined) updates.name = name;
   if (department_id !== undefined) updates.department_id = department_id;
   if (type !== undefined) updates.type = type;
+  if (is_free !== undefined) updates.is_free = is_free;
 
   const { error } = await supabaseAdmin.from('courses').update(updates).eq('id', id);
   if (error) return res.status(500).json({ error: error.message });
   res.json({ message: 'Course updated' });
 });
+
 
 // Delete a course
 router.delete('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {

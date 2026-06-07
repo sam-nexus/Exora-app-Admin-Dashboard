@@ -110,14 +110,21 @@ router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response
     if (profileError) throw profileError;
 
     // Lock all courses for new user
-    const { data: courses } = await supabaseAdmin.from('courses').select('id');
+    // Lock all courses for new user (except free courses)
+    const { data: courses } = await supabaseAdmin.from('courses').select('id, is_free');
     if (courses && courses.length > 0) {
-      const locks = courses.map(c => ({
+      const locks = courses.filter(c => !c.is_free).map(c => ({
         user_id: authUser.id,
         course_id: c.id,
         is_locked: true,
       }));
-      await supabaseAdmin.from('user_courses').insert(locks);
+      const freeLocks = courses.filter(c => c.is_free).map(c => ({
+        user_id: authUser.id,
+        course_id: c.id,
+        is_locked: false,
+      }));
+      if (locks.length > 0) await supabaseAdmin.from('user_courses').insert(locks);
+      if (freeLocks.length > 0) await supabaseAdmin.from('user_courses').insert(freeLocks);
     }
     res.status(201).json({ message: 'User created' });
   } catch (err: any) {
