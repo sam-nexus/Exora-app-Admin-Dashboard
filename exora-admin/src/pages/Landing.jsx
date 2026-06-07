@@ -159,7 +159,7 @@ const Landing = () => {
                                 Login
                             </a>
                             <a
-                                href="/register"
+                                href="/signup"
                                 className="px-4 lg:px-5 py-2 lg:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-200 dark:hover:shadow-indigo-900 transition flex items-center gap-2 text-sm"
                             >
                                 Get Started <ArrowRight size={16} />
@@ -246,7 +246,7 @@ const Landing = () => {
                         </p>
                         <div className="flex flex-wrap gap-3 sm:gap-4 mt-6 sm:mt-8 justify-center lg:justify-start">
                             <a
-                                href="/register"
+                                href="/signup"
                                 className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-indigo-200 dark:hover:shadow-indigo-900 transition flex items-center gap-2 text-base sm:text-lg group"
                             >
                                 Start Free Trial{' '}
