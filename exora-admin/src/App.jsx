@@ -23,8 +23,7 @@ import StudentProfile from './pages/StudentProfile';
 import Notifications from './pages/Notifications';
 import Materials from './pages/Materials';
 import Support from './pages/Support';
-
-
+import Landing from './pages/Landing';
 
 
 
@@ -32,6 +31,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />

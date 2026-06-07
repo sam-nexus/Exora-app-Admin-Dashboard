@@ -292,7 +292,7 @@ const StudentPayments = () => {
                       <h3 className="font-semibold text-gray-900">{dept.name}</h3>
                       <p className="text-sm text-gray-500 mt-1">{dept.courseCount} Courses</p>
                     </div>
-                    <span className="text-lg font-bold text-indigo-600">{dept.price || 500} Birr</span>
+                    <span className="text-lg font-bold text-indigo-600">{dept.price || 50} Birr</span>
                   </div>
                   <button
                     onClick={() => {
