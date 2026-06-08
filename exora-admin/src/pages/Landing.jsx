@@ -149,7 +149,7 @@ const Landing = () => {
                                 className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
                                 aria-label="Toggle theme"
                             >
-                                {/* //{darkMode ? <Sun size={18} /> : <Moon size={18} />} */}
+                                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
                             </button>
                             <a
                                 href="/login"
