@@ -42,27 +42,27 @@ router.post('/register', async (req, res) => {
     // 3. Lock every course for the new user (except free courses)
     const { data: courses } = await supabaseAdmin.from('courses').select('id, is_free');
     if (courses && courses.length > 0) {
-      const locks = courses
-        .filter(c => !c.is_free) // ← skip free courses
-        .map(c => ({
+      // Separate free and paid courses
+      const paidCourses = courses.filter(c => !c.is_free);
+      const freeCourses = courses.filter(c => c.is_free);
+
+      // Lock paid courses
+      if (paidCourses.length > 0) {
+        const locks = paidCourses.map(c => ({
           user_id: authUser.id,
           course_id: c.id,
           is_locked: true,
         }));
-
-      // Insert free courses as unlocked
-      const freeLocks = courses
-        .filter(c => c.is_free)
-        .map(c => ({
-          user_id: authUser.id,
-          course_id: c.id,
-          is_locked: false, // ← free courses are unlocked
-        }));
-
-      if (locks.length > 0) {
         await supabaseAdmin.from('user_courses').insert(locks);
       }
-      if (freeLocks.length > 0) {
+
+      // Unlock free courses
+      if (freeCourses.length > 0) {
+        const freeLocks = freeCourses.map(c => ({
+          user_id: authUser.id,
+          course_id: c.id,
+          is_locked: false, // free courses are unlocked
+        }));
         await supabaseAdmin.from('user_courses').insert(freeLocks);
       }
     }
