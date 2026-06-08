@@ -83,7 +83,7 @@ const StudentLayout = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        {/* Download Mobile App Banner */}
+        {/* Download Mobile App Banner
         <div className={`bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 transition-all duration-300 ${showDownloadBanner ? 'h-10 sm:h-12 opacity-100' : 'h-0 opacity-0 overflow-hidden'
           }`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
@@ -94,7 +94,7 @@ const StudentLayout = () => {
             </div>
             <div className="flex items-center gap-2">
               <a
-                href={import.meta.env.VITE_APP_STORE_LINK || "#"}
+                href={import.meta.env.VITE_APP_STORE_LINK || "https://t.me/exora_mobile/3"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 bg-white text-indigo-600 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold hover:shadow-lg transition shrink-0"
@@ -112,7 +112,7 @@ const StudentLayout = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo */}
