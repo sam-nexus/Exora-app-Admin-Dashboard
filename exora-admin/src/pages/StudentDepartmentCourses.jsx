@@ -64,8 +64,8 @@ const CourseCard = ({ course, index, deptId, tab, onUnlockClick }) => {
   const getButtonText = () => {
     if (tab === "mock") return "Start Mock";
     if (tab === "exit") return "Take Exam";
-    if (progress > 0 && progress < 100) return "Continue";
-    return "Start";
+    if (progress > 0 && progress < 100) return "Continue Learning";
+    return "Start Practice";
   };
 
   const getStatusIcon = () => {
@@ -80,36 +80,37 @@ const CourseCard = ({ course, index, deptId, tab, onUnlockClick }) => {
     return "Not Started";
   };
 
-  const tabColor = tab === "mock" ? "purple" : tab === "exit" ? "emerald" : "indigo";
-  const colorMap = {
-    indigo: "from-indigo-400 to-indigo-600",
-    purple: "from-purple-400 to-purple-600",
-    emerald: "from-emerald-400 to-emerald-600",
-  };
-  const btnColorMap = {
-    indigo: "from-indigo-600 to-indigo-700",
-    purple: "from-purple-600 to-purple-700",
-    emerald: "from-emerald-600 to-emerald-700",
-  };
-
   return (
     <div
-      className="group bg-gray-100 dark:bg-gray-800 rounded-2xl border border-indigo-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-fadeInUp shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500"
+      className="group relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl shadow-md animate-fadeInUp"
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* Top Gradient Line */}
-      <div className={`h-1.5 w-full bg-gradient-to-r ${colorMap[tabColor]}`} />
+      <div className={`h-1.5 w-full bg-gradient-to-r ${tab === "mock"
+          ? "from-purple-400 via-purple-500 to-purple-600"
+          : tab === "exit"
+            ? "from-emerald-400 via-emerald-500 to-emerald-600"
+            : "from-indigo-400 via-indigo-500 to-indigo-600"
+        }`} />
 
-      <div className="p-5">
+      {/* Decorative Blurs */}
+      {!isLocked && (
+        <>
+          <div className="absolute -top-8 -right-8 w-20 h-20 bg-gradient-to-br from-indigo-400/10 to-purple-400/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
+          <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-tr from-purple-400/10 to-pink-400/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
+        </>
+      )}
+
+      <div className="relative z-10 p-5">
         {/* Status Badges Row */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {isLocked ? (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-800">
                 <Lock size={11} /> Locked
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                 <Unlock size={11} /> Unlocked
               </span>
             )}
@@ -120,7 +121,7 @@ const CourseCard = ({ course, index, deptId, tab, onUnlockClick }) => {
             )}
           </div>
           {!isLocked && (
-            <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
               {getStatusIcon()}
               <span>{getStatusText()}</span>
             </div>
@@ -128,22 +129,34 @@ const CourseCard = ({ course, index, deptId, tab, onUnlockClick }) => {
         </div>
 
         {/* Course Name */}
-        <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 line-clamp-2 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition-colors">
+        <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-4 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors min-h-[2.5rem]">
           {name}
         </h3>
 
         {/* Progress Bar */}
         {!isLocked && (
-          <div className="mb-4">
+          <div className="mb-5">
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">Progress</span>
-              <span className={`text-[11px] font-bold ${progress === 100 ? "text-emerald-600 dark:text-emerald-400" : progress > 0 ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400"}`}>
+              <span className={`text-[11px] font-bold ${progress === 100
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : progress > 0
+                    ? "text-indigo-600 dark:text-indigo-400"
+                    : "text-gray-400"
+                }`}>
                 {progress}%
               </span>
             </div>
             <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-700 ease-out ${progressColor(progress)}`}
+                className={`h-full rounded-full transition-all duration-700 ease-out ${progress === 0
+                    ? "bg-gray-200 dark:bg-gray-600"
+                    : progress < 50
+                      ? "bg-orange-400"
+                      : progress < 100
+                        ? "bg-indigo-500"
+                        : "bg-emerald-500"
+                  }`}
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -154,14 +167,14 @@ const CourseCard = ({ course, index, deptId, tab, onUnlockClick }) => {
         {isLocked ? (
           <button
             onClick={onUnlockClick}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-500 hover:from-indigo-600 hover:to-indigo-600 text-white text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md active:scale-[0.98]"
           >
             <Lock size={13} /> Unlock Course
           </button>
         ) : (
           <Link
             to={getHref()}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r ${btnColorMap[tabColor]} hover:bg-gradient-to-r hover:brightness-110 transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98]`}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98]"
           >
             {progress > 0 && progress < 100 ? <PlayCircle size={14} /> : <Sparkles size={14} />}
             {getButtonText()}
@@ -468,7 +481,7 @@ const StudentDepartmentCourses = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map((course, i) => (
               <CourseCard
                 key={course.id}

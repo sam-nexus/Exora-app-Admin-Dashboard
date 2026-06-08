@@ -40,15 +40,15 @@ const OptionButton = ({ opt, optText, state, onClick, disabled }) => {
     <button onClick={onClick} disabled={disabled} className={`${base} ${styles[state]}`}>
       <span className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold border
         ${state === 'correct' ? 'bg-emerald-500 border-emerald-500 text-white'
-        : state === 'wrong' ? 'bg-red-400 border-red-400 text-white'
-        : state === 'selected' ? 'bg-indigo-500 border-indigo-500 text-white'
-        : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 text-gray-500 dark:text-gray-400 group-hover:border-indigo-400 group-hover:text-indigo-600'}`}>
+          : state === 'wrong' ? 'bg-red-400 border-red-400 text-white'
+            : state === 'selected' ? 'bg-indigo-500 border-indigo-500 text-white'
+              : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 text-gray-500 dark:text-gray-400 group-hover:border-indigo-400 group-hover:text-indigo-600'}`}>
         {opt}
       </span>
       <span className={`flex-1 text-sm leading-relaxed
         ${state === 'correct' ? 'text-emerald-800 dark:text-emerald-400 font-medium'
-        : state === 'wrong' ? 'text-red-700 dark:text-red-400'
-        : 'text-gray-700 dark:text-gray-200'}`}>
+          : state === 'wrong' ? 'text-red-700 dark:text-red-400'
+            : 'text-gray-700 dark:text-gray-200'}`}>
         {optText}
       </span>
       {state === 'correct' && <CheckCircle size={18} className="text-emerald-500 shrink-0 mt-0.5" />}
@@ -60,8 +60,8 @@ const OptionButton = ({ opt, optText, state, onClick, disabled }) => {
 // ─── Explanation Box ──────────────────────────────────────────────────────────
 const ExplanationBox = ({ isCorrect, correctLetter, correctText, userLetter, userText, explanation }) => (
   <div className={`p-5 rounded-xl mb-2 border-2 animate-in slide-in-from-bottom-2 duration-200
-    ${isCorrect ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' 
-    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'}`}>
+    ${isCorrect ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+      : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'}`}>
     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isCorrect ? 'bg-emerald-100 dark:bg-emerald-800' : 'bg-red-100 dark:bg-red-800'}`}>
         {isCorrect ? <CheckCircle size={20} className="text-emerald-600" /> : <XCircle size={20} className="text-red-600" />}
@@ -126,17 +126,17 @@ const QuestionMap = ({ questions, answers, marked, current, onGo, onClose }) => 
               <button key={q.id} onClick={() => onGo(idx)}
                 className={`h-9 rounded-xl text-xs font-bold transition-all
                   ${isCurrent ? 'bg-indigo-600 text-white ring-2 ring-indigo-300 ring-offset-1'
-                  : answered ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200'
-                  : flagged ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+                    : answered ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200'
+                      : flagged ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                 {idx + 1}
               </button>
             );
           })}
         </div>
         <div className="px-5 py-3 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400">
-          {[['bg-indigo-600','Current'],['bg-emerald-400','Answered'],['bg-amber-400','Flagged'],['bg-gray-300','Unanswered']].map(([c,l]) => (
-            <span key={l} className="flex items-center gap-1.5"><span className={`w-3 h-3 rounded-full ${c}`}/>{l}</span>
+          {[['bg-indigo-600', 'Current'], ['bg-emerald-400', 'Answered'], ['bg-amber-400', 'Flagged'], ['bg-gray-300', 'Unanswered']].map(([c, l]) => (
+            <span key={l} className="flex items-center gap-1.5"><span className={`w-3 h-3 rounded-full ${c}`} />{l}</span>
           ))}
         </div>
       </div>
@@ -145,7 +145,7 @@ const QuestionMap = ({ questions, answers, marked, current, onGo, onClose }) => 
 };
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-const Sidebar = ({ questions, answers, marked, totalQs, answeredCount, flaggedCount, currentIdx, goTo, onSubmit }) => (
+const Sidebar = ({ questions, answers, marked, totalQs, answeredCount, flaggedCount, currentIdx, goTo, onSubmit, screen }) => (
   <div className="space-y-4">
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
       <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4 flex items-center gap-2">
@@ -171,8 +171,8 @@ const Sidebar = ({ questions, answers, marked, totalQs, answeredCount, flaggedCo
 
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
       <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Quick Nav</p>
-      <div className="grid grid-cols-5 gap-1.5 max-h-60 overflow-y-auto">
-        {questions.slice(0, 50).map((q, i) => {
+      <div className="grid grid-cols-5 gap-1.5 max-h-80 overflow-y-auto">
+        {questions.map((q, i) => {
           const answered = !!answers[q.id];
           const flagged = !!marked[q.id];
           const isCur = i === currentIdx;
@@ -180,19 +180,21 @@ const Sidebar = ({ questions, answers, marked, totalQs, answeredCount, flaggedCo
             <button key={q.id} onClick={() => goTo(i)}
               className={`h-8 rounded-lg text-[11px] font-bold transition-all
                 ${isCur ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
-                : answered ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                : flagged ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200'}`}>
+                  : answered ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                    : flagged ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200'}`}>
               {i + 1}
             </button>
           );
         })}
       </div>
-      {totalQs > 50 && <p className="text-xs text-gray-400 text-center mt-2">+{totalQs - 50} more — use Map</p>}
     </div>
 
-    <button onClick={onSubmit} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center gap-2">
-      <Trophy size={16} /> Submit Exam
+    <button onClick={onSubmit} className={`w-full py-3 rounded-xl font-bold active:scale-95 transition-all flex items-center justify-center gap-2 text-white ${screen === "practice"
+      ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+      : "bg-emerald-600 hover:bg-emerald-700"
+      }`}>
+      <Trophy size={16} /> {screen === "practice" ? "Finish Practice" : "Submit Exam"}
     </button>
   </div>
 );
@@ -236,9 +238,9 @@ const StudentExitExam = () => {
             const coursesRes = await api.get('/courses', { params: { department_id: deptId } });
             const found = (coursesRes.data || []).find((c) => c.id === courseId);
             if (found) setCourse(found);
-          } catch {}
+          } catch { }
         }
-      } catch {} finally { setLoading(false); }
+      } catch { } finally { setLoading(false); }
     })();
   }, [deptId, courseId]);
 
@@ -324,22 +326,66 @@ const StudentExitExam = () => {
   };
 
   const submitExam = async () => {
+    console.log('🟢 submitExam called!');
+    console.log('screen:', screen);
+    console.log('mode:', mode);
+    console.log('answers:', answers);
+    console.log('questions length:', questions.length);
+
     setLoading(true);
+
+
+    // Practice mode — calculate locally, no backend call
+    if (screen === "practice") {
+      let totalCorrect = 0;
+      const allResults = questions.map((q) => {
+        const userLetter = answers[q.id] ?? '';
+        const isCorrect = userLetter === optionLabel(q.correct_index ?? 0);
+        if (isCorrect) totalCorrect++;
+        return {
+          id: q.id,
+          text: q.question_text || q.text,
+          userAnswer: userLetter || '(Not answered)',
+          correctAnswer: optionLabel(q.correct_index ?? 0),
+          isCorrect,
+          explanation: q.explanation || '',
+        };
+      });
+      const score = totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0;
+      setResult({ score, correctCount: totalCorrect, totalCount: totalQs, results: allResults });
+      setScreen("result");
+      setConfirmSubmit(false);
+      setLoading(false);
+      return;
+    }
+
+    // Test mode — submit to backend
     const timeSpent = enableTimer && totalTime > 0 ? totalTime - timeLeft : null;
     try {
-      const res = await api.post('/student/exit-exam/submit', { departmentId: deptId, courseId: courseId || undefined, answers, mode, timeTaken: timeSpent });
-      setResult(res.data); setScreen('result'); setConfirmSubmit(false);
+      const res = await api.post("/student/exit-exam/submit", {
+        departmentId: deptId,
+        courseId: courseId || undefined,
+        answers,
+        mode,
+        timeTaken: timeSpent
+      });
+      setResult(res.data);
+      setScreen("result");
+      setConfirmSubmit(false);
     } catch {
       let totalCorrect = 0;
-      const results = questions.map((q) => {
+      const allResults = questions.map((q) => {
         const userLetter = answers[q.id] ?? '';
         const isCorrect = userLetter === optionLabel(q.correct_index ?? 0);
         if (isCorrect) totalCorrect++;
         return { id: q.id, text: q.question_text, userAnswer: userLetter, correctAnswer: optionLabel(q.correct_index ?? 0), isCorrect, explanation: q.explanation };
       });
-      setResult({ score: totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0, correctCount: totalCorrect, totalCount: totalQs, results });
-      setScreen('result'); setConfirmSubmit(false);
-    } finally { setLoading(false); }
+      setResult({ score: totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0, correctCount: totalCorrect, totalCount: totalQs, results: allResults });
+      setScreen("result");
+      setConfirmSubmit(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ── Loading ──
@@ -507,7 +553,24 @@ const StudentExitExam = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {showMap && <QuestionMap questions={questions} answers={answers} marked={marked} current={currentIdx} onGo={goTo} onClose={() => setShowMap(false)} />}
-
+        {/* ADD THE MODAL HERE */}
+        {confirmSubmit && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
+              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle size={26} className="text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Finish Practice?</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Answered: <span className="font-bold text-indigo-600">{answeredCount}</span> / {totalQs}
+              </p>
+              <div className="flex gap-3 mt-4">
+                <button onClick={() => setConfirmSubmit(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">Cancel</button>
+                <button onClick={submitExam} className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm">Finish</button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-[1fr_280px] gap-6">
             <div className="space-y-4">
@@ -563,7 +626,16 @@ const StudentExitExam = () => {
                 ))}
               </div>
             </div>
-            <Sidebar questions={questions} answers={answers} marked={marked} totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount} currentIdx={currentIdx} goTo={goTo} onSubmit={() => setConfirmSubmit(true)} />
+            <Sidebar
+              questions={questions} answers={answers} marked={marked}
+              totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount}
+              currentIdx={currentIdx} goTo={goTo}
+              onSubmit={() => {
+                console.log('🟡 setConfirmSubmit called!');
+                setConfirmSubmit(true);
+              }}
+              screen={screen}  // ← add this
+            />
           </div>
         </div>
       </div>
@@ -631,7 +703,13 @@ const StudentExitExam = () => {
                 </div>
               </div>
             </div>
-            <Sidebar questions={questions} answers={answers} marked={marked} totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount} currentIdx={currentIdx} goTo={goTo} onSubmit={() => setConfirmSubmit(true)} />
+            <Sidebar
+              questions={questions} answers={answers} marked={marked}
+              totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount}
+              currentIdx={currentIdx} goTo={goTo}
+              onSubmit={() => setConfirmSubmit(true)}
+              screen={screen}  // ← add this
+            />
           </div>
         </div>
       </div>

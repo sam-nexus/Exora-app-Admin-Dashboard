@@ -184,7 +184,7 @@ const Landing = () => {
                             >
                                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
                             </button>
-                            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2">
+                            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 dark:text-gray-400">
                                 {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
                             </button>
                         </div>

@@ -113,43 +113,79 @@ const StudentDashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredDepts.map((dept) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredDepts.map((dept, index) => {
           const isLocked = dept.isLocked ?? false;
           return (
             <Link
               key={dept.id}
               to={isLocked ? "#" : `/student/departments/${dept.id}/courses`}
               onClick={(e) => { if (isLocked) e.preventDefault(); }}
-              className={`group relative overflow-hidden rounded-2xl border-2 p-5 transition-all duration-300 hover:-translate-y-1.5 ${isLocked
-                  ? 'border-gray-200 dark:border-gray-600 opacity-70 bg-gray-50 dark:bg-gray-800/50'
-                  : 'border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-xl shadow-md'
+              className={`group relative overflow-hidden rounded-2xl border-2 p-6 transition-all duration-300 hover:-translate-y-2 animate-fadeInUp ${isLocked
+                  ? 'border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/40'
+                  : 'border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-2xl shadow-lg'
                 }`}
+              style={{ animationDelay: `${index * 80}ms` }}
             >
-              {/* Top accent line */}
+              {/* Decorative corner gradient */}
               {!isLocked && (
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+                <>
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="absolute -bottom-8 -left-8 w-20 h-20 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+                </>
               )}
 
-              <div className="mb-4">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 ${isLocked
-                    ? 'bg-gray-100 dark:bg-gray-700'
-                    : 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/20 dark:to-purple-500/20 shadow-md group-hover:shadow-lg'
-                  }`}>
-                  {dept.icon || '📚'}
+              <div className="relative z-10">
+                {/* Icon Section */}
+                <div className="mb-5">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 ${isLocked
+                      ? 'bg-gray-100 dark:bg-gray-700'
+                      : 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/20 dark:to-purple-500/20 shadow-lg group-hover:shadow-xl'
+                    }`}>
+                    <span className="group-hover:animate-bounce">{dept.icon || '📚'}</span>
+                  </div>
                 </div>
-              </div>
 
-              <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                {dept.name}
-              </h3>
+                {/* Department Name */}
+                <h3 className={`font-bold text-base mb-3 transition-colors duration-300 ${isLocked
+                    ? 'text-gray-500 dark:text-gray-400'
+                    : 'text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
+                  }`}>
+                  {dept.name}
+                </h3>
 
-              <div className={`flex items-center text-sm font-semibold transition-all group-hover:gap-2 ${isLocked
-                  ? 'text-gray-400 dark:text-gray-500'
-                  : 'text-indigo-600 dark:text-indigo-400'
-                }`}>
-                {isLocked ? 'Unlock to access' : 'Browse Courses'}
-                <ChevronRight size={15} className="ml-1 group-hover:translate-x-1.5 transition-transform" />
+                {/* Status Badge */}
+                <div className="mb-4">
+                  {isLocked ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                      <Lock size={12} /> Locked
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                      <Unlock size={12} /> Unlocked
+                    </span>
+                  )}
+                </div>
+
+                {/* Action Link */}
+                <div className={`flex items-center justify-between pt-3 border-t ${isLocked
+                    ? 'border-gray-100 dark:border-gray-700'
+                    : 'border-indigo-100 dark:border-indigo-800'
+                  }`}>
+                  <span className={`text-sm font-semibold transition-colors ${isLocked
+                      ? 'text-gray-400 dark:text-gray-500'
+                      : 'text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'
+                    }`}>
+                    {isLocked ? 'Unlock to access' : 'Browse Courses'}
+                  </span>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isLocked
+                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-400'
+                      : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-md'
+                    }`}>
+                    <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
               </div>
             </Link>
           );
