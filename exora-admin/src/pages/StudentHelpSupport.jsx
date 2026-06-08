@@ -1,20 +1,17 @@
 import { useState, useEffect } from "react";
 import {
   HelpCircle,
-  Mail,
-  Phone,
-  MessageCircle,
   Send,
   ChevronDown,
   ChevronUp,
-  Headphones,
   Ticket,
-  AlertCircle,
-  CheckCircle,
-  Clock,
   ArrowLeft,
   X,
   Loader2,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  MessageCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
@@ -22,44 +19,16 @@ import api from "../api/axios";
 const StudentHelpSupport = () => {
   const navigate = useNavigate();
   const [activeFaq, setActiveFaq] = useState(null);
-  const [showTicketForm, setShowTicketForm] = useState(false);
-  const [tickets, setTickets] = useState([]);
-  const [formData, setFormData] = useState({
-    subject: "",
-    category: "technical",
-    message: "",
-  });
+  const [formData, setFormData] = useState({ subject: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [tickets, setTickets] = useState([]);
   const [loadingTickets, setLoadingTickets] = useState(true);
-  const [toast, setToast] = useState(null); // { type: 'success'|'error', msg: string }
 
   const showToast = (type, msg) => {
     setToast({ type, msg });
     setTimeout(() => setToast(null), 4000);
   };
-
-  const faqs = [
-    {
-      q: "How do I unlock a department?",
-      a: "Go to Payments page, select the department you want to unlock, make payment via TeleBirr or upload receipt, and admin will verify within 24 hours.",
-    },
-    {
-      q: "My mock exam froze during submission, what should I do?",
-      a: "Open a support ticket with the course name and time of issue. Our team will restore your attempt or provide a retake.",
-    },
-    {
-      q: "How can I get my exit exam certificate?",
-      a: "After passing the exit exam with 50% or above, you can download your certificate from the exit exam results page.",
-    },
-    {
-      q: "Can I retake a mock exam?",
-      a: "Yes, you can retake each mock exam up to 3 times. Your best score will be saved.",
-    },
-    {
-      q: "I forgot my password, how to reset?",
-      a: "Click Forgot Password on the login page and follow the instructions sent to your email.",
-    },
-  ];
 
   useEffect(() => {
     fetchTickets();
@@ -68,7 +37,10 @@ const StudentHelpSupport = () => {
   const fetchTickets = async () => {
     setLoadingTickets(true);
     try {
-      const { data } = await api.get("/student/support-tickets");
+      const token = localStorage.getItem("token");
+      const { data } = await api.get("/support/my", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setTickets(data || []);
     } catch (error) {
       console.error("Error fetching tickets:", error);
@@ -77,315 +49,317 @@ const StudentHelpSupport = () => {
     }
   };
 
+  const faqs = [
+    {
+      q: "How do I unlock all departments?",
+      a: "Go to Payments, make a one-time payment of 50 ETB via CBE, upload your receipt, and admin will verify within 24 hours.",
+    },
+    {
+      q: "Can I retake a mock exam?",
+      a: "Yes, you can retake each mock exam up to 3 times. Your best score is saved.",
+    },
+    {
+      q: "I forgot my password, how to reset?",
+      a: "Click Forgot Password on the login page and follow the instructions.",
+    },
+    {
+      q: "How can I get support?",
+      a: "Open a support ticket using the form on this page or join our Telegram channel for quick help.",
+    },
+    {
+      q: "How do I download course materials?",
+      a: "Go to a department, select the Materials tab, and click Download on any available PDF.",
+    },
+  ];
+
   const handleSubmitTicket = async (e) => {
     e.preventDefault();
+    if (!formData.subject.trim() || !formData.message.trim()) {
+      showToast("error", "Subject and message are required.");
+      return;
+    }
     setSubmitting(true);
     try {
-      await api.post("/student/support-tickets", formData);
+      const token = localStorage.getItem("token");
+      await api.post(
+        "/support",
+        { subject: formData.subject, message: formData.message },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       showToast("success", "Ticket submitted! We'll respond within 24 hours.");
-      setShowTicketForm(false);
-      setFormData({ subject: "", category: "technical", message: "" });
+      setFormData({ subject: "", message: "" });
       fetchTickets();
     } catch (error) {
-      showToast("error", error?.response?.data?.error || "Failed to submit ticket. Please try again.");
+      showToast("error", error?.response?.data?.error || "Failed to submit ticket.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "open":
-        return <Clock size={12} className="text-amber-600" />;
-      case "in-progress":
-        return <AlertCircle size={12} className="text-blue-600" />;
-      case "resolved":
-        return <CheckCircle size={12} className="text-emerald-600" />;
-      default:
-        return null;
-    }
+  const getStatusBadge = (status) => {
+    const badges = {
+      open: {
+        bg: "bg-amber-50 dark:bg-amber-900/20",
+        text: "text-amber-700 dark:text-amber-400",
+        icon: <Clock size={12} />,
+        label: "Open",
+      },
+      "in-progress": {
+        bg: "bg-blue-50 dark:bg-blue-900/20",
+        text: "text-blue-700 dark:text-blue-400",
+        icon: <AlertCircle size={12} />,
+        label: "In Progress",
+      },
+      resolved: {
+        bg: "bg-emerald-50 dark:bg-emerald-900/20",
+        text: "text-emerald-700 dark:text-emerald-400",
+        icon: <CheckCircle size={12} />,
+        label: "Resolved",
+      },
+      closed: {
+        bg: "bg-emerald-50 dark:bg-emerald-900/20",
+        text: "text-emerald-700 dark:text-emerald-400",
+        icon: <CheckCircle size={12} />,
+        label: "Closed",
+      },
+    };
+    return (
+      badges[status] || {
+        bg: "bg-gray-50 dark:bg-gray-700",
+        text: "text-gray-600 dark:text-gray-300",
+        icon: null,
+        label: status || "Unknown",
+      }
+    );
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "open":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "in-progress":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-      case "resolved":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
-    }
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    if (diff < 60000) return "Just now";
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
   return (
-    <div className="space-y-6">
-      {/* Toast */}
+    <div className="space-y-6 pb-8">
+      {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-5 right-5 z-[60] flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border max-w-sm animate-slideIn
-          ${toast.type === 'success'
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-            : 'bg-red-50 border-red-200 text-red-800'}`}>
-          {toast.type === 'success'
-            ? <CheckCircle size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-            : <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />}
-          <p className="text-sm font-medium flex-1">{toast.msg}</p>
-          <button onClick={() => setToast(null)} className="text-gray-400 hover:text-gray-600">
+        <div
+          className={`fixed top-5 right-5 z-50 flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm animate-slideInRight ${
+            toast.type === "success"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-red-50 border-red-200 text-red-800"
+          }`}
+        >
+          {toast.type === "success" ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+          <span className="flex-1">{toast.msg}</span>
+          <button onClick={() => setToast(null)}>
             <X size={14} />
           </button>
         </div>
       )}
+
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/student")}
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition group"
+      >
+        <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition" /> Back to Dashboard
+      </button>
+
       {/* Page Header */}
-      <div className="border-b border-gray-200 pb-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-1 -ml-1 text-gray-500 hover:text-gray-700 transition"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Help & Support</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Get assistance with your account and exams</p>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Help & Support</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          Get assistance with your account and exams
+        </p>
+      </div>
+
+      {/* Two Column Layout: Form (Left) + FAQ (Right) */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Left: Submit Ticket Form */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                <Ticket size={16} className="text-white" />
+              </div>
+              <h2 className="text-lg font-semibold text-white">Submit a Request</h2>
+            </div>
+            <p className="text-indigo-200 text-xs mt-0.5">Describe your issue and we'll help you</p>
+          </div>
+          <form onSubmit={handleSubmitTicket} className="p-5 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Subject <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.subject}
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                required
+                placeholder="e.g., Payment issue, Course access problem..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Message <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                rows={5}
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none resize-none transition"
+                required
+                placeholder="Describe your issue in detail..."
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+            >
+              {submitting ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Send size={16} />
+              )}
+              {submitting ? "Submitting..." : "Submit Ticket"}
+            </button>
+          </form>
+        </div>
+
+        {/* Right: FAQ */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+          <div className="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                <HelpCircle size={16} className="text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Frequently Asked Questions
+              </h2>
+            </div>
+          </div>
+          <div className="p-4 space-y-2 max-h-[460px] overflow-y-auto">
+            {faqs.map((faq, idx) => (
+              <div
+                key={idx}
+                className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all duration-200"
+              >
+                <button
+                  onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                  className="w-full flex justify-between items-center p-3.5 text-left font-medium text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm"
+                >
+                  <span className="pr-4">{faq.q}</span>
+                  {activeFaq === idx ? (
+                    <ChevronUp size={16} className="text-gray-400 shrink-0" />
+                  ) : (
+                    <ChevronDown size={16} className="text-gray-400 shrink-0" />
+                  )}
+                </button>
+                {activeFaq === idx && (
+                  <div className="px-3.5 pb-3.5 pt-0 text-gray-600 dark:text-gray-300 text-sm border-t border-gray-100 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-700/50">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column - Contact & Quick Actions */}
-        <div className="space-y-6">
-          {/* Contact Card */}
-         
-
-          {/* Quick Actions Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-3">Quick Actions</h2>
-            <button
-              onClick={() => setShowTicketForm(true)}
-              className="w-full flex items-center justify-center gap-2 bg-gray-800 text-white py-2.5 rounded-lg font-medium hover:bg-gray-900 transition mb-3"
-            >
-              <Ticket size={15} />
-              Open Support 
-            </button>
-            
-          </div>
-
-          {/* Support Hours */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-2">Support Hours</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Monday - Friday</span>
-                <span className="text-gray-800">8:00 AM - 8:00 PM</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Saturday</span>
-                <span className="text-gray-800">9:00 AM - 5:00 PM</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Sunday</span>
-                <span className="text-gray-800">Closed</span>
-              </div>
+      {/* My Tickets Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+        <div className="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+              <MessageCircle size={16} className="text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">My Tickets</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Track your support requests</p>
             </div>
           </div>
         </div>
-
-        {/* Right Column - FAQ & Tickets */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* FAQ Section */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gray-50 px-5 py-4 border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <HelpCircle size={16} className="text-gray-600" />
-                <h2 className="text-base font-semibold text-gray-900">Frequently Asked Questions</h2>
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5">Quick answers to common questions</p>
+        <div className="p-5">
+          {loadingTickets ? (
+            <div className="text-center py-10">
+              <Loader2 size={24} className="animate-spin text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading tickets...</p>
             </div>
-            <div className="p-4 space-y-2">
-              {faqs.map((faq, idx) => (
-                <div
-                  key={idx}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
-                >
-                  <button
-                    onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                    className="w-full flex justify-between items-center p-3 text-left font-medium text-gray-800 hover:bg-gray-50 transition"
+          ) : tickets.length === 0 ? (
+            <div className="text-center py-10">
+              <div className="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Ticket size={24} className="text-gray-400 dark:text-gray-500" />
+              </div>
+              <p className="text-gray-500 dark:text-gray-400 font-medium">No tickets yet</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Submit a request using the form above
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {tickets.map((ticket) => {
+                const badge = getStatusBadge(ticket.status);
+                return (
+                  <div
+                    key={ticket.id}
+                    className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-sm transition-all duration-200 animate-fadeInUp"
                   >
-                    <span className="text-sm">{faq.q}</span>
-                    {activeFaq === idx ? (
-                      <ChevronUp size={16} className="text-gray-500" />
-                    ) : (
-                      <ChevronDown size={16} className="text-gray-400" />
-                    )}
-                  </button>
-                  {activeFaq === idx && (
-                    <div className="p-3 pt-0 text-gray-600 text-sm border-t border-gray-100 bg-gray-50/50">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* My Tickets Section */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gray-50 px-5 py-4 border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <Ticket size={16} className="text-gray-600" />
-                <h2 className="text-base font-semibold text-gray-900">My Support Tickets</h2>
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5">Track your support requests</p>
-            </div>
-            <div className="p-5">
-              {loadingTickets ? (
-                <div className="text-center py-10">
-                  <Loader2 size={24} className="animate-spin text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500 text-sm">Loading tickets...</p>
-                </div>
-              ) : tickets.length === 0 ? (
-                <div className="text-center py-10">
-                  <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Ticket size={22} className="text-gray-400" />
-                  </div>
-                  <p className="text-gray-600 font-medium">No tickets yet</p>
-                  <p className="text-sm text-gray-400 mt-1">Open a support ticket if you need help</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                  {tickets.map((ticket) => (
-                    <div
-                      key={ticket.id}
-                      className={`border rounded-lg p-3 ${getStatusColor(ticket.status)}`}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-gray-900 text-sm">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                           {ticket.subject}
                         </h3>
-                        <span
-                          className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${getStatusColor(ticket.status)}`}
-                        >
-                          {getStatusIcon(ticket.status)}
-                          {ticket.status === "open"
-                            ? "Open"
-                            : ticket.status === "in-progress"
-                              ? "In Progress"
-                              : "Resolved"}
-                        </span>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                          {ticket.message}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                        {ticket.message}
-                      </p>
-                      <div className="flex justify-between items-center text-xs text-gray-400">
-                        <span>Ticket #{ticket.id}</span>
-                        <span>
-                          {new Date(ticket.createdAt || ticket.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ml-3 ${badge.bg} ${badge.text} border`}
+                      >
+                        {badge.icon}
+                        {badge.label}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    {/* Admin Reply */}
+                    {ticket.admin_reply && (
+                      <div className="mt-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <CheckCircle size={12} className="text-emerald-500" />
+                          <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                            Admin Reply
+                          </p>
+                        </div>
+                        <p className="text-sm text-emerald-600 dark:text-emerald-300">
+                          {ticket.admin_reply}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
+                        Ticket #{ticket.id?.substring(0, 8)}
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
+                        {formatDate(ticket.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          )}
         </div>
       </div>
-
-      {/* Ticket Form Modal */}
-      {showTicketForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full shadow-xl overflow-hidden">
-            <div className="bg-gray-800 px-6 py-4 flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Open Support Ticket</h3>
-                <p className="text-gray-300 text-sm mt-0.5">Describe your issue and we'll help you</p>
-              </div>
-              <button
-                onClick={() => setShowTicketForm(false)}
-                className="text-white/70 hover:text-white transition"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <form onSubmit={handleSubmitTicket} className="p-6 space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={formData.subject}
-                  onChange={(e) =>
-                    setFormData({ ...formData, subject: e.target.value })
-                  }
-                  placeholder="Brief description of your issue"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 transition"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Category
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 transition"
-                >
-                  <option value="technical">Technical Issue</option>
-                  <option value="payment">Payment Problem</option>
-                  <option value="exam">Exam Issue</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Message
-                </label>
-                <textarea
-                  rows={5}
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
-                  }
-                  placeholder="Please provide detailed information about your issue..."
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 transition resize-none"
-                  required
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowTicketForm(false)}
-                  className="flex-1 border border-gray-300 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gray-800 text-white py-2.5 rounded-lg font-medium hover:bg-gray-900 transition disabled:opacity-50"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Send size={15} />
-                      Submit Ticket
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

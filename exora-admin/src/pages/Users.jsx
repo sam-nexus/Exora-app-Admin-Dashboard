@@ -58,7 +58,11 @@ const Users = () => {
           try {
             const res = await api.get(`/courses/user/${u.id}`);
             const userCourses = res.data || [];
-            const allLocked = userCourses.length === 0 || userCourses.every((uc) => uc.is_locked);
+            // In fetchUsers, change the lock status logic:
+            const allLocked = userCourses.length === 0 ||
+              userCourses
+                .filter((uc) => !uc.courses?.is_free) // only check paid courses
+                .every((uc) => uc.is_locked);
             statusMap[u.id] = allLocked;
           } catch {
             statusMap[u.id] = true;
@@ -422,11 +426,10 @@ const Users = () => {
                     <td className="px-6 py-4 text-gray-600">{user.email}</td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          user.role === "admin"
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${user.role === "admin"
                             ? "bg-purple-100 text-purple-700"
                             : "bg-green-100 text-green-700"
-                        }`}
+                          }`}
                       >
                         {user.role === "admin" ? "👨‍💼 Admin" : "👨‍🎓 Student"}
                       </span>
@@ -471,11 +474,10 @@ const Users = () => {
                         <button
                           onClick={() => handleToggleLock(user.id)}
                           disabled={toggling === user.id}
-                          className={`p-1.5 rounded-lg transition ${
-                            userLockStatus[user.id]
+                          className={`p-1.5 rounded-lg transition ${userLockStatus[user.id]
                               ? "text-red-600 hover:bg-red-50"
                               : "text-emerald-600 hover:bg-emerald-50"
-                          } disabled:opacity-50`}
+                            } disabled:opacity-50`}
                           title={
                             userLockStatus[user.id]
                               ? "Courses Locked — click to Unlock"

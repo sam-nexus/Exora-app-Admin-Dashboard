@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -26,53 +27,56 @@ import Materials from './pages/Materials';
 import NotFound from './pages/NotFound';
 import Support from './pages/Support';
 import Landing from './pages/Landing';
+import StudentNotification from './pages/StudentNotifications';
 
 
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-        <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/departments" element={<Departments />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/questions" element={<Questions />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/materials" element={<Materials />} />
-            <Route path="/support" element={<Support />} />
+          <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/departments" element={<Departments />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/questions" element={<Questions />} />
+              <Route path="/payments" element={<Payments />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/materials" element={<Materials />} />
+              <Route path="/support" element={<Support />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route element={<PrivateRoute allowedRoles={['user']} />}>
-          <Route path="/student" element={<StudentLayout />}>
-            <Route index element={<StudentDashboard />} />
-            <Route path="departments" element={<StudentDepartments />} />
-            <Route path="departments/:id/courses" element={<StudentDepartmentCourses />} />
-            <Route path="departments/:deptId/courses/:courseId/practice" element={<StudentPracticeMode />} />
-            <Route path="departments/:deptId/courses/:courseId/mock-exam" element={<StudentMockExam />} />
-            <Route path="departments/:deptId/courses/:courseId/exit-exam" element={<StudentExitExam />} />
-            <Route path="departments/:deptId/exit-exam" element={<StudentExitExam />} />
-            <Route path="payments" element={<StudentPayments />} />
-            <Route path="notifications" element={<Notifications />} />
-            <Route path="help-support" element={<StudentHelpSupport />} />
-            <Route path="profile" element={<StudentProfile />} />
+          <Route element={<PrivateRoute allowedRoles={['user']} />}>
+            <Route path="/student" element={<StudentLayout />}>
+              <Route index element={<StudentDashboard />} />
+              <Route path="departments" element={<StudentDepartments />} />
+              <Route path="departments/:id/courses" element={<StudentDepartmentCourses />} />
+              <Route path="departments/:deptId/courses/:courseId/practice" element={<StudentPracticeMode />} />
+              <Route path="departments/:deptId/courses/:courseId/mock-exam" element={<StudentMockExam />} />
+              <Route path="departments/:deptId/courses/:courseId/exit-exam" element={<StudentExitExam />} />
+              <Route path="departments/:deptId/exit-exam" element={<StudentExitExam />} />
+              <Route path="payments" element={<StudentPayments />} />
+              <Route path="notifications" element={<StudentNotification />} />
+              <Route path="help-support" element={<StudentHelpSupport />} />
+              <Route path="profile" element={<StudentProfile />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Catch-all — any unmatched URL shows the 404 page */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+          {/* Catch-all — any unmatched URL shows the 404 page */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 export default App;
