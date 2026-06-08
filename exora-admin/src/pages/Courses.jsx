@@ -11,7 +11,6 @@ import {
   Layers,
   GraduationCap,
   ChevronRight,
-  X,
 } from "lucide-react";
 import Modal from "../components/Modal";
 
@@ -27,6 +26,7 @@ const Courses = () => {
   const [totalCourses, setTotalCourses] = useState(0);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [isFree, setIsFree] = useState(false);
 
   const fetchDepartments = async () => {
     try {
@@ -68,6 +68,7 @@ const Courses = () => {
     e.preventDefault();
     const name = e.target.name.value.trim();
     const type = e.target.type.value || "regular";
+    const free = e.target.is_free?.checked || false;
     if (!name) return;
 
     setActionLoading(true);
@@ -76,9 +77,11 @@ const Courses = () => {
         department_id: selectedDept.id,
         name,
         type,
+        is_free: free,
       });
       setAddModal(false);
       e.target.reset();
+      setIsFree(false);
       handleViewDept(selectedDept);
       fetchAllCourses();
     } catch (err) {
@@ -92,13 +95,19 @@ const Courses = () => {
     e.preventDefault();
     const name = e.target.name.value.trim();
     const type = e.target.type.value || "regular";
+    const free = e.target.is_free?.checked || false;
     if (!name) return;
 
     setActionLoading(true);
     try {
-      await api.put(`/courses/${selectedCourse.id}`, { name, type });
+      await api.put(`/courses/${selectedCourse.id}`, {
+        name,
+        type,
+        is_free: free,
+      });
       setEditModal(false);
       setSelectedCourse(null);
+      setIsFree(false);
       handleViewDept(selectedDept);
       fetchAllCourses();
     } catch (err) {
@@ -149,6 +158,17 @@ const Courses = () => {
         📚 Regular
       </span>
     );
+  };
+
+  const getFreeBadge = (isFree) => {
+    if (isFree) {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 ml-2">
+          🆓 Free
+        </span>
+      );
+    }
+    return null;
   };
 
   return (
@@ -227,8 +247,8 @@ const Courses = () => {
           <div
             key={dept.id}
             className={`group bg-white rounded-xl shadow-sm border cursor-pointer transition-all hover:shadow-md ${selectedDept?.id === dept.id
-              ? "border-indigo-500 ring-2 ring-indigo-200"
-              : "border-gray-100 hover:border-indigo-200"
+                ? "border-indigo-500 ring-2 ring-indigo-200"
+                : "border-gray-100 hover:border-indigo-200"
               }`}
             onClick={() => handleViewDept(dept)}
           >
@@ -261,7 +281,10 @@ const Courses = () => {
                 </p>
               </div>
               <button
-                onClick={() => setAddModal(true)}
+                onClick={() => {
+                  setIsFree(false);
+                  setAddModal(true);
+                }}
                 className="flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition text-sm font-medium"
               >
                 <Plus size={16} /> Add Course
@@ -295,6 +318,7 @@ const Courses = () => {
                           {course.name}
                         </p>
                         {getTypeBadge(course.type)}
+                        {getFreeBadge(course.is_free)}
                       </div>
                       <p className="text-xs text-gray-400 mt-1">
                         ID: {course.id}
@@ -304,6 +328,7 @@ const Courses = () => {
                       <button
                         onClick={() => {
                           setSelectedCourse(course);
+                          setIsFree(course.is_free || false);
                           setEditModal(true);
                         }}
                         className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
@@ -368,14 +393,16 @@ const Courses = () => {
                 <option value="exit">🎓 Exit Exam</option>
               </select>
             </div>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={isFree}
-                onChange={(e) => setIsFree(e.target.checked)}
-                id="is_free"
+                name="is_free"
+                id="add_is_free"
+                className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
               />
-              <label htmlFor="is_free" className="text-sm">Free Course (unlocked for all new users)</label>
+              <label htmlFor="add_is_free" className="text-sm text-gray-700">
+                Free Course (unlocked for all users)
+              </label>
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <button
@@ -438,14 +465,17 @@ const Courses = () => {
                 <option value="exit">🎓 Exit Exam</option>
               </select>
             </div>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={isFree}
-                onChange={(e) => setIsFree(e.target.checked)}
-                id="is_free"
+                name="is_free"
+                id="edit_is_free"
+                defaultChecked={selectedCourse.is_free || false}
+                className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
               />
-              <label htmlFor="is_free" className="text-sm">Free Course (unlocked for all new users)</label>
+              <label htmlFor="edit_is_free" className="text-sm text-gray-700">
+                Free Course (unlocked for all users)
+              </label>
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <button

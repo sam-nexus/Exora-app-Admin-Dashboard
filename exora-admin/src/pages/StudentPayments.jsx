@@ -540,7 +540,7 @@ const StudentPayments = () => {
                     <p className="text-sm font-medium text-gray-800">
                       {selectedPayment?.departmentName || selectedPayment?.name || 'Selected Department'}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Amount: <span className="font-semibold">{selectedPayment?.amount || 500} Birr</span></p>
+                    <p className="text-xs text-gray-500 mt-1">Amount: <span className="font-semibold">{selectedPayment?.amount || 50} Birr</span></p>
                   </div>
                 </div>
               </div>
