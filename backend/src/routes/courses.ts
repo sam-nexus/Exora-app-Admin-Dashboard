@@ -168,7 +168,7 @@ router.get('/user/:userId', authenticate, async (req: AuthRequest, res: Response
 
   const { data, error } = await supabaseAdmin
     .from('user_courses')
-    .select('course_id, is_locked, courses(name, department_id, departments(name))')
+    .select('course_id, is_locked, courses(id, name, department_id, type, is_free, departments(name))')  // ← added is_free
     .eq('user_id', userId);
 
   if (error) return res.status(500).json({ error: error.message });
@@ -199,12 +199,27 @@ router.patch('/:userCourseId/toggle', authenticate, adminOnly, async (req: AuthR
 router.post('/lock-all/:userId', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { userId } = req.params;
   try {
+    // Get all paid course IDs
+    const { data: paidCourses, error: coursesError } = await supabaseAdmin
+      .from('courses')
+      .select('id')
+      .eq('is_free', false);
+    if (coursesError) throw coursesError;
+
+    const paidCourseIds = (paidCourses || []).map(c => c.id);
+
+    if (paidCourseIds.length === 0) {
+      return res.json({ message: 'No paid courses to lock.' });
+    }
+
     const { error } = await supabaseAdmin
       .from('user_courses')
       .update({ is_locked: true })
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .in('course_id', paidCourseIds);
+
     if (error) throw error;
-    res.json({ message: `All courses locked for user ${userId}` });
+    res.json({ message: `All paid courses locked for user ${userId}. Free courses remain unlocked.` });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -223,12 +238,27 @@ router.post('/lock-all-users', authenticate, adminOnly, async (req: AuthRequest,
       return res.json({ message: 'No users found' });
     }
 
+    // Get all paid course IDs
+    const { data: paidCourses, error: coursesError } = await supabaseAdmin
+      .from('courses')
+      .select('id')
+      .eq('is_free', false);
+    if (coursesError) throw coursesError;
+
+    const paidCourseIds = (paidCourses || []).map(c => c.id);
+
+    if (paidCourseIds.length === 0) {
+      return res.json({ message: 'No paid courses to lock.' });
+    }
+
     const { error } = await supabaseAdmin
       .from('user_courses')
       .update({ is_locked: true })
-      .in('user_id', userIds);
+      .in('user_id', userIds)
+      .in('course_id', paidCourseIds);
+
     if (error) throw error;
-    res.json({ message: `Locked courses for ${userIds.length} users` });
+    res.json({ message: `Locked paid courses for ${userIds.length} users. Free courses remain unlocked.` });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -237,22 +267,78 @@ router.post('/lock-all-users', authenticate, adminOnly, async (req: AuthRequest,
 router.post('/toggle-all/:userId', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { userId } = req.params;
   try {
-    const { data: userCourses, error: fetchError } = await supabaseAdmin
+    // Get ALL courses (including free ones)
+    const { data: allCourses, error: coursesError } = await supabaseAdmin
+      .from('courses')
+      .select('id, is_free');
+    if (coursesError) throw coursesError;
+
+    if (!allCourses || allCourses.length === 0) {
+      return res.json({ message: 'No courses exist in the system yet.' });
+    }
+
+    // Separate free and paid courses
+    const paidCourseIds = allCourses.filter(c => !c.is_free).map(c => c.id);
+    const freeCourseIds = allCourses.filter(c => c.is_free).map(c => c.id);
+
+    // Get existing user_courses for this user
+    const { data: existingUserCourses, error: fetchError } = await supabaseAdmin
       .from('user_courses')
-      .select('is_locked')
+      .select('course_id')
       .eq('user_id', userId);
     if (fetchError) throw fetchError;
 
-    const anyUnlocked = userCourses?.some(uc => uc.is_locked === false);
-    const newLockState = anyUnlocked; // toggle correctly
+    const existingCourseIds = (existingUserCourses || []).map(uc => uc.course_id);
 
-    const { error: updateError } = await supabaseAdmin
+    // Insert missing rows for ALL courses (free courses should always be unlocked)
+    const missingPaidIds = paidCourseIds.filter(id => !existingCourseIds.includes(id));
+    const missingFreeIds = freeCourseIds.filter(id => !existingCourseIds.includes(id));
+
+    if (missingPaidIds.length > 0 || missingFreeIds.length > 0) {
+      const newRows: any[] = [];
+
+      // Paid courses — insert as locked (will be toggled below)
+      missingPaidIds.forEach(courseId => {
+        newRows.push({ user_id: userId, course_id: courseId, is_locked: true });
+      });
+
+      // Free courses — always insert as unlocked
+      missingFreeIds.forEach(courseId => {
+        newRows.push({ user_id: userId, course_id: courseId, is_locked: false });
+      });
+
+      if (newRows.length > 0) {
+        const { error: insertError } = await supabaseAdmin
+          .from('user_courses')
+          .insert(newRows);
+        if (insertError) throw insertError;
+      }
+    }
+
+    // Now check lock status of PAID courses only (free courses are always unlocked)
+    const { data: paidUserCourses, error: refreshError } = await supabaseAdmin
       .from('user_courses')
-      .update({ is_locked: newLockState })
-      .eq('user_id', userId);
-    if (updateError) throw updateError;
+      .select('is_locked')
+      .eq('user_id', userId)
+      .in('course_id', paidCourseIds);
+    if (refreshError) throw refreshError;
 
-    res.json({ message: `All courses ${newLockState ? 'locked' : 'unlocked'} for user ${userId}` });
+    // If any PAID course is unlocked → lock all PAID courses
+    // If all PAID courses are locked → unlock all PAID courses
+    const anyPaidUnlocked = paidUserCourses?.some(uc => uc.is_locked === false);
+    const newLockState = anyPaidUnlocked ? true : false; // true = lock, false = unlock
+
+    // Only update PAID courses — free courses remain untouched
+    if (paidCourseIds.length > 0) {
+      const { error: updateError } = await supabaseAdmin
+        .from('user_courses')
+        .update({ is_locked: newLockState })
+        .eq('user_id', userId)
+        .in('course_id', paidCourseIds);
+      if (updateError) throw updateError;
+    }
+
+    res.json({ message: `All paid courses ${newLockState ? 'locked' : 'unlocked'} for user ${userId}. Free courses remain unlocked.` });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

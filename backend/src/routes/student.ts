@@ -4,8 +4,28 @@ import admin from '../firebase';
 import { supabaseAdmin } from '../supabase';
 import { authenticate, AuthRequest } from '../middleware/auth';
 
-const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
+
+// ─────────────────────────────────────────────
+// FILE UPLOAD CONFIG
+// ─────────────────────────────────────────────
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp',
+];
+
+const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+    cb(null, true);
+    return;
+  }
+  cb(new Error('Invalid file type. Allowed: JPG, PNG, GIF, WEBP, BMP'));
+};
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 // ─────────────────────────────────────────────
 // COURSES
@@ -59,12 +79,10 @@ router.post('/courses/:courseId/mock-exam/start', authenticate, async (req: Auth
       return res.status(500).json({ error: questionsError.message });
     }
 
-    // Keep correct_index so practice mode can reveal answers client-side.
-    // Test mode submit uses server-side grading so exposing it here is acceptable.
     res.json({
       course,
       questions: questions || [],
-      timeLimit: 3600, // 60 minutes
+      timeLimit: 3600,
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -72,7 +90,6 @@ router.post('/courses/:courseId/mock-exam/start', authenticate, async (req: Auth
 });
 
 // POST – Submit mock exam
-// Returns field names that match the frontend: correctAnswers, totalQuestions
 router.post('/mock-exam/submit', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { courseId, answers, mode, timeTaken } = req.body;
@@ -114,26 +131,23 @@ router.post('/mock-exam/submit', authenticate, async (req: AuthRequest, res: Res
     const score = Math.round((correctAnswers / questions.length) * 100);
     const isPassed = score >= 60;
 
-    // ── Save result to database ──────────────────────────────────────────────
     const { error: saveError } = await supabaseAdmin.from('exam_results').insert({
-      user_id:       userId,
-      course_id:     courseId,
-      exam_type:     'mock',
-      mode:          mode || 'test',
+      user_id: userId,
+      course_id: courseId,
+      exam_type: 'mock',
+      mode: mode || 'test',
       score,
       correct_count: correctAnswers,
-      total_count:   questions.length,
-      is_passed:     isPassed,
+      total_count: questions.length,
+      is_passed: isPassed,
       answers,
       results,
-      time_taken:    timeTaken ?? null,
+      time_taken: timeTaken ?? null,
     });
 
     if (saveError) {
-      // Non-fatal: log but still return results to student
       console.error('Failed to save mock exam result:', saveError.message);
     }
-    // ────────────────────────────────────────────────────────────────────────
 
     res.json({
       score,
@@ -173,12 +187,10 @@ router.get('/departments/:deptId', authenticate, async (req: AuthRequest, res: R
 });
 
 // POST – Start department exit exam
-// Builds sections (one per exit-type course) from the department
 router.post('/departments/:deptId/exit-exam/start', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { deptId } = req.params;
 
-    // Get all exit-type courses for this department
     const { data: courses, error: coursesError } = await supabaseAdmin
       .from('courses')
       .select('id, name')
@@ -190,7 +202,6 @@ router.post('/departments/:deptId/exit-exam/start', authenticate, async (req: Au
       return res.status(404).json({ error: 'No exit exam courses found for this department' });
     }
 
-    // Build sections – one per course, include questions (strip correct_index)
     const sections = await Promise.all(
       courses.map(async (course) => {
         const { data: questions } = await supabaseAdmin
@@ -210,7 +221,6 @@ router.post('/departments/:deptId/exit-exam/start', authenticate, async (req: Au
       })
     );
 
-    // 90 min per section, capped at 3 hours total
     const totalTime = Math.min(sections.length * 5400, 10800);
 
     res.json({ sections, totalTime });
@@ -229,11 +239,9 @@ router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Res
       return res.status(400).json({ error: 'answers are required' });
     }
 
-    // Support both course-specific exit exam (courseId) and dept-wide (departmentId)
     let courses: any[] = [];
 
     if (courseId) {
-      // Single course exit exam
       const { data, error } = await supabaseAdmin
         .from('courses')
         .select('id, name')
@@ -241,7 +249,6 @@ router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Res
       if (error) return res.status(500).json({ error: error.message });
       courses = data || [];
     } else if (departmentId) {
-      // Department-wide: all exit-type courses
       const { data, error } = await supabaseAdmin
         .from('courses')
         .select('id, name')
@@ -250,7 +257,6 @@ router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Res
       if (error) return res.status(500).json({ error: error.message });
       courses = data || [];
 
-      // Fallback: if no exit-type courses, try all courses in the dept
       if (courses.length === 0) {
         const { data: allCourses } = await supabaseAdmin
           .from('courses')
@@ -270,7 +276,7 @@ router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Res
     let totalQuestions = 0;
     const allResults: any[] = [];
 
-    const sectionResults = await Promise.all(
+    await Promise.all(
       courses.map(async (course) => {
         const { data: questions } = await supabaseAdmin
           .from('questions')
@@ -314,26 +320,24 @@ router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Res
     const score = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
     const isPassed = score >= 50;
 
-    // ── Save result to database ──────────────────────────────────────────────
     const { error: saveError } = await supabaseAdmin.from('exam_results').insert({
-      user_id:       userId,
-      course_id:     courseId || null,
+      user_id: userId,
+      course_id: courseId || null,
       department_id: departmentId || null,
-      exam_type:     'exit',
-      mode:          mode || 'test',
+      exam_type: 'exit',
+      mode: mode || 'test',
       score,
       correct_count: totalCorrect,
-      total_count:   totalQuestions,
-      is_passed:     isPassed,
+      total_count: totalQuestions,
+      is_passed: isPassed,
       answers,
-      results:       allResults,
-      time_taken:    timeTaken ?? null,
+      results: allResults,
+      time_taken: timeTaken ?? null,
     });
 
     if (saveError) {
       console.error('Failed to save exit exam result:', saveError.message);
     }
-    // ────────────────────────────────────────────────────────────────────────
 
     res.json({
       score,
@@ -341,7 +345,6 @@ router.post('/exit-exam/submit', authenticate, async (req: AuthRequest, res: Res
       totalCount: totalQuestions,
       isPassed,
       passingScore: 50,
-      sectionResults,
       results: allResults,
       timestamp: new Date().toISOString(),
     });
@@ -361,25 +364,13 @@ router.get('/payments', authenticate, async (req: AuthRequest, res: Response) =>
 
     const { data, error } = await supabaseAdmin
       .from('payment_receipts')
-      .select('*, departments(name)')
+      .select('id, user_id, image_url, status, amount, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    const formatted = (data || []).map((p: any) => ({
-      id:             p.id,
-      user_id:        p.user_id,
-      image_url:      p.image_url,
-      status:         p.status,
-      created_at:     p.created_at,
-      department_id:  p.department_id,
-      amount:         p.amount ?? null,
-      // resolve department name from join OR fallback
-      departmentName: p.departments?.name || p.department_name || null,
-    }));
-
-    res.json(formatted);
+    res.json(data || []);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -390,14 +381,12 @@ router.get('/locked-departments', authenticate, async (req: AuthRequest, res: Re
   try {
     const userId = req.userId!;
 
-    // Get all departments
     const { data: departments, error: deptError } = await supabaseAdmin
       .from('departments')
       .select('id, name, icon');
 
     if (deptError) throw deptError;
 
-    // For each department, check if student has at least one unlocked course
     const results = await Promise.all(
       (departments || []).map(async (dept) => {
         const { data: courses } = await supabaseAdmin
@@ -406,7 +395,7 @@ router.get('/locked-departments', authenticate, async (req: AuthRequest, res: Re
           .eq('department_id', dept.id);
 
         const courseIds = (courses || []).map((c) => c.id);
-        if (courseIds.length === 0) return null; // skip empty departments
+        if (courseIds.length === 0) return null;
 
         const { data: userCourses } = await supabaseAdmin
           .from('user_courses')
@@ -419,7 +408,7 @@ router.get('/locked-departments', authenticate, async (req: AuthRequest, res: Re
           userCourses.length === 0 ||
           userCourses.every((uc) => uc.is_locked);
 
-        if (!allLocked) return null; // already has access
+        if (!allLocked) return null;
 
         return {
           id: dept.id,
@@ -436,7 +425,19 @@ router.get('/locked-departments', authenticate, async (req: AuthRequest, res: Re
   }
 });
 
-// POST – student uploads a payment receipt for a department
+// GET – Payment info (bank details with discount)
+router.get('/payment-info', authenticate, async (req: AuthRequest, res: Response) => {
+  res.json({
+    amount: process.env.PAYMENT_AMOUNT || '50 ETB',
+    originalAmount: process.env.PAYMENT_ORIGINAL_AMOUNT || '100 ETB',
+    discount: process.env.PAYMENT_DISCOUNT || '50%',
+    bank: process.env.PAYMENT_BANK || 'Commercial Bank of Ethiopia (CBE)',
+    accountNumber: process.env.PAYMENT_ACCOUNT_NUMBER || '100023456789',
+    accountName: process.env.PAYMENT_ACCOUNT_NAME || 'John Dalton',
+  });
+});
+
+// POST – student uploads a payment receipt (NO department_id)
 router.post(
   '/payments/upload-receipt',
   authenticate,
@@ -444,32 +445,32 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const { paymentId, amount } = req.body; // paymentId = department id, amount = price in Birr
 
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-      if (!paymentId) return res.status(400).json({ error: 'paymentId (department id) is required' });
 
-      const filePath = `receipts/${userId}/${Date.now()}-${req.file.originalname}`;
+      const ext = req.file.originalname.substring(req.file.originalname.lastIndexOf('.'));
+      const filePath = `receipts/${userId}/${Date.now()}${ext}`;
+
+      // Upload to Supabase Storage
       const { error: uploadError } = await supabaseAdmin.storage
         .from('payment-receipts')
         .upload(filePath, req.file.buffer, { contentType: req.file.mimetype });
 
       if (uploadError) throw uploadError;
 
+      // Generate signed URL (valid for 1 year)
       const { data: signedData, error: signedError } = await supabaseAdmin.storage
         .from('payment-receipts')
         .createSignedUrl(filePath, 31536000);
       if (signedError) throw signedError;
 
-      // Upsert: if a pending receipt already exists for this dept, replace it
+      // Insert record — NO department_id
       const { error: insertError } = await supabaseAdmin
         .from('payment_receipts')
         .insert({
           user_id: userId,
-          department_id: paymentId,
           image_url: signedData.signedUrl,
           status: 'pending',
-          amount: amount ? Number(amount) : null,
         });
 
       if (insertError) throw insertError;
@@ -512,6 +513,12 @@ router.post(
 
       res.status(201).json({ message: 'Receipt uploaded, waiting for admin approval.' });
     } catch (err: any) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
+      }
+      if (err.message && err.message.includes('Invalid file type')) {
+        return res.status(400).json({ error: err.message });
+      }
       res.status(500).json({ error: err.message });
     }
   }
@@ -532,7 +539,6 @@ router.get('/profile', authenticate, async (req: AuthRequest, res: Response) => 
       .single();
 
     if (error) {
-      // Return empty object if columns don't exist yet (graceful degradation)
       return res.json({});
     }
 
@@ -544,7 +550,7 @@ router.get('/profile', authenticate, async (req: AuthRequest, res: Response) => 
       phone: data?.phone || '',
     });
   } catch (err: any) {
-    res.json({}); // graceful — profile screen still loads
+    res.json({});
   }
 });
 
@@ -553,7 +559,6 @@ router.get('/stats', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
 
-    // Count unlocked courses (proxy for "completed" since we don't track sessions yet)
     const { data: userCourses } = await supabaseAdmin
       .from('user_courses')
       .select('is_locked')
@@ -561,7 +566,6 @@ router.get('/stats', authenticate, async (req: AuthRequest, res: Response) => {
 
     const coursesCompleted = (userCourses || []).filter((c) => !c.is_locked).length;
 
-    // Count total questions across all unlocked courses
     const { data: unlockedCourses } = await supabaseAdmin
       .from('user_courses')
       .select('course_id')
@@ -581,11 +585,12 @@ router.get('/stats', authenticate, async (req: AuthRequest, res: Response) => {
     res.json({
       coursesCompleted,
       totalQuestions,
-      averageScore: 0,   // requires a results table – placeholder
-      studyStreak: 0,    // requires session tracking – placeholder
+      averageScore: 0,
+      studyStreak: 0,
+      totalHours: 0,
     });
   } catch (err: any) {
-    res.json({ coursesCompleted: 0, totalQuestions: 0, averageScore: 0, studyStreak: 0 });
+    res.json({ coursesCompleted: 0, totalQuestions: 0, averageScore: 0, studyStreak: 0, totalHours: 0 });
   }
 });
 
@@ -604,7 +609,6 @@ router.get('/support-tickets', authenticate, async (req: AuthRequest, res: Respo
       .order('created_at', { ascending: false });
 
     if (error) {
-      // Table may not exist yet – return empty array gracefully
       return res.json([]);
     }
 
@@ -638,9 +642,7 @@ router.post('/support-tickets', authenticate, async (req: AuthRequest, res: Resp
 
     if (error) throw error;
 
-    // ── Notify all admins ────────────────────────────────────────────────────
     try {
-      // Get student name for the notification message
       const { data: profile } = await supabaseAdmin
         .from('profiles')
         .select('full_name, email')
@@ -649,14 +651,12 @@ router.post('/support-tickets', authenticate, async (req: AuthRequest, res: Resp
 
       const studentName = profile?.full_name || profile?.email || 'A student';
 
-      // Get all admins with their device tokens
       const { data: admins } = await supabaseAdmin
         .from('profiles')
         .select('id, device_tokens')
         .eq('role', 'admin');
 
       if (admins && admins.length > 0) {
-        // Insert in-app notifications for each admin
         await supabaseAdmin.from('notifications').insert(
           admins.map((a: any) => ({
             recipient_id: a.id,
@@ -668,25 +668,6 @@ router.post('/support-tickets', authenticate, async (req: AuthRequest, res: Resp
           }))
         );
 
-        // Update Firebase unread counts for admins
-        if (admin.apps.length > 0) {
-          const database = admin.database();
-          for (const adminUser of admins) {
-            try {
-              const snapshot = await database
-                .ref(`notifications/${adminUser.id}/unread_count`)
-                .get();
-              const currentCount = snapshot.val() || 0;
-              await database
-                .ref(`notifications/${adminUser.id}/unread_count`)
-                .set(currentCount + 1);
-            } catch (fbErr) {
-              console.error('Firebase update error:', fbErr);
-            }
-          }
-        }
-
-        // Send FCM push notification to admin devices
         const tokens = admins
           .flatMap((a: any) => (Array.isArray(a.device_tokens) ? a.device_tokens : []))
           .map((t: any) => t.token)
@@ -710,10 +691,8 @@ router.post('/support-tickets', authenticate, async (req: AuthRequest, res: Resp
         }
       }
     } catch (notifyErr: any) {
-      // Non-fatal — ticket is saved, notification failure shouldn't block response
       console.error('Admin notification failed:', notifyErr.message);
     }
-    // ────────────────────────────────────────────────────────────────────────
 
     res.status(201).json({ message: 'Ticket submitted', ticketId: data.id });
   } catch (err: any) {

@@ -150,7 +150,7 @@ router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response)
   try {
     let query = supabaseAdmin
       .from('payment_receipts')
-      .select('*, profiles(full_name, email), departments(name)')
+      .select('*, profiles(full_name, email)')  // No departments join
       .order('created_at', { ascending: false });
 
     const statusFilter = req.query.status as string;

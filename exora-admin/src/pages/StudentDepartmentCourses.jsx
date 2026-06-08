@@ -3,29 +3,22 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Search,
-  Award,
   BookOpen,
-  Clock,
-  CheckCircle,
-  TrendingUp,
   Sparkles,
   PlayCircle,
   GraduationCap,
-  ChevronRight,
   Lock,
   Unlock,
-  Layers,
   FileText,
   Trophy,
-  Flame,
-  Eye,
   Download,
   Loader2,
   AlertCircle,
   X,
-  File,
-  Image,
-  FileUp,
+  Gift,
+  Clock,
+  CheckCircle,
+  Flame,
 } from "lucide-react";
 import api from "../api/axios";
 import { getUserId } from "../utils/auth";
@@ -42,7 +35,6 @@ const loadCoursePracticeProgress = (courseId) => {
   }
 };
 
-// ─── Tab definitions ──────────────────────────────────────────────────────────
 const TABS = [
   { key: "regular", label: "Practice", icon: BookOpen },
   { key: "mock", label: "Mock Exams", icon: FileText },
@@ -50,59 +42,18 @@ const TABS = [
   { key: "materials", label: "Materials", icon: Download },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 const progressColor = (pct) => {
-  if (pct === 0) return "bg-gray-200";
+  if (pct === 0) return "bg-gray-200 dark:bg-gray-600";
   if (pct < 50) return "bg-orange-400";
   if (pct < 100) return "bg-indigo-500";
   return "bg-emerald-500";
 };
 
-const getFileIcon = (fileType) => {
-  if (fileType?.includes("pdf")) return <FileText size={16} className="text-red-500" />;
-  if (fileType?.includes("image")) return <Image size={16} className="text-purple-500" />;
-  if (fileType?.includes("video")) return <PlayCircle size={16} className="text-blue-500" />;
-  return <File size={16} className="text-gray-500" />;
-};
-
-const formatFileSize = (bytes) => {
-  if (!bytes) return "";
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
-};
-
-const StatusPill = ({ progress }) => {
-  const v = Number(progress ?? 0);
-  if (v === 0) return <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><Clock size={10}/>Not started</span>;
-  if (v === 100) return <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle size={10}/>Completed</span>;
-  return <span className="inline-flex items-center gap-1 text-[11px] font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full"><Flame size={10}/>In progress</span>;
-};
-
-// ─── Course Card ──────────────────────────────────────────────────────────────
 const CourseCard = ({ course, index, deptId, tab, onUnlockClick }) => {
   const progress = Number(course.progress ?? 0);
   const isLocked = course.is_locked === true;
+  const isFree = course.is_free === true;
   const name = course.name || course.title || "Course";
-
-  const getTabColor = () => {
-    if (tab === "mock") return "purple";
-    if (tab === "exit") return "emerald";
-    return "indigo";
-  };
-
-  const getButtonText = () => {
-    if (tab === "mock") return "Start Mock Exam";
-    if (tab === "exit") return "Take Exit Exam";
-    if (progress > 0 && progress < 100) return "Continue Practice";
-    return "Start Practice";
-  };
-
-  const getButtonIcon = () => {
-    if (tab === "mock" || tab === "exit") return <Sparkles size={13} />;
-    if (progress > 0 && progress < 100) return <PlayCircle size={13} />;
-    return <PlayCircle size={13} />;
-  };
 
   const getHref = () => {
     if (tab === "mock") return `/student/departments/${deptId}/courses/${course.id}/mock-exam`;
@@ -110,77 +61,109 @@ const CourseCard = ({ course, index, deptId, tab, onUnlockClick }) => {
     return `/student/departments/${deptId}/courses/${course.id}/practice`;
   };
 
-  const tabColor = getTabColor();
-  const colorClasses = {
+  const getButtonText = () => {
+    if (tab === "mock") return "Start Mock";
+    if (tab === "exit") return "Take Exam";
+    if (progress > 0 && progress < 100) return "Continue";
+    return "Start";
+  };
+
+  const getStatusIcon = () => {
+    if (progress === 100) return <CheckCircle size={12} className="text-emerald-500" />;
+    if (progress > 0) return <Flame size={12} className="text-orange-500" />;
+    return <Clock size={12} className="text-gray-400" />;
+  };
+
+  const getStatusText = () => {
+    if (progress === 100) return "Completed";
+    if (progress > 0) return "In Progress";
+    return "Not Started";
+  };
+
+  const tabColor = tab === "mock" ? "purple" : tab === "exit" ? "emerald" : "indigo";
+  const colorMap = {
     indigo: "from-indigo-400 to-indigo-600",
     purple: "from-purple-400 to-purple-600",
     emerald: "from-emerald-400 to-emerald-600",
   };
+  const btnColorMap = {
+    indigo: "from-indigo-600 to-indigo-700",
+    purple: "from-purple-600 to-purple-700",
+    emerald: "from-emerald-600 to-emerald-700",
+  };
 
   return (
-    <div className={`group relative bg-white rounded-xl border transition-all duration-200 overflow-hidden
-      ${isLocked
-        ? "border-gray-200 hover:border-gray-300 hover:shadow-md"
-        : "border-gray-200 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5"
-      }`}
+    <div
+      className="group bg-gray-100 dark:bg-gray-800 rounded-2xl border border-indigo-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-fadeInUp shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500"
+      style={{ animationDelay: `${index * 60}ms` }}
     >
-      <div className={`h-1 w-full bg-gradient-to-r ${colorClasses[tabColor]}`} />
+      {/* Top Gradient Line */}
+      <div className={`h-1.5 w-full bg-gradient-to-r ${colorMap[tabColor]}`} />
 
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
+      <div className="p-5">
+        {/* Status Badges Row */}
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-medium shadow-sm
-              ${tab === "mock" ? "bg-purple-500" : tab === "exit" ? "bg-emerald-500" : "bg-indigo-500"}`}>
-              {index + 1}
-            </div>
-            <StatusPill progress={progress} />
+            {isLocked ? (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">
+                <Lock size={11} /> Locked
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                <Unlock size={11} /> Unlocked
+              </span>
+            )}
+            {isFree && !isLocked && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-gradient-to-r from-emerald-400 to-teal-500 px-2.5 py-1 rounded-full shadow-sm animate-bounce-subtle">
+                <Sparkles size={10} className="animate-pulse" /> FREE
+              </span>
+            )}
           </div>
-
-          {isLocked ? (
-            <span className="flex items-center gap-1 text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-              <Lock size={9} /> Locked
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-              <Unlock size={9} /> Unlocked
-            </span>
+          {!isLocked && (
+            <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400">
+              {getStatusIcon()}
+              <span>{getStatusText()}</span>
+            </div>
           )}
         </div>
 
-        <h3 className="text-sm font-semibold text-gray-900 leading-snug mb-3 line-clamp-2 group-hover:text-gray-700 transition-colors">
+        {/* Course Name */}
+        <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 line-clamp-2 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition-colors">
           {name}
         </h3>
 
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-[10px] text-gray-400">Progress</span>
-            <span className={`text-[10px] font-semibold ${progress === 100 ? "text-emerald-600" : progress > 0 ? "text-orange-500" : "text-gray-400"}`}>
-              {progress}%
-            </span>
+        {/* Progress Bar */}
+        {!isLocked && (
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">Progress</span>
+              <span className={`text-[11px] font-bold ${progress === 100 ? "text-emerald-600 dark:text-emerald-400" : progress > 0 ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400"}`}>
+                {progress}%
+              </span>
+            </div>
+            <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ease-out ${progressColor(progress)}`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
-          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${progressColor(progress)}`}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
+        )}
 
+        {/* Action Button */}
         {isLocked ? (
           <button
             onClick={onUnlockClick}
-            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-200 transition active:scale-95 cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-500 hover:from-indigo-600 hover:to-indigo-600 text-white text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md"
           >
-            <Lock size={12} /> Unlock Course
+            <Lock size={13} /> Unlock Course
           </button>
         ) : (
           <Link
             to={getHref()}
-            className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-white transition-all
-              ${tab === "mock" ? "bg-purple-600 hover:bg-purple-700" : tab === "exit" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-indigo-600 hover:bg-indigo-700"}
-              hover:shadow-sm active:scale-95`}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r ${btnColorMap[tabColor]} hover:bg-gradient-to-r hover:brightness-110 transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98]`}
           >
-            {getButtonIcon()}
+            {progress > 0 && progress < 100 ? <PlayCircle size={14} /> : <Sparkles size={14} />}
             {getButtonText()}
           </Link>
         )}
@@ -189,38 +172,30 @@ const CourseCard = ({ course, index, deptId, tab, onUnlockClick }) => {
   );
 };
 
-// ─── Material Card Component ──────────────────────────────────────────────────
 const MaterialCard = ({ material }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition">
+  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-600 dark:border-gray-700 p-4 hover:shadow-md transition-all duration-200 animate-fadeInUp">
     <div className="flex items-start gap-3">
-      <div className="shrink-0">
-        {getFileIcon(material.file_type)}
+      <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
+        <FileText size={18} className="text-red-500" />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-medium text-gray-800 truncate">{material.title}</h4>
-        {material.description && (
-          <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{material.description}</p>
+        <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">{material.title}</h4>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">PDF Document</p>
+        {material.file_url && (
+          <a
+            href={material.file_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline mt-2"
+          >
+            <Download size={12} /> Download
+          </a>
         )}
-        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
-          {material.file_size && <span>{formatFileSize(material.file_size)}</span>}
-          {material.file_type && <span>{material.file_type.toUpperCase()}</span>}
-        </div>
       </div>
-      {material.file_url && (
-        <a
-          href={material.file_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 p-1.5 text-gray-400 hover:text-indigo-600 transition"
-        >
-          <Download size={14} />
-        </a>
-      )}
     </div>
   </div>
 );
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 const StudentDepartmentCourses = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -232,11 +207,9 @@ const StudentDepartmentCourses = () => {
   const [allCourses, setAllCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("regular");
-
   const [materials, setMaterials] = useState([]);
   const [materialsLoading, setMaterialsLoading] = useState(false);
 
-  // Fetch department and courses
   const fetchData = useCallback(async () => {
     if (!id) return;
     setLoading(true);
@@ -246,7 +219,6 @@ const StudentDepartmentCourses = () => {
         api.get("/departments"),
         api.get("/courses", { params: { department_id: id } }),
       ]);
-
       const dept = (deptsRes.data || []).find((d) => d.id.toString() === id);
       setDepartment(dept || { name: "Department" });
 
@@ -254,62 +226,44 @@ const StudentDepartmentCourses = () => {
       if (userId) {
         try {
           const userCoursesRes = await api.get(`/courses/user/${userId}`);
-          (userCoursesRes.data || []).forEach((uc) => {
-            lockMap[uc.course_id] = uc.is_locked;
-          });
-        } catch {
-          // ignore
-        }
+          (userCoursesRes.data || []).forEach((uc) => { lockMap[uc.course_id] = uc.is_locked; });
+        } catch { }
       }
 
       const enriched = (coursesRes.data || []).map((course) => {
         const saved = loadCoursePracticeProgress(course.id);
-        const progress = saved?.questionCount > 0
-          ? Math.round(((saved.answeredCount ?? 0) / saved.questionCount) * 100)
-          : 0;
-        return {
-          ...course,
-          progress,
-          is_locked: lockMap[course.id] ?? course.is_locked ?? false,
-        };
+        const progress = saved?.questionCount > 0 ? Math.round(((saved.answeredCount ?? 0) / saved.questionCount) * 100) : 0;
+        return { ...course, progress, is_locked: lockMap[course.id] ?? course.is_locked ?? false };
+      });
+
+      // Sort: free courses first (for ALL types)
+      enriched.sort((a, b) => {
+        if (a.is_free && !b.is_free) return -1;
+        if (!a.is_free && b.is_free) return 1;
+        return 0;
       });
 
       setAllCourses(enriched);
     } catch (err) {
-      console.error("Error fetching data:", err);
-      setError("Failed to load courses. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+      setError("Failed to load courses.");
+    } finally { setLoading(false); }
   }, [id, userId]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Fetch materials
   useEffect(() => {
     if (activeTab !== "materials" || allCourses.length === 0) return;
-    
     const fetchMaterials = async () => {
       setMaterialsLoading(true);
       try {
-        const results = await Promise.all(
-          allCourses.map(async (course) => {
-            try {
-              const { data } = await api.get(`/courses/${course.id}/materials`);
-              return data.map(item => ({ ...item, courseName: course.name }));
-            } catch {
-              return [];
-            }
-          })
-        );
+        const results = await Promise.all(allCourses.map(async (course) => {
+          try {
+            const { data } = await api.get(`/courses/${course.id}/materials`);
+            return data.map((item) => ({ ...item, courseName: course.name }));
+          } catch { return []; }
+        }));
         setMaterials(results.flat());
-      } catch (err) {
-        console.error('Error fetching materials:', err);
-      } finally {
-        setMaterialsLoading(false);
-      }
+      } catch { } finally { setMaterialsLoading(false); }
     };
     fetchMaterials();
   }, [activeTab, allCourses]);
@@ -326,23 +280,30 @@ const StudentDepartmentCourses = () => {
   };
 
   const tabCourses = getTabCourses();
-  const filteredCourses = tabCourses.filter((c) =>
-    (c.name || c.title || "").toLowerCase().includes(searchTerm.toLowerCase())
+
+  // Sort tab courses: free first
+  const sortedTabCourses = [...tabCourses].sort((a, b) => {
+    if (a.is_free && !b.is_free) return -1;
+    if (!a.is_free && b.is_free) return 1;
+    return 0;
+  });
+
+  const filteredCourses = sortedTabCourses.filter((c) =>
+    (c.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const completedRegular = regularCourses.filter((c) => c.progress === 100).length;
-  const totalRegular = regularCourses.length;
-  const overallProgress = totalRegular > 0
-    ? Math.round(regularCourses.reduce((s, c) => s + c.progress, 0) / totalRegular)
-    : 0;
-  const isExitReady = completedRegular === totalRegular && totalRegular > 0;
+  // Check if current tab has free courses
+  const hasFreeCoursesInTab = sortedTabCourses.some(c => c.is_free && !c.is_locked);
 
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <Loader2 size={28} className="animate-spin text-gray-400 mx-auto" />
-          <p className="text-sm text-gray-500">Loading courses...</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative">
+            <div className="w-12 h-12 border-2 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin" />
+            <BookOpen size={20} className="absolute inset-0 m-auto text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading courses...</p>
         </div>
       </div>
     );
@@ -350,18 +311,14 @@ const StudentDepartmentCourses = () => {
 
   if (error) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 max-w-sm">
+          <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle size={24} className="text-red-500" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load</h3>
-          <p className="text-sm text-gray-500 mb-4">{error}</p>
-          <button
-            onClick={fetchData}
-            className="bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
-          >
-            Try Again
+          <p className="text-gray-600 dark:text-gray-300 text-sm">{error}</p>
+          <button onClick={fetchData} className="mt-4 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
+            Retry
           </button>
         </div>
       </div>
@@ -369,70 +326,46 @@ const StudentDepartmentCourses = () => {
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      {/* Back button */}
+    <div className="space-y-6 pb-8">
+      {/* Back Button */}
       <button
-        onClick={() => navigate("/student/departments")}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition group"
+        onClick={() => navigate("/student")}
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition group"
       >
-        <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition" />
-        Back to Departments
+        <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition" /> Back to Dashboard
       </button>
 
-      {/* Department Header */}
-      <div className="bg-gray-800 rounded-xl p-6 text-white">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 bg-white/15 rounded-lg flex items-center justify-center">
-                <GraduationCap size={14} />
-              </div>
-              <span className="text-gray-300 text-xs font-medium uppercase tracking-wider">Department</span>
-            </div>
-            <h1 className="text-2xl font-bold">{department?.name}</h1>
-            <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-300">
-              <span className="flex items-center gap-1"><Layers size={12} />{totalRegular} courses</span>
-              <span className="w-1 h-1 bg-gray-600 rounded-full" />
-              <span className="flex items-center gap-1"><CheckCircle size={12} />{completedRegular} completed</span>
-            </div>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 sm:p-6 text-white shadow-lg">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
+            <GraduationCap size={20} />
           </div>
-
-          <div className="shrink-0 bg-white/10 backdrop-blur-sm rounded-xl p-4 min-w-[140px] text-center">
-            <p className="text-gray-300 text-[10px] font-medium uppercase tracking-wider mb-1">Overall Progress</p>
-            <p className="text-3xl font-bold">{overallProgress}<span className="text-sm text-gray-300">%</span></p>
-            <div className="mt-2 h-1.5 bg-white/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-amber-400 rounded-full transition-all duration-500"
-                style={{ width: `${overallProgress}%` }}
-              />
-            </div>
-          </div>
+          <span className="text-indigo-200 text-sm font-medium">Department</span>
         </div>
+        <h1 className="text-2xl font-bold">{department?.name}</h1>
+        <p className="text-indigo-200 text-sm mt-1">{allCourses.length} courses available</p>
       </div>
 
-      {/* Tab Bar */}
-      <div className="flex flex-wrap gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-1 bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl">
         {TABS.map(({ key, label, icon: Icon }) => {
-          const count = activeTab === key ? tabCourses.length : 
-                        key === "regular" ? regularCourses.length :
-                        key === "mock" ? mockCourses.length :
-                        key === "exit" ? exitCourses.length : 0;
+          const count = key === "regular" ? regularCourses.length : key === "mock" ? mockCourses.length : key === "exit" ? exitCourses.length : 0;
           const isActive = activeTab === key;
           return (
             <button
               key={key}
               onClick={() => { setActiveTab(key); setSearchTerm(""); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200
                 ${isActive
-                  ? "bg-white text-gray-800 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-md'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-700/50'
                 }`}
             >
               <Icon size={14} />
               {label}
               {count > 0 && (
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full
-                  ${isActive ? "bg-gray-100 text-gray-600" : "bg-gray-200 text-gray-500"}`}>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-gray-200 dark:bg-gray-600 text-gray-500'}`}>
                   {count}
                 </span>
               )}
@@ -441,85 +374,47 @@ const StudentDepartmentCourses = () => {
         })}
       </div>
 
-      {/* Exit Exam Tab */}
-      {activeTab === "exit" && (
-        <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-5">
-          <div className="flex flex-col md:flex-row md:items-center gap-5">
-            <div className="flex items-start gap-3 flex-1">
-              <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shrink-0">
-                <Trophy size={18} className="text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-1">Department Exit Exam</h2>
-                <p className="text-sm text-gray-600">
-                  Complete all {totalRegular} practice courses to unlock this exam and earn your certificate.
-                </p>
-                <div className="flex items-center gap-3 mt-3">
-                  <div className="flex-1 max-w-xs h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                      style={{ width: totalRegular > 0 ? `${(completedRegular / totalRegular) * 100}%` : "0%" }}
-                    />
-                  </div>
-                  <span className="text-xs font-medium text-gray-700">
-                    {completedRegular} / {totalRegular}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <Link
-              to={`/student/departments/${id}/exit-exam`}
-              onClick={(e) => { if (!isExitReady) e.preventDefault(); }}
-              className={`shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all
-                ${isExitReady
-                  ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-            >
-              <Award size={15} />
-              {isExitReady ? "Take Exit Exam" : "Complete courses first"}
-            </Link>
-          </div>
-
-          {/* Exit Exam Courses */}
-          {exitCourses.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-emerald-200">
-              <p className="text-xs font-medium text-gray-500 mb-3">Preparation Courses</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {exitCourses.map((course, i) => (
-                  <CourseCard key={course.id} course={course} index={i} deptId={id} tab="exit" onUnlockClick={() => navigate("/student/payments")} />
-                ))}
-              </div>
-            </div>
+      {/* Search */}
+      {activeTab !== "materials" && (
+        <div className="relative max-w-sm">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+          <input
+            type="text"
+            placeholder={`Search ${activeTab === "mock" ? "mock exams" : activeTab === "exit" ? "exit exams" : "courses"}...`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-9 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <X size={16} />
+            </button>
           )}
         </div>
       )}
 
       {/* Materials Tab */}
       {activeTab === "materials" && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Download size={18} className="text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Course Materials</h2>
-          </div>
-          
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Download size={18} className="text-indigo-600 dark:text-indigo-400" />
+            Course Materials
+          </h2>
           {materialsLoading ? (
-            <div className="text-center py-10">
-              <Loader2 size={24} className="animate-spin text-gray-400 mx-auto" />
-              <p className="text-sm text-gray-500 mt-2">Loading materials...</p>
+            <div className="text-center py-12">
+              <Loader2 size={24} className="animate-spin text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">Loading materials...</p>
             </div>
           ) : materials.length === 0 ? (
-            <div className="text-center py-10">
-              <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+              <div className="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <FileText size={24} className="text-gray-400" />
               </div>
-              <p className="text-gray-500 font-medium">No materials available</p>
-              <p className="text-sm text-gray-400 mt-1">Check back later for study materials</p>
+              <p className="text-gray-500 dark:text-gray-400 font-medium">No materials available</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Check back later for study materials</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {/* Group materials by course */}
+            <div className="space-y-5">
               {Object.entries(
                 materials.reduce((acc, m) => {
                   if (!acc[m.courseName]) acc[m.courseName] = [];
@@ -527,15 +422,11 @@ const StudentDepartmentCourses = () => {
                   return acc;
                 }, {})
               ).map(([courseName, courseMaterials]) => (
-                <div key={courseName} className="border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-800">{courseName}</h3>
+                <div key={courseName} className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                  <div className="bg-gray-50 dark:bg-gray-700 px-5 py-3 border-b border-gray-200 dark:border-gray-600">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{courseName}</h3>
                   </div>
-                  <div className="p-3 space-y-2">
-                    {courseMaterials.map((material, idx) => (
-                      <MaterialCard key={idx} material={material} />
-                    ))}
-                  </div>
+                  <div className="p-4 space-y-2">{courseMaterials.map((m, i) => <MaterialCard key={i} material={m} />)}</div>
                 </div>
               ))}
             </div>
@@ -543,106 +434,54 @@ const StudentDepartmentCourses = () => {
         </div>
       )}
 
-      {/* Regular / Mock Tabs */}
-      {(activeTab === "regular" || activeTab === "mock") && (
-        <>
-          {/* Stats Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatBox
-              label="Total"
-              value={tabCourses.length}
-              icon={<Layers size={14} />}
-              color="gray"
-            />
-            <StatBox
-              label="In Progress"
-              value={tabCourses.filter(c => c.progress > 0 && c.progress < 100).length}
-              icon={<Flame size={14} />}
-              color="orange"
-            />
-            <StatBox
-              label="Completed"
-              value={tabCourses.filter(c => c.progress === 100).length}
-              icon={<CheckCircle size={14} />}
-              color="green"
-            />
-            <StatBox
-              label="Locked"
-              value={tabCourses.filter(c => c.is_locked).length}
-              icon={<Lock size={14} />}
-              color="red"
-            />
+      {/* Free Banner */}
+      {activeTab !== "materials" && hasFreeCoursesInTab && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3 animate-fadeInUp">
+          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-md">
+            <Gift size={20} className="text-white" />
           </div>
+          <div>
+            <p className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">
+              Free {activeTab === "mock" ? "Mock Exams" : activeTab === "exit" ? "Exit Exams" : "Courses"} Available!
+            </p>
+            <p className="text-xs text-emerald-600 dark:text-emerald-500">
+              Start learning instantly with these free {activeTab === "mock" ? "mock exams" : activeTab === "exit" ? "exit exams" : "courses"}
+            </p>
+          </div>
+        </div>
+      )}
 
-          {/* Search */}
-          <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={`Search ${activeTab === "mock" ? "mock exams" : "courses"}...`}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gray-400 focus:ring-1 focus:ring-gray-400 outline-none"
-            />
+      {/* Course Grid */}
+      {activeTab !== "materials" && (
+        filteredCourses.length === 0 ? (
+          <div className="text-center py-14 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <BookOpen size={28} className="text-gray-400 dark:text-gray-500" />
+            </div>
+            <p className="text-gray-500 dark:text-gray-400 font-medium">
+              No {activeTab === "mock" ? "mock exams" : activeTab === "exit" ? "exit exams" : "courses"} found
+            </p>
             {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X size={14} />
+              <button onClick={() => setSearchTerm("")} className="mt-2 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+                Clear search
               </button>
             )}
           </div>
-
-          {/* Course Grid */}
-          {filteredCourses.length === 0 ? (
-            <div className="py-12 flex flex-col items-center gap-3 text-center bg-gray-50 rounded-xl">
-              <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
-                <BookOpen size={24} className="text-gray-300" />
-              </div>
-              <p className="font-medium text-gray-500">
-                No {activeTab === "mock" ? "mock exams" : "courses"} found
-              </p>
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="text-sm text-indigo-600 hover:text-indigo-700"
-                >
-                  Clear search
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredCourses.map((course, i) => (
-                <CourseCard key={course.id} course={course} index={i} deptId={id} tab={activeTab} onUnlockClick={() => navigate("/student/payments")} />
-              ))}
-            </div>
-          )}
-        </>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredCourses.map((course, i) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                index={i}
+                deptId={id}
+                tab={activeTab}
+                onUnlockClick={() => navigate("/student/payments")}
+              />
+            ))}
+          </div>
+        )
       )}
-    </div>
-  );
-};
-
-// Helper Components
-const StatBox = ({ label, value, icon, color }) => {
-  const colors = {
-    gray: "bg-gray-100 text-gray-600",
-    orange: "bg-orange-100 text-orange-600",
-    green: "bg-green-100 text-green-600",
-    red: "bg-red-100 text-red-600",
-  };
-
-  return (
-    <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
-      <div className={`w-8 h-8 ${colors[color]} rounded-lg flex items-center justify-center shrink-0`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-xl font-bold text-gray-800 leading-none">{value}</p>
-        <p className="text-[10px] text-gray-500">{label}</p>
-      </div>
     </div>
   );
 };
