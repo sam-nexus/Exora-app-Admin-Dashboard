@@ -42,6 +42,23 @@ const StudentLayout = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Inside StudentLayout component:
+  const location = useLocation();
+
+  useEffect(() => {
+    const trackPage = async () => {
+      try {
+        await api.post('/student/track', {
+          page: location.pathname,
+          action: 'view',
+        });
+      } catch (err) {
+        // silent — don't block the user
+      }
+    };
+    trackPage();
+  }, [location.pathname]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {

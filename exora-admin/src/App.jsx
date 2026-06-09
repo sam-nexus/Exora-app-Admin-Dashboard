@@ -29,6 +29,9 @@ import Support from './pages/Support';
 import Landing from './pages/Landing';
 import StudentNotification from './pages/StudentNotifications';
 
+import Analytics from './pages/Analytics';
+
+// Inside Routes:
 
 
 function App() {
@@ -53,6 +56,7 @@ function App() {
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/materials" element={<Materials />} />
               <Route path="/support" element={<Support />} />
+              <Route path="/analytics" element={<Analytics />} />
             </Route>
           </Route>
 

@@ -14,6 +14,7 @@ import {
   X,
   FileText,
   MessageSquare,
+  TrendingUp,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -49,6 +50,7 @@ const Sidebar = () => {
       label: "Notifications",
     },
     { path: "/support", icon: <MessageSquare size={20} />, label: "Support" },
+    { path: "/analytics", icon: <TrendingUp size={20} />, label: "Analytics" },
   ];
 
   // Close mobile sidebar when route changes
