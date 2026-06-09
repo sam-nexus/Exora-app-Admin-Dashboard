@@ -6,14 +6,21 @@
   <link rel="icon" type="image" href="/logoIcon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Exora</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ABC123DEFG"></script>
   <script>
-  (function() {
-    var saved = localStorage.getItem('theme');
-    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    }
-  })();
-</script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-8N4GBF0KCP');
+  </script>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('theme');
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
 </head>
 
 <body>
