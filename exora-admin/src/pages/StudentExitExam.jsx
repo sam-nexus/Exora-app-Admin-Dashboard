@@ -4,7 +4,7 @@ import {
   Clock, AlertCircle, CheckCircle, XCircle, ArrowLeft,
   Award, ChevronLeft, ChevronRight, Flag, BookOpen,
   GraduationCap, Grid3x3, X, Search, Timer, BarChart3,
-  Target, Zap, Brain, TrendingUp, Trophy, RotateCcw, ListChecks
+  Target, Zap, Brain, TrendingUp, Trophy, RotateCcw, ListChecks, Loader2
 } from 'lucide-react';
 import api from '../api/axios';
 
@@ -227,6 +227,7 @@ const StudentExitExam = () => {
 
   const [result, setResult] = useState(null);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -326,14 +327,9 @@ const StudentExitExam = () => {
   };
 
   const submitExam = async () => {
-    console.log('🟢 submitExam called!');
-    console.log('screen:', screen);
-    console.log('mode:', mode);
-    console.log('answers:', answers);
-    console.log('questions length:', questions.length);
-
+    if (submitting) return;
+    setSubmitting(true);
     setLoading(true);
-
 
     // Practice mode — calculate locally, no backend call
     if (screen === "practice") {
@@ -355,6 +351,7 @@ const StudentExitExam = () => {
       setResult({ score, correctCount: totalCorrect, totalCount: totalQs, results: allResults });
       setScreen("result");
       setConfirmSubmit(false);
+      setSubmitting(false);
       setLoading(false);
       return;
     }
@@ -384,6 +381,7 @@ const StudentExitExam = () => {
       setScreen("result");
       setConfirmSubmit(false);
     } finally {
+      setSubmitting(false);
       setLoading(false);
     }
   };
@@ -553,7 +551,6 @@ const StudentExitExam = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {showMap && <QuestionMap questions={questions} answers={answers} marked={marked} current={currentIdx} onGo={goTo} onClose={() => setShowMap(false)} />}
-        {/* ADD THE MODAL HERE */}
         {confirmSubmit && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
@@ -565,8 +562,12 @@ const StudentExitExam = () => {
                 Answered: <span className="font-bold text-indigo-600">{answeredCount}</span> / {totalQs}
               </p>
               <div className="flex gap-3 mt-4">
-                <button onClick={() => setConfirmSubmit(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">Cancel</button>
-                <button onClick={submitExam} className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm">Finish</button>
+                <button onClick={() => setConfirmSubmit(false)} disabled={submitting} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50">
+                  Cancel
+                </button>
+                <button onClick={submitExam} disabled={submitting} className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                  {submitting ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : "Finish"}
+                </button>
               </div>
             </div>
           </div>
@@ -630,11 +631,8 @@ const StudentExitExam = () => {
               questions={questions} answers={answers} marked={marked}
               totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount}
               currentIdx={currentIdx} goTo={goTo}
-              onSubmit={() => {
-                console.log('🟡 setConfirmSubmit called!');
-                setConfirmSubmit(true);
-              }}
-              screen={screen}  // ← add this
+              onSubmit={() => setConfirmSubmit(true)}
+              screen={screen}
             />
           </div>
         </div>
@@ -664,8 +662,10 @@ const StudentExitExam = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Answered: <span className="font-bold text-indigo-600">{answeredCount}</span> / {totalQs}</p>
               {totalQs - answeredCount > 0 && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-3 mb-3">⚠️ {totalQs - answeredCount} unanswered</p>}
               <div className="flex gap-3">
-                <button onClick={() => setConfirmSubmit(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">Cancel</button>
-                <button onClick={submitExam} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-sm">Submit</button>
+                <button onClick={() => setConfirmSubmit(false)} disabled={submitting} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50">Cancel</button>
+                <button onClick={submitExam} disabled={submitting} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                  {submitting ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : "Submit"}
+                </button>
               </div>
             </div>
           </div>
@@ -708,7 +708,7 @@ const StudentExitExam = () => {
               totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount}
               currentIdx={currentIdx} goTo={goTo}
               onSubmit={() => setConfirmSubmit(true)}
-              screen={screen}  // ← add this
+              screen={screen}
             />
           </div>
         </div>

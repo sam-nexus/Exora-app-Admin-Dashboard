@@ -59,6 +59,24 @@ const StudentLayout = () => {
     trackPage();
   }, [location.pathname]);
 
+  // Inside the component:
+const location = useLocation();
+
+useEffect(() => {
+  const trackPage = async () => {
+    try {
+      await api.post('/analytics/track', {
+        page: location.pathname,
+        referrer: document.referrer,
+        userAgent: navigator.userAgent,
+      });
+    } catch (err) {
+      // silent — never block the user
+    }
+  };
+  trackPage();
+}, [location.pathname]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {

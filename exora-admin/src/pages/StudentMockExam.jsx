@@ -4,7 +4,8 @@ import {
   Clock, AlertCircle, CheckCircle, XCircle, ArrowLeft,
   Award, ChevronLeft, ChevronRight, Flag, BookOpen,
   GraduationCap, Grid3x3, X, Search, Timer, BarChart3,
-  Target, Zap, Brain, TrendingUp, Trophy, RotateCcw, ListChecks
+  Target, Zap, Brain, TrendingUp, Trophy, RotateCcw, ListChecks,
+  Loader2
 } from "lucide-react";
 import api from "../api/axios";
 
@@ -141,7 +142,7 @@ const QuestionMap = ({ questions, answers, marked, current, onGo, onClose }) => 
 };
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-const Sidebar = ({ questions, answers, marked, totalQs, answeredCount, flaggedCount, currentIdx, goTo, onSubmit }) => (
+const Sidebar = ({ questions, answers, marked, totalQs, answeredCount, flaggedCount, currentIdx, goTo, onSubmit, screen }) => (
   <div className="space-y-4">
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
       <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4 flex items-center gap-2">
@@ -187,8 +188,12 @@ const Sidebar = ({ questions, answers, marked, totalQs, answeredCount, flaggedCo
       {totalQs > 50 && <p className="text-xs text-gray-400 text-center mt-2">+{totalQs - 50} more — use Map</p>}
     </div>
 
-    <button onClick={onSubmit} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center gap-2">
-      <Trophy size={16} /> Submit Exam
+    <button onClick={onSubmit} className={`w-full py-3 rounded-xl font-bold active:scale-95 transition-all flex items-center justify-center gap-2 text-white ${
+      screen === "practice" 
+        ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" 
+        : "bg-emerald-600 hover:bg-emerald-700"
+    }`}>
+      <Trophy size={16} /> {screen === "practice" ? "Finish Practice" : "Submit Exam"}
     </button>
   </div>
 );
@@ -220,6 +225,7 @@ const StudentMockExam = () => {
 
   const [result, setResult] = useState(null);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -301,7 +307,33 @@ const StudentMockExam = () => {
   };
 
   const submitExam = async () => {
+    setSubmitting(true);
     setLoading(true);
+
+    // Practice mode — calculate locally
+    if (screen === "practice") {
+      let totalCorrect = 0;
+      const allResults = questions.map((q) => {
+        const userLetter = answers[q.id] ?? '';
+        const isCorrect = userLetter === optionLabel(q.correct_index ?? 0);
+        if (isCorrect) totalCorrect++;
+        return {
+          id: q.id, text: q.question_text || q.text,
+          userAnswer: userLetter || '(Not answered)',
+          correctAnswer: optionLabel(q.correct_index ?? 0),
+          isCorrect, explanation: q.explanation || '',
+        };
+      });
+      const score = totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0;
+      setResult({ score, correctAnswers: totalCorrect, totalQuestions: totalQs, results: allResults });
+      setScreen("result");
+      setConfirmSubmit(false);
+      setSubmitting(false);
+      setLoading(false);
+      return;
+    }
+
+    // Test mode — submit to backend
     const timeSpent = enableTimer && totalTime > 0 ? totalTime - timeLeft : null;
     try {
       const res = await api.post("/student/mock-exam/submit", { courseId, answers, mode, timeTaken: timeSpent });
@@ -316,7 +348,10 @@ const StudentMockExam = () => {
       });
       setResult({ score: totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0, correctAnswers: totalCorrect, totalQuestions: totalQs, results });
       setScreen("result"); setConfirmSubmit(false);
-    } finally { setLoading(false); }
+    } finally {
+      setSubmitting(false);
+      setLoading(false);
+    }
   };
 
   // ── Loading ──
@@ -482,24 +517,41 @@ const StudentMockExam = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {showMap && <QuestionMap questions={questions} answers={answers} marked={marked} current={currentIdx} onGo={goTo} onClose={() => setShowMap(false)} />}
-        {/* ADD THE MODAL HERE */}
+
+        {/* Confirmation Modal with Loading State */}
         {confirmSubmit && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
-              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle size={26} className="text-amber-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Finish Practice?</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                Answered: <span className="font-bold text-indigo-600">{answeredCount}</span> / {totalQs}
-              </p>
-              <div className="flex gap-3 mt-4">
-                <button onClick={() => setConfirmSubmit(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">Cancel</button>
-                <button onClick={submitExam} className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm">Finish</button>
-              </div>
+              {submitting ? (
+                <div className="py-6">
+                  <Loader2 size={40} className="animate-spin text-indigo-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Calculating Results...</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Please wait a moment</p>
+                </div>
+              ) : (
+                <>
+                  <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle size={26} className="text-amber-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Finish Practice?</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Answered: <span className="font-bold text-indigo-600">{answeredCount}</span> / {totalQs}
+                  </p>
+                  {totalQs - answeredCount > 0 && (
+                    <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-3 mb-3">
+                      ⚠️ {totalQs - answeredCount} question{totalQs - answeredCount > 1 ? 's' : ''} unanswered
+                    </p>
+                  )}
+                  <div className="flex gap-3 mt-4">
+                    <button onClick={() => setConfirmSubmit(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">Cancel</button>
+                    <button onClick={submitExam} className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm">Finish</button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
+
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-[1fr_280px] gap-6">
             <div className="space-y-4">
@@ -542,20 +594,14 @@ const StudentMockExam = () => {
                     })}
                   </div>
                   {isLast ? (
-                    <button onClick={() => { const tc = Object.values(revealed).filter(r => r?.isCorrect).length; setResult({ score: totalQs ? Math.round((tc / totalQs) * 100) : 0, correctAnswers: tc, totalQuestions: totalQs, results: [] }); setScreen("result"); }} className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition">Finish <Trophy size={15} /></button>
+                    <button onClick={() => setConfirmSubmit(true)} className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition">Finish <Trophy size={15} /></button>
                   ) : (
                     <button onClick={goNext} className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition">Next <ChevronRight size={16} /></button>
                   )}
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {[{ label: "Answered", val: answeredCount, color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-50 dark:bg-indigo-900/20" }, { label: "Flagged", val: flaggedCount, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20" }, { label: "Left", val: totalQs - answeredCount, color: "text-gray-500", bg: "bg-gray-50 dark:bg-gray-700" }].map(({ label, val, color, bg }) => (
-                  <div key={label} className={`${bg} rounded-xl py-3 text-center`}><p className={`text-xl font-extrabold ${color}`}>{val}</p><p className="text-[11px] text-gray-400">{label}</p></div>
-                ))}
-              </div>
             </div>
-            <Sidebar questions={questions} answers={answers} marked={marked} totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount} currentIdx={currentIdx} goTo={goTo} onSubmit={() => setConfirmSubmit(true)} />
+            <Sidebar questions={questions} answers={answers} marked={marked} totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount} currentIdx={currentIdx} goTo={goTo} onSubmit={() => setConfirmSubmit(true)} screen={screen} />
           </div>
         </div>
       </div>
@@ -576,17 +622,28 @@ const StudentMockExam = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {showMap && <QuestionMap questions={questions} answers={answers} marked={marked} current={currentIdx} onGo={goTo} onClose={() => setShowMap(false)} />}
 
+        {/* Confirmation Modal with Loading State */}
         {confirmSubmit && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
-              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4"><AlertCircle size={26} className="text-amber-600" /></div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Submit Mock Exam?</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Answered: <span className="font-bold text-indigo-600">{answeredCount}</span> / {totalQs}</p>
-              {totalQs - answeredCount > 0 && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-3 mb-3">⚠️ {totalQs - answeredCount} unanswered</p>}
-              <div className="flex gap-3">
-                <button onClick={() => setConfirmSubmit(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">Cancel</button>
-                <button onClick={submitExam} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-sm">Submit</button>
-              </div>
+              {submitting ? (
+                <div className="py-6">
+                  <Loader2 size={40} className="animate-spin text-indigo-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Submitting Exam...</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Please wait a moment</p>
+                </div>
+              ) : (
+                <>
+                  <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4"><AlertCircle size={26} className="text-amber-600" /></div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Submit Mock Exam?</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Answered: <span className="font-bold text-indigo-600">{answeredCount}</span> / {totalQs}</p>
+                  {totalQs - answeredCount > 0 && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-3 mb-3">⚠️ {totalQs - answeredCount} unanswered</p>}
+                  <div className="flex gap-3">
+                    <button onClick={() => setConfirmSubmit(false)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">Cancel</button>
+                    <button onClick={submitExam} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-sm">Submit</button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -623,7 +680,7 @@ const StudentMockExam = () => {
                 </div>
               </div>
             </div>
-            <Sidebar questions={questions} answers={answers} marked={marked} totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount} currentIdx={currentIdx} goTo={goTo} onSubmit={() => setConfirmSubmit(true)} />
+            <Sidebar questions={questions} answers={answers} marked={marked} totalQs={totalQs} answeredCount={answeredCount} flaggedCount={flaggedCount} currentIdx={currentIdx} goTo={goTo} onSubmit={() => setConfirmSubmit(true)} screen={screen} />
           </div>
         </div>
       </div>
