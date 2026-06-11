@@ -17,7 +17,7 @@ const ForgotPassword = () => {
     setSuccess('');
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/admin/forgot-password', { email });
+      const { data } = await api.post('/auth/forgot-password', { email });
       setSuccess(data.message || 'Reset link sent! Please check your email.');
       setEmail('');
     } catch (err) {
