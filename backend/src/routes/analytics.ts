@@ -104,4 +104,30 @@ router.get('/stats', authenticate, adminOnly, async (req: AuthRequest, res: Resp
   }
 });
 
+// Get recent visitors (admin only)
+router.get('/recent-visitors', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('page_views')
+      .select('*, profiles(full_name, email)')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+
+    const visitors = (data || []).map((v: any) => ({
+      id: v.id,
+      page: v.page,
+      user: v.profiles?.full_name || v.profiles?.email || 'Guest',
+      ip: v.ip_address || 'Unknown',
+      device: v.user_agent?.includes('Mobile') ? '📱 Mobile' : '💻 Desktop',
+      time: v.created_at,
+    }));
+
+    res.json(visitors);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
