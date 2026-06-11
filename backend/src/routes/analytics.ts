@@ -4,7 +4,7 @@ import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-// Track a page view (no auth required — works for guests too)
+// Track a page view (no auth required)
 router.post('/track', async (req: AuthRequest, res: Response) => {
   try {
     const { page, referrer, userAgent } = req.body;
@@ -16,7 +16,7 @@ router.post('/track', async (req: AuthRequest, res: Response) => {
       .insert({
         user_id: userId,
         page: page || '/',
-        referrer: referrer || document?.referrer || null,
+        referrer: referrer || null,
         user_agent: userAgent || req.headers['user-agent'] || null,
         ip_address: ipAddress,
       });
@@ -44,20 +44,22 @@ router.get('/stats', authenticate, adminOnly, async (req: AuthRequest, res: Resp
       .gte('created_at', new Date().toISOString().split('T')[0]);
 
     const uniqueVisitors = new Set(
-      todayVisitors?.map(v => v.user_id || v.ip_address)
+      todayVisitors?.map((v: any) => v.user_id || v.ip_address)
     ).size;
 
     // Last 7 days
     const { data: last7Days } = await supabaseAdmin
       .from('page_views')
-      .select('created_at, page')
+      .select('created_at')
       .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
 
-    // Group by date
-    const dailyMap = {};
+    // Group by date (fix: typed as Record<string, number>)
+    const dailyMap: Record<string, number> = {};
     last7Days?.forEach((d: any) => {
       const date = new Date(d.created_at).toISOString().split('T')[0];
-      if (!dailyMap[date]) dailyMap[date] = 0;
+      if (!dailyMap[date]) {
+        dailyMap[date] = 0;
+      }
       dailyMap[date]++;
     });
 
@@ -70,13 +72,18 @@ router.get('/stats', authenticate, adminOnly, async (req: AuthRequest, res: Resp
       .order('created_at', { ascending: false })
       .limit(1000);
 
-    const pageCounts = {};
+    // Fix: typed as Record<string, number>
+    const pageCounts: Record<string, number> = {};
     topPages?.forEach((p: any) => {
-      pageCounts[p.page] = (pageCounts[p.page] || 0) + 1;
+      const page = p.page || '/';
+      if (!pageCounts[page]) {
+        pageCounts[page] = 0;
+      }
+      pageCounts[page]++;
     });
 
     const sortedPages = Object.entries(pageCounts)
-      .sort((a: any, b: any) => b[1] - a[1])
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([page, count]) => ({ page, count }));
 
