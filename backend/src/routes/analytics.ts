@@ -4,12 +4,13 @@ import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-// Track a page view (no auth required)
-router.post('/track', async (req: AuthRequest, res: Response) => {
+// Track a page view (authenticated users only)
+router.post('/track', authenticate, async (req: AuthRequest, res: Response) => {
+    console.log('📊 Track request - userId:', req.userId, 'page:', req.body.page);
   try {
     const { page, referrer, userAgent } = req.body;
     const ipAddress = req.ip || req.socket.remoteAddress;
-    const userId = req.userId || null;
+    const userId = req.userId!; // Now guaranteed to exist because of authenticate middleware
 
     const { error } = await supabaseAdmin
       .from('page_views')
@@ -104,12 +105,11 @@ router.get('/stats', authenticate, adminOnly, async (req: AuthRequest, res: Resp
   }
 });
 
-// Get recent visitors (admin only)
 router.get('/recent-visitors', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('page_views')
-      .select('*, profiles(full_name, email)')
+      .select('*, profiles!inner(full_name, email)')
       .order('created_at', { ascending: false })
       .limit(20);
 
@@ -118,7 +118,7 @@ router.get('/recent-visitors', authenticate, adminOnly, async (req: AuthRequest,
     const visitors = (data || []).map((v: any) => ({
       id: v.id,
       page: v.page,
-      user: v.profiles?.full_name || v.profiles?.email || 'Guest',
+      user: v.profiles?.full_name || v.profiles?.email || 'Unknown User',
       ip: v.ip_address || 'Unknown',
       device: v.user_agent?.includes('Mobile') ? '📱 Mobile' : '💻 Desktop',
       time: v.created_at,

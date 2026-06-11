@@ -43,25 +43,6 @@ const StudentLayout = () => {
   }, []);
 
 
-  // Inside the component:
-const location = useLocation();
-// Track page views
-  useEffect(() => {
-    const trackPage = async () => {
-      try {
-        await api.post('/analytics/track', {
-          page: location.pathname,
-          referrer: document.referrer,
-          userAgent: navigator.userAgent,
-        });
-      } catch (err) {
-        // silent — never block the user
-      }
-    };
-    trackPage();
-  }, [location.pathname]);
-
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
@@ -93,6 +74,25 @@ const location = useLocation();
     clearSession();
     window.location.href = "/login";
   };
+
+  
+  // Inside the component:
+const location = useLocation();
+// Track page views
+  useEffect(() => {
+    const trackPage = async () => {
+      try {
+        await api.post('/analytics/track', {
+          page: location.pathname,
+          referrer: document.referrer,
+          userAgent: navigator.userAgent,
+        });
+      } catch (err) {
+        // silent — never block the user
+      }
+    };
+    trackPage();
+  }, [location.pathname]);
 
   const navItems = [
     { path: "/student", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
