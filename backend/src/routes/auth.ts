@@ -19,11 +19,65 @@ const transporter = nodemailer.createTransport({
 });
 
 // --------------------------------------------------
-// Regular user registration (unchanged)
-// --------------------------------------------------
+// Regular user registration
 router.post('/register', async (req, res) => {
   const { email, password, fullName } = req.body;
   let authUser: any = null;
+
+  // ─── Validation ──────────────────────────────────────────────────────────
+  if (!email || !password || !fullName) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+
+  if (typeof fullName !== 'string' || fullName.trim().length < 2) {
+    return res.status(400).json({ error: 'Full name must be at least 2 characters.' });
+  }
+
+  if (typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+  }
+
+  // Basic email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  // Extract domain and validate allowed providers
+  const domain = email.split('@')[1]?.toLowerCase();
+  const allowedDomains = [
+    'gmail.com',
+    'yahoo.com',
+    'outlook.com',
+    'hotmail.com',
+    'icloud.com',
+    'protonmail.com',
+    'live.com',
+    'aol.com',
+    'zoho.com',
+    'yandex.com',
+    'mail.com',
+    'gmx.com',
+    'fastmail.com',
+    'tutanota.com',
+    'inbox.com',
+  ];
+
+  if (!domain || !allowedDomains.includes(domain)) {
+    return res.status(400).json({
+      error: `Email must be from a valid provider (e.g., ${allowedDomains.slice(0, 5).join(', ')}...).`,
+    });
+  }
+
+  // Optional: Block disposable/temporary email providers
+  const disposableDomains = [
+    'tempmail.com', 'temp-mail.org', 'guerrillamail.com', 'mailinator.com',
+    '10minutemail.com', 'yopmail.com', 'throwaway.email', 'sharklasers.com',
+    'trashmail.com', 'fakeinbox.com',
+  ];
+  if (disposableDomains.includes(domain)) {
+    return res.status(400).json({ error: 'Disposable email addresses are not allowed.' });
+  }
 
   try {
     const { data, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -36,17 +90,15 @@ router.post('/register', async (req, res) => {
 
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .insert({ id: authUser.id, full_name: fullName, email, role: 'user' });
+      .insert({ id: authUser.id, full_name: fullName.trim(), email, role: 'user' });
     if (profileError) throw profileError;
 
-    // 3. Lock every course for the new user (except free courses)
+    // Lock every course for the new user (except free courses)
     const { data: courses } = await supabaseAdmin.from('courses').select('id, is_free');
     if (courses && courses.length > 0) {
-      // Separate free and paid courses
       const paidCourses = courses.filter(c => !c.is_free);
       const freeCourses = courses.filter(c => c.is_free);
 
-      // Lock paid courses
       if (paidCourses.length > 0) {
         const locks = paidCourses.map(c => ({
           user_id: authUser.id,
@@ -56,12 +108,11 @@ router.post('/register', async (req, res) => {
         await supabaseAdmin.from('user_courses').insert(locks);
       }
 
-      // Unlock free courses
       if (freeCourses.length > 0) {
         const freeLocks = freeCourses.map(c => ({
           user_id: authUser.id,
           course_id: c.id,
-          is_locked: false, // free courses are unlocked
+          is_locked: false,
         }));
         await supabaseAdmin.from('user_courses').insert(freeLocks);
       }
@@ -76,7 +127,7 @@ router.post('/register', async (req, res) => {
       const adminNotifications = admins.map((adminUser: any) => ({
         recipient_id: adminUser.id,
         title: 'New student registered',
-        message: `${fullName} has registered with email ${email}.`,
+        message: `${fullName.trim()} has registered with email ${email}.`,
         link: '/admin/users',
         notification_type: 'student_registered',
         data: { studentId: authUser.id, email: email },
@@ -94,7 +145,7 @@ router.post('/register', async (req, res) => {
         const payload = {
           notification: {
             title: 'New student registered',
-            body: `${fullName} has joined the platform.`,
+            body: `${fullName.trim()} has joined the platform.`,
           },
           data: {
             link: '/admin/users',
