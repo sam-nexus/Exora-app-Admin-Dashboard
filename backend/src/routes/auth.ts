@@ -248,23 +248,31 @@ router.post("/admin/login", async (req, res) => {
   }
 });
 // --------------------------------------------------
-// Admin forgot password (link‑based) – unchanged
-// --------------------------------------------------
-router.post('/admin/forgot-password', async (req, res) => {
+
+
+// Forgot password for all users (no admin check)
+router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
+
   try {
+    // Check if email exists in profiles (any role)
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('role')
+      .select('id, role')
       .eq('email', email)
       .single();
 
-    if (profileError || !profile || profile.role !== 'admin') {
-      return res.status(404).json({ error: 'No admin account found with that email.' });
+    if (profileError || !profile) {
+      return res.status(404).json({ error: 'No account found with that email.' });
     }
 
+    // Determine redirect URL based on role
+    const redirectTo = profile.role === 'admin'
+      ? 'https://exoraapp.netlify.app/reset-password'
+      : 'https://exoraapp.netlify.app/reset-password'; // Change to your student app URL
+
     const { error } = await supabaseAnon.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://exora-admin.netlify.app/reset-password', // your Netlify admin URL
+      redirectTo,
     });
     if (error) throw error;
 

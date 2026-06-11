@@ -94,6 +94,25 @@ const location = useLocation();
     window.location.href = "/login";
   };
 
+  
+  // Inside the component:
+const location = useLocation();
+// Track page views
+  useEffect(() => {
+    const trackPage = async () => {
+      try {
+        await api.post('/analytics/track', {
+          page: location.pathname,
+          referrer: document.referrer,
+          userAgent: navigator.userAgent,
+        });
+      } catch (err) {
+        // silent — never block the user
+      }
+    };
+    trackPage();
+  }, [location.pathname]);
+
   const navItems = [
     { path: "/student", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { path: "/student/help-support", icon: <LifeBuoy size={18} />, label: "Support" },
