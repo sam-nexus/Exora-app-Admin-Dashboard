@@ -1,25 +1,98 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Check, Loader2, X, Flag, ChevronLeft, ChevronRight,
-  Wifi, WifiOff, Trash2, Bot, Send, XCircle, BarChart3, BookOpen
+  ArrowLeft, Check, X, Loader2, AlertCircle, BookOpen, Sparkles, Clock,
+  CheckCircle, Wifi, WifiOff, ThumbsUp, ThumbsDown, Star, Zap, Award, Heart,
+  Smile, Frown, Laugh, Meh, Angry, Brain, Trophy, Flame, Sun, TrendingUp
 } from "lucide-react";
 import api from "../api/axios";
 
-const getPracticeCacheKey = (courseIdValue) => `practice-cache:${courseIdValue}`;
+// ─── Funny Phrases (30 correct, 30 wrong) ───────────────────────────────────
+const correctPhrases = [
+  { text: "You're doing great! 🎉", icon: <Star size={16} className="text-yellow-400" /> },
+  { text: "Correct! Exora is proud... suspiciously proud. 🤨", icon: <Award size={16} className="text-amber-400" /> },
+  { text: "Nailed it! Someone studied! 📚", icon: <ThumbsUp size={16} className="text-emerald-400" /> },
+  { text: "Boom! That answer didn't stand a chance. 💥", icon: <Zap size={16} className="text-yellow-400" /> },
+  { text: "You're on fire! 🔥 (Not literally, please stay safe.)", icon: <Sparkles size={16} className="text-orange-400" /> },
+  { text: "Einstein would be proud. Maybe. Probably. 🧠", icon: <Star size={16} className="text-purple-400" /> },
+  { text: "Correct! Your brain is functioning at full capacity. ⚡", icon: <Zap size={16} className="text-blue-400" /> },
+  { text: "That's right! You're basically a genius now. 🎓", icon: <Award size={16} className="text-indigo-400" /> },
+  { text: "Perfect! Even your textbooks are applauding. 👏", icon: <Heart size={16} className="text-pink-400" /> },
+  { text: "Yes! You're making this look easy. 😎", icon: <ThumbsUp size={16} className="text-teal-400" /> },
+  { text: "Wow, your single brain cell fired perfectly! 🧬", icon: <Brain size={16} className="text-purple-400" /> },
+  { text: "Correct! Your IQ just went up a notch. 📈", icon: <TrendingUp size={16} className="text-emerald-400" /> },
+  { text: "You got it! The exam is shaking in fear. 😱", icon: <Trophy size={16} className="text-yellow-400" /> },
+  { text: "Right answer! Your teacher would be impressed. 👩‍🏫", icon: <Smile size={16} className="text-blue-400" /> },
+  { text: "Correct! You're collecting wins like Pokémon. 🏆", icon: <Award size={16} className="text-amber-400" /> },
+  { text: "Spot on! Even Google is jealous of your knowledge. 🔍", icon: <Star size={16} className="text-indigo-400" /> },
+  { text: "That's it! You're officially smarter than your phone. 📱", icon: <Zap size={16} className="text-teal-400" /> },
+  { text: "Correct! Your brain deserves a gold star. ⭐", icon: <Star size={16} className="text-yellow-400" /> },
+  { text: "You're unstoppable! (Until the next hard question.) 😏", icon: <Flame size={16} className="text-orange-400" /> },
+  { text: "Yes! You're on a roll. Don't stop now! 🎲", icon: <ThumbsUp size={16} className="text-emerald-400" /> },
+  { text: "Correct! The answer bowed down to you. 👑", icon: <Award size={16} className="text-purple-400" /> },
+  { text: "Right! Your brain is a well-oiled machine. ⚙️", icon: <Brain size={16} className="text-blue-400" /> },
+  { text: "You got it! High five... to yourself. ✋", icon: <Smile size={16} className="text-indigo-400" /> },
+  { text: "Correct! Your confidence is showing. 💪", icon: <Flame size={16} className="text-amber-400" /> },
+  { text: "That's the one! You make studying look cool. 😎", icon: <Sun size={16} className="text-yellow-400" /> },
+  { text: "Nailed it! You're on a winning streak. 🏅", icon: <Trophy size={16} className="text-emerald-400" /> },
+  { text: "Correct! Your brain cells are doing a happy dance. 💃", icon: <Heart size={16} className="text-pink-400" /> },
+  { text: "Yes! You just made that question regret existing. 😂", icon: <Laugh size={16} className="text-teal-400" /> },
+  { text: "Perfect score incoming! Keep going. 🎯", icon: <Zap size={16} className="text-purple-400" /> },
+  { text: "Right answer! Your future self is thanking you. 🙏", icon: <Star size={16} className="text-blue-400" /> },
+];
+
+const wrongPhrases = [
+  { text: "Wrong! You are the weakest link. Goodbye. 👋", icon: <ThumbsDown size={16} className="text-red-400" /> },
+  { text: "Oops! You have the trivia skills of a damp sponge. 🧽", icon: <ThumbsDown size={16} className="text-red-400" /> },
+  { text: "Nope! But hey, at least you're consistent. 😅", icon: <X size={16} className="text-orange-400" /> },
+  { text: "Not quite. Even a broken clock is right twice a day. ⏰", icon: <Clock size={16} className="text-amber-400" /> },
+  { text: "Swing and a miss! But you'll get it next time. ⚾", icon: <ThumbsDown size={16} className="text-red-400" /> },
+  { text: "Incorrect. But failure is the mother of success... or something. 🤷", icon: <AlertCircle size={16} className="text-orange-400" /> },
+  { text: "Nope! Your brain took a coffee break. ☕", icon: <X size={16} className="text-amber-400" /> },
+  { text: "Wrong answer! Don't worry, even AI hallucinates sometimes. 🤖", icon: <AlertCircle size={16} className="text-red-400" /> },
+  { text: "That's not it. But you're still breathing, so that's a win. 😮‍💨", icon: <ThumbsDown size={16} className="text-orange-400" /> },
+  { text: "Missed it! The correct answer is hiding from you. 🙈", icon: <X size={16} className="text-red-400" /> },
+  { text: "Wrong! You must be allergic to correct answers. 🤧", icon: <ThumbsDown size={16} className="text-red-400" /> },
+  { text: "Your IQ just dropped to room temperature. 🌡️", icon: <Frown size={16} className="text-red-400" /> },
+  { text: "Mind-blowing. Mostly because it was you. 🤯", icon: <Brain size={16} className="text-purple-400" /> },
+  { text: "Nope! Even your pencil is embarrassed. ✏️", icon: <Meh size={16} className="text-orange-400" /> },
+  { text: "Wrong! The correct answer is laughing at you. 😂", icon: <Laugh size={16} className="text-amber-400" /> },
+  { text: "That's a no. Your brain needs a software update. 🔄", icon: <AlertCircle size={16} className="text-red-400" /> },
+  { text: "Incorrect! But at least you're good-looking. (Maybe.) 💅", icon: <Smile size={16} className="text-orange-400" /> },
+  { text: "Wrong! The question is winning this round. 🥊", icon: <Angry size={16} className="text-red-400" /> },
+  { text: "Nope! Your brain cells are on strike. ✊", icon: <ThumbsDown size={16} className="text-amber-400" /> },
+  { text: "That's not right. But don't cry... yet. 😢", icon: <Frown size={16} className="text-orange-400" /> },
+  { text: "Wrong! The answer is playing hide and seek. 🙈", icon: <X size={16} className="text-red-400" /> },
+  { text: "Missed! Your brain is buffering... please wait. ⏳", icon: <Clock size={16} className="text-amber-400" /> },
+  { text: "Incorrect! Even a guess has a 25% chance. You beat the odds... badly. 📉", icon: <ThumbsDown size={16} className="text-red-400" /> },
+  { text: "Nope! The answer called in sick today. 🤒", icon: <Meh size={16} className="text-orange-400" /> },
+  { text: "Wrong! Your brain just filed for unemployment. 📄", icon: <AlertCircle size={16} className="text-red-400" /> },
+  { text: "That's a miss. The correct answer is sending thoughts and prayers. 🙏", icon: <Smile size={16} className="text-amber-400" /> },
+  { text: "Not it! Your answer was rejected by the universe. 🌌", icon: <X size={16} className="text-red-400" /> },
+  { text: "Wrong! The answer is still waiting for you. Patiently. 🧘", icon: <Clock size={16} className="text-orange-400" /> },
+  { text: "Nope! You just made the question feel smarter. 🤓", icon: <ThumbsDown size={16} className="text-amber-400" /> },
+  { text: "Incorrect! But hey, you're building character. 💪", icon: <Frown size={16} className="text-red-400" /> },
+];
+
+const usedPhrasesRef = { current: { correct: new Set(), wrong: new Set() } };
+
+const getRandomPhrase = (isCorrect) => {
+  const phrases = isCorrect ? correctPhrases : wrongPhrases;
+  const usedSet = isCorrect ? usedPhrasesRef.current.correct : usedPhrasesRef.current.wrong;
+  const available = phrases.filter((_, i) => !usedSet.has(i));
+  if (available.length === 0) {
+    usedSet.clear();
+    const randomIndex = Math.floor(Math.random() * phrases.length);
+    usedSet.add(randomIndex);
+    return phrases[randomIndex];
+  }
+  const randomIndex = Math.floor(Math.random() * available.length);
+  const originalIndex = phrases.indexOf(available[randomIndex]);
+  usedSet.add(originalIndex);
+  return available[randomIndex];
+};
+
 const getPracticeProgressKey = (courseIdValue) => `practice-progress:${courseIdValue}`;
-
-const loadPracticeCache = (courseIdValue) => {
-  if (!courseIdValue) return null;
-  try { const cached = localStorage.getItem(getPracticeCacheKey(courseIdValue)); return cached ? JSON.parse(cached) : null; }
-  catch { return null; }
-};
-
-const savePracticeCache = (courseIdValue, courseData, questionData) => {
-  if (!courseIdValue) return;
-  try { localStorage.setItem(getPracticeCacheKey(courseIdValue), JSON.stringify({ course: courseData, questions: questionData, savedAt: new Date().toISOString() })); }
-  catch {}
-};
 
 const loadPracticeProgress = (courseIdValue) => {
   if (!courseIdValue) return null;
@@ -33,11 +106,7 @@ const savePracticeProgress = (courseIdValue, progressState) => {
   catch {}
 };
 
-const clearPracticeProgress = (courseIdValue) => {
-  if (!courseIdValue) return;
-  try { localStorage.removeItem(getPracticeProgressKey(courseIdValue)); }
-  catch {}
-};
+const optionLabel = (idx) => String.fromCharCode(65 + idx);
 
 const StudentPracticeMode = () => {
   const { deptId, courseId } = useParams();
@@ -45,307 +114,172 @@ const StudentPracticeMode = () => {
   const [loading, setLoading] = useState(true);
   const [course, setCourse] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [showResult, setShowResult] = useState(false);
-  const [answerStatus, setAnswerStatus] = useState({});
-  const [markedForReview, setMarkedForReview] = useState({});
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [answers, setAnswers] = useState({});
+  const [revealed, setRevealed] = useState({});
   const [fetchError, setFetchError] = useState("");
-
-  // AI States
-  const [isAIOpen, setIsAIOpen] = useState(false);
-  const [aiQuestion, setAiQuestion] = useState("");
-  const [aiResponse, setAiResponse] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiHistory, setAiHistory] = useState([]);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => { window.removeEventListener("online", handleOnline); window.removeEventListener("offline", handleOffline); };
+    const ho = () => setIsOnline(true), hf = () => setIsOnline(false);
+    window.addEventListener("online", ho); window.addEventListener("offline", hf);
+    return () => { window.removeEventListener("online", ho); window.removeEventListener("offline", hf); };
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const restoreFromCache = () => {
-        const cached = loadPracticeCache(courseId);
-        const persistedProgress = loadPracticeProgress(courseId);
-        if (cached && cached.questions?.length) {
-          setCourse(cached.course || { title: "Course" });
-          setQuestions(cached.questions);
-          setAnswerStatus(persistedProgress?.answerStatus || {});
-          setMarkedForReview(persistedProgress?.markedForReview || {});
-          setCurrentIndex(typeof persistedProgress?.currentIndex === "number" ? Math.min(persistedProgress.currentIndex, cached.questions.length - 1) : 0);
-          setSelectedAnswer(persistedProgress?.selectedAnswer || null);
-          setShowResult(persistedProgress?.showResult || false);
-          return true;
-        }
-        return false;
-      };
+    (async () => {
+      setLoading(true); setFetchError("");
       try {
         const [courseRes, questionsRes] = await Promise.all([
           api.get("/courses", { params: { department_id: deptId } }),
-          api.get("/questions", { params: { course_id: courseId } })
+          api.get("/questions", { params: { course_id: courseId } }),
         ]);
-        const foundCourse = (courseRes.data || []).find((item) => item.id.toString() === courseId) || { title: "Selected Course" };
-        const normalizedQuestions = (questionsRes.data || []).map((q) => ({
+        setCourse((courseRes.data || []).find(i => i.id.toString() === courseId) || { title: "Course" });
+        const qs = (questionsRes.data || []).map(q => ({
           id: q.id, text: q.question_text || q.text || "No question text.",
           options: Array.isArray(q.options) ? q.options : [],
-          correctAnswer: String.fromCharCode(65 + (q.correct_index ?? q.correctIndex ?? 0)),
-          explanation: q.explanation || "",
+          correctIndex: q.correct_index ?? q.correctIndex ?? 0, explanation: q.explanation || "",
         }));
-        const persistedProgress = loadPracticeProgress(courseId);
-        setCourse(foundCourse);
-        setQuestions(normalizedQuestions);
-        setAnswerStatus(persistedProgress?.answerStatus || {});
-        setMarkedForReview(persistedProgress?.markedForReview || {});
-        setCurrentIndex(typeof persistedProgress?.currentIndex === "number" ? Math.min(persistedProgress.currentIndex, normalizedQuestions.length - 1) : 0);
-        setSelectedAnswer(persistedProgress?.selectedAnswer || null);
-        setShowResult(persistedProgress?.showResult || false);
-        savePracticeCache(courseId, foundCourse, normalizedQuestions);
+        setQuestions(qs);
+        const saved = loadPracticeProgress(courseId);
+        if (saved) { setAnswers(saved.answers || {}); setRevealed(saved.revealed || {}); }
       } catch {
-        if (!restoreFromCache()) setFetchError("Unable to load practice questions.");
+        const saved = loadPracticeProgress(courseId);
+        if (saved?.questions?.length) { setQuestions(saved.questions); setAnswers(saved.answers || {}); setRevealed(saved.revealed || {}); }
+        else setFetchError("Unable to load practice questions.");
       } finally { setLoading(false); }
-    };
-    if (deptId && courseId) fetchData();
+    })();
   }, [deptId, courseId]);
 
-  const currentQuestion = questions[currentIndex];
+  useEffect(() => {
+    if (courseId && questions.length) savePracticeProgress(courseId, { answers, revealed, questions, questionCount: questions.length, answeredCount: Object.keys(answers).length });
+  }, [answers, revealed, questions, courseId]);
+
+  const showToast = (isCorrect) => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    const phrase = getRandomPhrase(isCorrect);
+    setToast({ ...phrase, isCorrect });
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleSelectAnswer = (questionId, optionLetter) => {
+    if (revealed[questionId]) return;
+    const q = questions.find(q => q.id === questionId);
+    if (!q) return;
+    const correctLetter = optionLabel(q.correctIndex), isCorrect = optionLetter === correctLetter;
+    setAnswers(p => ({ ...p, [questionId]: optionLetter }));
+    setRevealed(p => ({ ...p, [questionId]: { correctLetter, correctText: q.options[q.correctIndex] || "", isCorrect, userLetter: optionLetter, userText: q.options[optionLetter.charCodeAt(0)-65] || "", explanation: q.explanation || "" } }));
+    showToast(isCorrect);
+  };
+
+  const answeredCount = Object.keys(answers).length;
+  const correctCount = Object.values(revealed).filter(r => r?.isCorrect).length;
   const totalQuestions = questions.length;
-  const answeredCount = Object.keys(answerStatus).length;
-  const correctCount = Object.values(answerStatus).filter((item) => item.isCorrect).length;
-  const incorrectCount = answeredCount - correctCount;
-  const overallScore = totalQuestions === 0 ? 0 : Math.round((correctCount / totalQuestions) * 100);
+  const progressPercent = totalQuestions ? Math.round((answeredCount / totalQuestions) * 100) : 0;
 
-  const handleAnswerSelect = (answer) => {
-    if (showResult) return;
-    setSelectedAnswer(answer);
-    if (currentQuestion) {
-      const isCorrect = answer === currentQuestion.correctAnswer;
-      const nextAnswerStatus = { ...answerStatus, [currentQuestion.id]: { selectedAnswer: answer, isCorrect } };
-      setAnswerStatus(nextAnswerStatus);
-      setShowResult(true);
-      saveCurrentProgress({ answerStatus: nextAnswerStatus, showResult: true, selectedAnswer: answer });
-    }
+  const getOptionState = (qId, opt) => {
+    const rev = revealed[qId], sel = answers[qId];
+    if (!rev) return sel === opt ? "selected" : "idle";
+    if (opt === rev.correctLetter) return "correct";
+    if (opt === sel && !rev.isCorrect) return "wrong";
+    return "idle";
   };
 
-  const saveCurrentProgress = useCallback((overrides = {}) => {
-    if (!courseId) return;
-    savePracticeProgress(courseId, {
-      currentIndex: overrides.currentIndex ?? currentIndex,
-      answerStatus: overrides.answerStatus ?? answerStatus,
-      markedForReview: overrides.markedForReview ?? markedForReview,
-      selectedAnswer: overrides.selectedAnswer ?? selectedAnswer,
-      showResult: overrides.showResult ?? showResult,
-      questionCount: questions.length,
-      answeredCount: Object.keys(overrides.answerStatus ?? answerStatus).length,
-    });
-  }, [courseId, answerStatus, markedForReview, selectedAnswer, showResult, currentIndex, questions.length]);
-
-  const handleClearProgress = () => {
-    if (confirm("Clear all progress for this course?")) {
-      clearPracticeProgress(courseId);
-      setAnswerStatus({}); setMarkedForReview({}); setSelectedAnswer(null); setShowResult(false); setCurrentIndex(0);
-    }
+  const stateStyles = {
+    idle: "border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20",
+    selected: "border-indigo-500 dark:border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-300",
+    correct: "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20",
+    wrong: "border-red-400 bg-red-50 dark:bg-red-900/20",
   };
 
-  const handleNext = () => { setSelectedAnswer(null); setShowResult(false); if (currentIndex < totalQuestions - 1) { const ni = currentIndex + 1; setCurrentIndex(ni); saveCurrentProgress({ currentIndex: ni, selectedAnswer: null, showResult: false }); } };
-  const handlePrevious = () => { setSelectedAnswer(null); setShowResult(false); if (currentIndex > 0) { const ni = currentIndex - 1; setCurrentIndex(ni); saveCurrentProgress({ currentIndex: ni, selectedAnswer: null, showResult: false }); } };
-  const handleMarkForReview = () => { if (!currentQuestion) return; const nextMarked = { ...markedForReview, [currentQuestion.id]: !markedForReview[currentQuestion.id] }; setMarkedForReview(nextMarked); saveCurrentProgress({ markedForReview: nextMarked }); };
-
-  const handleAskAI = async () => {
-    if (!aiQuestion.trim()) return;
-    setAiLoading(true); setAiResponse("");
-    setTimeout(() => {
-      const responses = [
-        `The correct answer is ${currentQuestion?.correctAnswer}. ${currentQuestion?.explanation || "This is the key concept."}`,
-        `${currentQuestion?.correctAnswer} is right because ${currentQuestion?.explanation?.toLowerCase() || "it matches the definition"}.`,
-      ];
-      const resp = responses[Math.floor(Math.random() * responses.length)];
-      setAiResponse(resp);
-      setAiHistory((prev) => [{ question: aiQuestion, answer: resp, timestamp: new Date() }, ...prev].slice(0, 5));
-      setAiLoading(false);
-    }, 1000);
-  };
-
-  useEffect(() => { return () => { if (courseId) saveCurrentProgress(); }; }, [courseId, saveCurrentProgress]);
-
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-gray-400 dark:text-gray-500 mx-auto" />
+  if (loading) return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="relative"><div className="w-12 h-12 border-2 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin"/><BookOpen size={20} className="absolute inset-0 m-auto text-indigo-600 dark:text-indigo-400"/></div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Loading practice questions...</p>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (fetchError && questions.length === 0) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center max-w-md bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-          <AlertCircle size={40} className="text-red-400 mx-auto mb-3" />
-          <p className="text-gray-500 dark:text-gray-400 text-sm">{fetchError}</p>
-          <button onClick={() => window.location.reload()} className="mt-4 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm">Retry</button>
-        </div>
+  if (fetchError && !questions.length) return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="text-center max-w-md bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+        <AlertCircle size={40} className="text-red-400 mx-auto mb-3"/><p className="text-gray-500 dark:text-gray-400 text-sm">{fetchError}</p>
+        <button onClick={() => window.location.reload()} className="mt-4 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm">Retry</button>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="space-y-5 pb-8">
-      {/* Back + Clear */}
-      <div className="flex items-center justify-between">
-        <button onClick={() => navigate(`/student/departments/${deptId}/courses`)} className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition group">
-          <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition" /> Back to Courses
-        </button>
-        <button onClick={handleClearProgress} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 transition">
-          <Trash2 size={13} /> Clear Progress
-        </button>
-      </div>
-
-      {/* Status Bar */}
-      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${isOnline ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300" : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400"}`}>
-        {isOnline ? <Wifi size={13} /> : <WifiOff size={13} />}
-        <span>{isOnline ? "Online" : "Offline — Progress saved locally"}</span>
-      </div>
-
-      <div className="flex flex-col xl:flex-row gap-5">
-        {/* Question Area */}
-        <div className="flex-1">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-4">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-500 dark:text-gray-400">Q {currentIndex + 1} of {totalQuestions}</span>
-              <span className="text-gray-500 dark:text-gray-400">{Math.round(((currentIndex + 1) / totalQuestions) * 100)}%</span>
-            </div>
-            <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }} />
-            </div>
+    <div className="space-y-4 sm:space-y-5 pb-8 max-w-3xl mx-auto relative">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-16 sm:top-20 right-2 sm:right-6 lg:right-8 z-50 animate-slideInRight w-[calc(100%-1rem)] sm:max-w-xs max-w-[280px]">
+          <div className={`rounded-2xl shadow-xl border p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 backdrop-blur-sm ${toast.isCorrect ? "bg-emerald-50/95 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800" : "bg-red-50/95 dark:bg-red-900/30 border-red-200 dark:border-red-800"}`}>
+            <div className={`shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${toast.isCorrect ? "bg-emerald-100 dark:bg-emerald-800" : "bg-red-100 dark:bg-red-800"}`}>{toast.icon}</div>
+            <p className={`text-[12px] sm:text-sm font-medium ${toast.isCorrect ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>{toast.text}</p>
           </div>
+        </div>
+      )}
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center text-xs font-bold text-indigo-600 dark:text-indigo-400">{currentIndex + 1}</div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">of {totalQuestions}</span>
+      {/* Back */}
+      <button onClick={() => navigate(`/student/departments/${deptId}/courses`)} className="inline-flex items-center gap-1.5 text-[13px] sm:text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition group"><ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition"/> Back to Courses</button>
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0"><h1 className="text-lg sm:text-2xl font-bold truncate">{course?.title || course?.name || "Practice Mode"}</h1><p className="text-indigo-200 text-xs sm:text-sm mt-0.5">{totalQuestions} questions</p></div>
+          <div className="bg-white/15 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-center shrink-0"><p className="text-xl sm:text-2xl font-bold">{progressPercent}%</p><p className="text-indigo-200 text-[10px] sm:text-xs">Complete</p></div>
+        </div>
+        <div className="mt-3 sm:mt-4 h-1.5 sm:h-2 bg-white/20 rounded-full overflow-hidden"><div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }}/></div>
+      </div>
+
+      {/* Status */}
+      <div className={`flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs ${isOnline ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300" : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400"}`}>
+        <span className="flex items-center gap-1.5">{isOnline ? <Wifi size={13}/> : <WifiOff size={13}/>}{isOnline ? "Online" : "Offline"}</span>
+        <div className="flex items-center gap-3 sm:gap-4"><span className="flex items-center gap-1"><CheckCircle size={12} className="text-emerald-500"/>{correctCount}</span><span className="flex items-center gap-1"><X size={12} className="text-red-500"/>{answeredCount-correctCount}</span><span className="flex items-center gap-1"><Clock size={12} className="text-gray-400"/>{totalQuestions-answeredCount}</span></div>
+      </div>
+
+      {/* Questions */}
+      <div className="space-y-3 sm:space-y-4">
+        {questions.map((q, index) => {
+          const rev = revealed[q.id], isAnswered = !!rev;
+          return (
+            <div key={q.id} id={`q-${index+1}`} className={`bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border-3 shadow-md shadow-gray-400 dark:shadow-gray-700 overflow-hidden transition-all duration-300 ${isAnswered ? (rev.isCorrect ? "border-emerald-300 dark:border-emerald-700 shadow-md shadow-emerald-50 dark:shadow-emerald-900/10" : "border-red-300 dark:border-red-700 shadow-md shadow-red-50 dark:shadow-red-900/10") : "border-gray-200 dark:border-gray-700"}`}>
+              <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-2">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <div className={`shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-xs sm:text-sm font-bold border-2 ${isAnswered ? (rev.isCorrect ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400" : "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400") : "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400"}`}>{index+1}</div>
+                  <div className="flex-1"><p className="text-gray-800 dark:text-white font-medium leading-relaxed text-[13px] sm:text-sm md:text-base pt-1.5 sm:pt-2">{q.text}</p></div>
+                  {isAnswered && <div className={`shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${rev.isCorrect ? "bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-400" : "bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-400"}`}>{rev.isCorrect ? <Check size={16}/> : <X size={16}/>}</div>}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setIsAIOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition"><Bot size={12} /> AI Help</button>
-                <button onClick={handleMarkForReview} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition ${markedForReview[currentQuestion?.id] ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}><Flag size={12} />{markedForReview[currentQuestion?.id] ? "Marked" : "Mark"}</button>
-              </div>
-            </div>
-
-            <div className="p-5">
-              <div className="text-gray-800 dark:text-white font-medium leading-relaxed mb-5" dangerouslySetInnerHTML={{ __html: currentQuestion?.text || "No question text." }} />
-
-              <div className="space-y-2.5 mb-5">
-                {["A", "B", "C", "D"].map((opt) => {
-                  const isSelected = selectedAnswer === opt;
-                  const isCorrect = showResult && opt === currentQuestion?.correctAnswer;
-                  const isWrong = showResult && selectedAnswer === opt && opt !== currentQuestion?.correctAnswer;
-                  const optText = currentQuestion?.options?.[opt.charCodeAt(0) - 65] || "";
+              <div className="px-4 sm:px-5 pb-2 space-y-1.5 sm:space-y-2">
+                {q.options.map((optText, oi) => {
+                  const opt = optionLabel(oi), state = getOptionState(q.id, opt);
                   return (
-                    <button key={opt} onClick={() => handleAnswerSelect(opt)} disabled={showResult}
-                      className={`w-full text-left p-3 rounded-lg border transition-all ${isSelected && !showResult ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20" : isCorrect ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : isWrong ? "border-red-400 bg-red-50 dark:bg-red-900/20" : "border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"}`}>
-                      <div className="flex gap-3">
-                        <span className={`font-medium text-sm w-6 ${isCorrect ? "text-emerald-600" : isWrong ? "text-red-600" : isSelected ? "text-indigo-600" : "text-gray-500 dark:text-gray-400"}`}>{opt}.</span>
-                        <span className="text-gray-700 dark:text-gray-200 text-sm flex-1">{optText}</span>
-                        {isCorrect && <Check size={16} className="text-emerald-500 shrink-0" />}
-                        {isWrong && <X size={16} className="text-red-500 shrink-0" />}
-                      </div>
+                    <button key={opt} onClick={() => handleSelectAnswer(q.id, opt)} disabled={isAnswered} className={`w-full text-left p-3 sm:p-3.5 rounded-lg sm:rounded-xl border-2 transition-all duration-200 flex items-center gap-2.5 sm:gap-3 ${isAnswered ? "cursor-default" : "cursor-pointer"} ${stateStyles[state]}`}>
+                      <span className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold border ${state==="correct"?"bg-emerald-500 border-emerald-500 text-white":state==="wrong"?"bg-red-400 border-red-400 text-white":state==="selected"?"bg-indigo-500 border-indigo-500 text-white":"bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500 text-gray-500 dark:text-gray-400"}`}>{opt}</span>
+                      <span className={`flex-1 text-[13px] sm:text-sm ${state==="correct"?"text-emerald-700 dark:text-emerald-400 font-medium":state==="wrong"?"text-red-600 dark:text-red-400":"text-gray-700 dark:text-gray-200"}`}>{optText}</span>
+                      {state==="correct"&&<CheckCircle size={16} className="text-emerald-500 shrink-0"/>}{state==="wrong"&&<X size={16} className="text-red-400 shrink-0"/>}
                     </button>
                   );
                 })}
               </div>
-
-              {showResult && (
-                <div className={`p-4 rounded-lg border mb-5 ${selectedAnswer === currentQuestion?.correctAnswer ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"}`}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedAnswer === currentQuestion?.correctAnswer ? "bg-emerald-100 dark:bg-emerald-800" : "bg-red-100 dark:bg-red-800"}`}>
-                      {selectedAnswer === currentQuestion?.correctAnswer ? <Check size={16} className="text-emerald-600" /> : <X size={16} className="text-red-600" />}
-                    </div>
-                    <h3 className={`font-semibold ${selectedAnswer === currentQuestion?.correctAnswer ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>{selectedAnswer === currentQuestion?.correctAnswer ? "Correct!" : "Incorrect"}</h3>
-                  </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Explanation</p>
-                  <p className="text-gray-700 dark:text-gray-300 text-sm bg-white/50 dark:bg-gray-800/50 p-2 rounded">{currentQuestion?.explanation || "No explanation."}</p>
-                  <div className="mt-3 bg-white/60 dark:bg-gray-800/60 rounded p-2">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Correct Answer</p>
-                    <span className="bg-emerald-100 dark:bg-emerald-800 rounded px-2 py-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">{currentQuestion?.correctAnswer}</span>
-                    <span className="text-sm text-gray-700 dark:text-gray-300 ml-2">{currentQuestion?.options?.[currentQuestion?.correctAnswer?.charCodeAt(0) - 65]}</span>
+              {isAnswered && (
+                <div className={`px-4 sm:px-5 pb-4 sm:pb-5 pt-1 border-t ${rev.isCorrect?"border-emerald-100 dark:border-emerald-800":"border-red-100 dark:border-red-800"}`}>
+                  <div className={`mt-3 p-3 sm:p-4 rounded-xl ${rev.isCorrect?"bg-emerald-50 dark:bg-emerald-900/20":"bg-red-50 dark:bg-red-900/20"}`}>
+                    <div className="flex items-center gap-2 mb-2">{rev.isCorrect?<CheckCircle size={16} className="text-emerald-600"/>:<X size={16} className="text-red-500"/>}<span className={`text-sm font-semibold ${rev.isCorrect?"text-emerald-700 dark:text-emerald-400":"text-red-700 dark:text-red-400"}`}>{rev.isCorrect?"Correct!":"Incorrect"}</span>{!rev.isCorrect&&<span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">Correct: <span className="font-bold text-emerald-600 dark:text-emerald-400">{rev.correctLetter}</span></span>}</div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{rev.explanation||"No explanation provided."}</p>
                   </div>
                 </div>
               )}
-
-              <div className="flex gap-3">
-                {!showResult ? (
-                  <div className="text-center w-full py-2 text-gray-500 dark:text-gray-400 text-sm border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">Click an answer to see explanation</div>
-                ) : (
-                  <>
-                    <button onClick={handlePrevious} disabled={currentIndex === 0} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"><ChevronLeft size={16} /></button>
-                    <button onClick={handleNext} disabled={currentIndex === totalQuestions - 1} className="flex-1 bg-indigo-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-indigo-700 disabled:opacity-40 transition">Next <ChevronRight size={14} className="inline ml-1" /></button>
-                  </>
-                )}
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between text-sm">
-                <div className="flex gap-4">
-                  <div><span className="text-gray-400 dark:text-gray-500 text-xs">Answered</span><p className="font-medium text-gray-800 dark:text-white">{answeredCount}/{totalQuestions}</p></div>
-                  <div><span className="text-gray-400 dark:text-gray-500 text-xs">Correct</span><p className="font-medium text-emerald-600">{correctCount}</p></div>
-                  <div><span className="text-gray-400 dark:text-gray-500 text-xs">Wrong</span><p className="font-medium text-red-600">{incorrectCount}</p></div>
-                </div>
-                <div><span className="text-gray-400 dark:text-gray-500 text-xs">Score</span><p className="font-medium text-gray-800 dark:text-white">{overallScore}%</p></div>
-              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="w-full xl:w-72 space-y-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-            <div className="flex items-center gap-2 mb-3"><BarChart3 size={16} className="text-gray-500" /><h3 className="font-medium text-gray-800 dark:text-white text-sm">Navigator</h3></div>
-            <div className="grid grid-cols-5 gap-1.5 max-h-52 overflow-y-auto">
-              {questions.map((_, idx) => {
-                const status = answerStatus[questions[idx]?.id];
-                const isCorrect = status?.isCorrect;
-                let bg = "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400";
-                if (status) bg = isCorrect ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400";
-                if (markedForReview[questions[idx]?.id]) bg = "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400";
-                return (
-                  <button key={idx} onClick={() => { setCurrentIndex(idx); setSelectedAnswer(answerStatus[questions[idx]?.id]?.selectedAnswer || null); setShowResult(!!answerStatus[questions[idx]?.id]); }}
-                    className={`w-8 h-8 rounded-lg text-xs font-medium transition ${currentIndex === idx ? "ring-2 ring-indigo-600 bg-indigo-600 text-white" : bg} hover:opacity-80`}>{idx + 1}</button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
-
-      {/* AI Modal */}
-      {isAIOpen && (
-        <>
-          <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsAIOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-lg pointer-events-auto">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 rounded-t-xl">
-                <div className="flex items-center gap-2"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center"><Bot size={16} className="text-white" /></div><h3 className="font-semibold text-gray-900 dark:text-white">AI Assistant</h3></div>
-                <button onClick={() => setIsAIOpen(false)} className="text-gray-400 hover:text-gray-600"><XCircle size={20} /></button>
-              </div>
-              <div className="p-4 max-h-[50vh] overflow-y-auto">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 text-sm text-gray-700 dark:text-gray-300">{currentQuestion?.text}</div>
-                {aiHistory.length > 0 && <div className="mb-4 space-y-2 max-h-24 overflow-y-auto">{aiHistory.map((item, idx) => <div key={idx} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-xs"><p className="font-medium">Q: {item.question.substring(0, 60)}...</p><p className="text-gray-500 dark:text-gray-400 mt-1">A: {item.answer.substring(0, 80)}...</p></div>)}</div>}
-                <div className="flex gap-2">
-                  <input type="text" value={aiQuestion} onChange={(e) => setAiQuestion(e.target.value)} placeholder="Ask about this question..." className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none" onKeyPress={(e) => e.key === "Enter" && handleAskAI()} autoFocus />
-                  <button onClick={handleAskAI} disabled={aiLoading || !aiQuestion.trim()} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 disabled:opacity-50"><Send size={16} /></button>
-                </div>
-                {aiLoading && <p className="text-xs text-gray-500 mt-2">Thinking...</p>}
-                {aiResponse && !aiLoading && <div className="mt-3 bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm text-gray-700 dark:text-gray-300">{aiResponse}</div>}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      {!questions.length && <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700"><BookOpen size={40} className="text-gray-300 mx-auto mb-3"/><p className="text-gray-500 dark:text-gray-400">No questions available.</p></div>}
+      <div className="h-8"/>
     </div>
   );
 };

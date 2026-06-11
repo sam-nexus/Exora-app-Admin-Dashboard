@@ -15,7 +15,6 @@ import deviceRoutes from './routes/devices';
 import studentRoutes from './routes/student';
 import unlockRequestRoutes from './routes/unlock-requests';
 import supportRoutes from './routes/support';
-
 import analyticsRoutes from './routes/analytics';
 
 // Add with other routes:
@@ -37,6 +36,7 @@ app.use('/api/student', studentRoutes);
 app.use('/api/unlock-requests', unlockRequestRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/analytics', analyticsRoutes);
+
 
 app.get('/', (_req, res) => {
   res.json({

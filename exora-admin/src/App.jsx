@@ -29,7 +29,9 @@ import Support from './pages/Support';
 import Landing from './pages/Landing';
 import StudentNotification from './pages/StudentNotifications';
 
-import Analytics from './pages/Analytics';
+
+import AdminSimpleAnalytics from './pages/AdminSimpleAnalytics';
+
 
 // Inside Routes:
 
@@ -56,7 +58,7 @@ function App() {
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/materials" element={<Materials />} />
               <Route path="/support" element={<Support />} />
-              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/analytics" element={<AdminSimpleAnalytics />} />
             </Route>
           </Route>
 

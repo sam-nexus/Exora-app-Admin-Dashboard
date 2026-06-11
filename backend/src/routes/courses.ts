@@ -71,6 +71,15 @@ router.put('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Respon
 
   const { error } = await supabaseAdmin.from('courses').update(updates).eq('id', id);
   if (error) return res.status(500).json({ error: error.message });
+
+  // If course is now free, unlock it for ALL users
+  if (is_free === true) {
+    await supabaseAdmin
+      .from('user_courses')
+      .update({ is_locked: false })
+      .eq('course_id', id);
+  }
+
   res.json({ message: 'Course updated' });
 });
 
