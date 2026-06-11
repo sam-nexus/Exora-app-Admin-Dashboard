@@ -80,19 +80,29 @@ const StudentLayout = () => {
 const location = useLocation();
 // Track page views
   useEffect(() => {
-    const trackPage = async () => {
-      try {
-        await api.post('/analytics/track', {
+  const trackPage = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return; // Don't track if not logged in
+    
+    try {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://exora-app-admin-dashboard.onrender.com/api'}/analytics/track`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
           page: location.pathname,
           referrer: document.referrer,
           userAgent: navigator.userAgent,
-        });
-      } catch (err) {
-        // silent — never block the user
-      }
-    };
-    trackPage();
-  }, [location.pathname]);
+        }),
+      });
+    } catch (err) {
+      // silent
+    }
+  };
+  trackPage();
+}, [location.pathname]);
 
   const navItems = [
     { path: "/student", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
