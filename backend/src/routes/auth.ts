@@ -20,6 +20,7 @@ const transporter = nodemailer.createTransport({
 
 // --------------------------------------------------
 // Regular user registration
+// Regular user registration
 router.post('/register', async (req, res) => {
   const { email, password, fullName } = req.body;
   let authUser: any = null;
@@ -80,12 +81,44 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    // ─── Check if email already exists ────────────────────────────────────
+    const { data: existingProfile, error: checkError } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+
+    if (existingProfile) {
+      return res.status(409).json({ error: 'An account with this email already exists. Please log in instead.' });
+    }
+
+    // Also check auth.users (in case profile insert failed previously)
+    const { data: existingAuthUsers, error: authCheckError } = await supabaseAdmin.auth.admin.listUsers();
+    if (!authCheckError) {
+      const existingAuthUser = (existingAuthUsers?.users || []).find(
+        (u: any) => u.email?.toLowerCase() === email.toLowerCase()
+      );
+      if (existingAuthUser) {
+        // Clean up orphan auth user (no profile)
+        await supabaseAdmin.auth.admin.deleteUser(existingAuthUser.id);
+      }
+    }
+
+    // ─── Create user ──────────────────────────────────────────────────────
     const { data, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
     });
-    if (authError) throw authError;
+    if (authError) {
+      // Handle Supabase's own duplicate error
+      if (authError.message?.toLowerCase().includes('already been registered')) {
+        return res.status(409).json({ error: 'An account with this email already exists. Please log in instead.' });
+      }
+      throw authError;
+    }
     authUser = data.user;
 
     const { error: profileError } = await supabaseAdmin
@@ -165,6 +198,10 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ message: 'User registered' });
   } catch (err: any) {
+    // Handle Supabase duplicate error at the catch level too
+    if (err.message?.toLowerCase().includes('already been registered') || err.message?.toLowerCase().includes('already exists')) {
+      return res.status(409).json({ error: 'An account with this email already exists. Please log in instead.' });
+    }
     if (authUser) await supabaseAdmin.auth.admin.deleteUser(authUser.id);
     res.status(400).json({ error: err.message });
   }

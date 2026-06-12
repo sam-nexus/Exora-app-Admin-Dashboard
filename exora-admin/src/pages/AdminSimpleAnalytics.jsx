@@ -16,7 +16,7 @@ const AdminSimpleAnalytics = () => {
       .finally(() => setLoading(false));
 
     api.get('/analytics/recent-visitors')
-      .then(res => setVisitors(res.data || []))
+      .then(res => setVisitors(res.data))
       .catch(console.error)
       .finally(() => setVisitorsLoading(false));
   }, []);
@@ -162,7 +162,7 @@ const AdminSimpleAnalytics = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Top Pages */}
+        {/* Top Pages
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Top Pages</h2>
           {data.topPages?.length > 0 ? (
@@ -187,7 +187,7 @@ const AdminSimpleAnalytics = () => {
           ) : (
             <p className="text-gray-400 text-sm text-center py-8">No data yet</p>
           )}
-        </div>
+        </div> */}
 
         {/* Recent Visitors Table */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">

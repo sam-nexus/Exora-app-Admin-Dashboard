@@ -9,15 +9,7 @@ router.post('/track', authenticate, async (req: AuthRequest, res: Response) => {
     const { page, referrer, userAgent } = req.body;
     const ipAddress = req.ip || req.socket.remoteAddress;
     const userId = req.userId;
-
-    console.log('═══════════════════════════════════');
-    console.log('📊 TRACK ENDPOINT CALLED');
-    console.log('📊 req.userId:', req.userId);
-    console.log('📊 req.role:', req.role);
-    console.log('📊 Authorization header:', req.headers.authorization?.substring(0, 30) + '...');
-    console.log('📊 page:', page);
-    console.log('═══════════════════════════════════');
-
+    
     const { error } = await supabaseAdmin
       .from('page_views')
       .insert({
@@ -33,7 +25,7 @@ router.post('/track', authenticate, async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    console.log('✅ Page view saved with userId:', userId);
+   
     res.json({ message: 'Tracked', userId });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
