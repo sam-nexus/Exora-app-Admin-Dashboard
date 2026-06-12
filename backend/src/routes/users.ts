@@ -59,11 +59,42 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 // Delete user
+// Delete user
 router.delete('/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const userId = req.params.id as string;
-  const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ message: 'User deleted' });
+
+  try {
+    // 1. Delete related records first (respect foreign keys)
+    await supabaseAdmin.from('page_views').delete().eq('user_id', userId);
+    await supabaseAdmin.from('notifications').delete().eq('recipient_id', userId);
+    await supabaseAdmin.from('support_tickets').delete().eq('user_id', userId);
+    await supabaseAdmin.from('payment_receipts').delete().eq('user_id', userId);
+    await supabaseAdmin.from('exam_results').delete().eq('user_id', userId);
+    await supabaseAdmin.from('user_courses').delete().eq('user_id', userId);
+    
+    // 2. Delete the profile
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+    
+    if (profileError) {
+      console.error('Profile delete error:', profileError);
+      // Continue anyway — try to delete the auth user
+    }
+
+    // 3. Delete the auth user
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (authError) {
+      console.error('Auth delete error:', authError);
+      return res.status(500).json({ error: authError.message });
+    }
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (err: any) {
+    console.error('Delete user error:', err);
+    res.status(500).json({ error: err.message || 'Failed to delete user' });
+  }
 });
 
 // Update extra student profile fields (university, department, etc.)
