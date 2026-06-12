@@ -76,16 +76,21 @@ const StudentLayout = () => {
   };
 
   
-  // Inside the component:
+ 
+
+// Inside StudentLayout component:
 const location = useLocation();
-// Track page views
-  useEffect(() => {
+
+useEffect(() => {
   const trackPage = async () => {
     const token = localStorage.getItem('token');
-    if (!token) return; // Don't track if not logged in
-    
+    if (!token) {
+      console.log('❌ No token found — user not logged in');
+      return;
+    }
+
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://exora-app-admin-dashboard.onrender.com/api'}/analytics/track`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://exora-app-admin-dashboard.onrender.com/api'}/analytics/track`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,14 +98,21 @@ const location = useLocation();
         },
         body: JSON.stringify({
           page: location.pathname,
-          referrer: document.referrer,
-          userAgent: navigator.userAgent,
+          referrer: document.referrer || '',
+          userAgent: navigator.userAgent || '',
         }),
       });
+
+      if (res.ok) {
+        console.log('✅ Page tracked:', location.pathname);
+      } else {
+        console.log('❌ Track failed:', res.status);
+      }
     } catch (err) {
-      // silent
+      console.log('❌ Track error:', err.message);
     }
   };
+
   trackPage();
 }, [location.pathname]);
 
