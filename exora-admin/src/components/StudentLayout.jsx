@@ -85,7 +85,7 @@ useEffect(() => {
   const trackPage = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      console.log('❌ No token found — user not logged in');
+      
       return;
     }
 
@@ -102,14 +102,9 @@ useEffect(() => {
           userAgent: navigator.userAgent || '',
         }),
       });
-
-      if (res.ok) {
-        console.log('✅ Page tracked:', location.pathname);
-      } else {
-        console.log('❌ Track failed:', res.status);
-      }
+      
     } catch (err) {
-      console.log('❌ Track error:', err.message);
+      
     }
   };
 
