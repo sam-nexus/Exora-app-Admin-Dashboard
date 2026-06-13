@@ -207,6 +207,24 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Logout
+router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        active_session_token: null,
+        session_device: null,
+        session_last_active: null,
+      })
+      .eq('id', req.userId);
+
+    res.json({ message: 'Logged out successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --------------------------------------------------
 // Mobile app login (any role)
 // --------------------------------------------------
@@ -219,9 +237,28 @@ router.post('/login', async (req, res) => {
 
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('role, full_name')
+      .select('role, full_name, active_session_token, session_device, session_last_active')
       .eq('id', data.user.id)
       .single();
+
+
+    // Check if user already has an active session on another device
+    if (profile?.active_session_token) {
+      const lastActive = profile.session_last_active
+        ? new Date(profile.session_last_active)
+        : null;
+      const now = new Date();
+
+      // If session is still active (last activity within 5 minutes)
+      if (lastActive && (now.getTime() - lastActive.getTime()) < 5 * 60 * 1000) {
+        return res.status(403).json({
+          error: 'You are already logged in on another device. Please log out from that device first.',
+          activeDevice: profile.session_device || 'another device'
+        });
+      }
+    }
+
+
 
     const role = profile?.role || 'user';
     const fullName = profile?.full_name || '';
@@ -257,9 +294,25 @@ router.post("/admin/login", async (req, res) => {
 
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("role, full_name")
+      .select("role, full_name, active_session_token, session_device, session_last_active")
       .eq("id", data.user.id)
       .single();
+
+    // Check if user already has an active session on another device
+    if (profile?.active_session_token) {
+      const lastActive = profile.session_last_active
+        ? new Date(profile.session_last_active)
+        : null;
+      const now = new Date();
+
+      // If session is still active (last activity within 5 minutes)
+      if (lastActive && (now.getTime() - lastActive.getTime()) < 5 * 60 * 1000) {
+        return res.status(403).json({
+          error: 'You are already logged in on another device. Please log out from that device first.',
+          activeDevice: profile.session_device || 'another device'
+        });
+      }
+    }
 
     const role = profile?.role || "student";
     const fullName = profile?.full_name || "";

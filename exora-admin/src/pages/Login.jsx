@@ -5,11 +5,11 @@ import api from '../api/axios';
 import { registerForPushNotifications } from '../firebase-messaging';
 
 const Login = () => {
-  const [email, setEmail]               = useState('');
-  const [password, setPassword]         = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading]           = useState(false);
-  const [error, setError]               = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,10 +18,10 @@ const Login = () => {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      localStorage.setItem('token',    data.token);
-      localStorage.setItem('role',     data.user.role);
-      localStorage.setItem('userId',   data.user.id);
-      localStorage.setItem('email',    email);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('email', email);
       localStorage.setItem('fullName', data.user.full_name || '');
 
       try {
@@ -34,7 +34,11 @@ const Login = () => {
       if (data.user.role === 'admin') navigate('/dashboard');
       else navigate('/student');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      if (err.response?.status === 403) {
+        setError(err.response.data.error); // "You are already logged in on another device..."
+      } else {
+        setError(err.response?.data?.error || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }
