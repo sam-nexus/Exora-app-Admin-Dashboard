@@ -161,74 +161,79 @@ const AdminSimpleAnalytics = () => {
         )}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Top Pages
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Top Pages</h2>
-          {data.topPages?.length > 0 ? (
-            <div className="space-y-3">
-              {data.topPages.map((p, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                  <div className="flex items-center gap-3">
-                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                      i === 0 ? 'bg-indigo-600' : i === 1 ? 'bg-indigo-500' : i === 2 ? 'bg-indigo-400' : 'bg-gray-300'
-                    }`}>
-                      {i + 1}
-                    </span>
-                    <span className="text-sm text-gray-700 truncate max-w-[180px]" title={p.page}>{p.page}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-800">{p.count}</span>
-                    <span className="text-xs text-gray-400">views</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-400 text-sm text-center py-8">No data yet</p>
-          )}
-        </div> */}
+      <div className="grid lg:grid-cols-1 gap-6">
 
-        {/* Recent Visitors Table */}
+        {/* Recent Visitors Table — Full Width */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Visitors</h2>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">Recent Visitors</h2>
+              <p className="text-sm text-gray-500 mt-0.5">Latest user activity on the platform</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <Users size={14} />
+              <span>{visitors.length} visitors</span>
+            </div>
+          </div>
+
           {visitorsLoading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 size={24} className="animate-spin text-gray-400" />
+            <div className="flex justify-center py-14">
+              <Loader2 size={28} className="animate-spin text-indigo-500" />
             </div>
           ) : visitors.length > 0 ? (
-            <div className="overflow-x-auto -mx-2">
+            <div className="overflow-auto max-h-[500px] rounded-lg border border-gray-100">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="py-2.5 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th className="py-2.5 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Page</th>
-                    <th className="py-2.5 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
-                    <th className="py-2.5 px-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                <thead className="sticky top-0 bg-gray-50 z-10">
+                  <tr>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Page</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Device</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">IP Address</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Visited At</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-100">
                   {visitors.map((v, i) => (
-                    <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
-                      <td className="py-2.5 px-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0">
+                    <tr key={i} className="hover:bg-gray-50/60 transition">
+                      <td className="py-3 px-4 text-gray-400 text-xs">{i + 1}</td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-sm">
                             {v.user?.charAt(0)?.toUpperCase() || '?'}
                           </div>
-                          <span className="truncate max-w-[90px] text-gray-800 font-medium" title={v.user}>{v.user}</span>
+                          <div>
+                            <p className="text-gray-800 font-medium text-sm leading-tight">{v.user}</p>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-2.5 px-2">
-                        <span className="text-gray-600 truncate max-w-[110px] block text-xs" title={v.page}>{v.page}</span>
+                      <td className="py-3 px-4">
+                        <span className="text-gray-600 text-xs bg-gray-100 px-2 py-1 rounded-md" title={v.page}>
+                          {v.page}
+                        </span>
                       </td>
-                      <td className="py-2.5 px-2">
-                        <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-                          {v.device?.includes('Mobile') ? <Smartphone size={12} /> : <Monitor size={12} />}
+                      <td className="py-3 px-4 hidden sm:table-cell">
+                        <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                          {v.device?.includes('Mobile') ? (
+                            <Smartphone size={13} className="text-indigo-500" />
+                          ) : (
+                            <Monitor size={13} className="text-purple-500" />
+                          )}
                           {v.device}
                         </span>
                       </td>
-                      <td className="py-2.5 px-2 text-right">
-                        <span className="text-xs text-gray-400 whitespace-nowrap">{formatTime(v.time)}</span>
+                      <td className="py-3 px-4 hidden md:table-cell">
+                        <span className="text-xs text-gray-400 font-mono">{v.ip || '—'}</span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex flex-col items-end">
+                          <span className="text-xs text-gray-600 font-medium">
+                            {new Date(v.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
+                          <span className="text-[11px] text-gray-400">
+                            {new Date(v.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -236,12 +241,14 @@ const AdminSimpleAnalytics = () => {
               </table>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-              <Users size={40} className="mb-3 opacity-50" />
-              <p className="text-sm">No visitors yet</p>
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <Users size={48} className="mb-4 opacity-40" />
+              <p className="text-sm font-medium">No visitors yet</p>
+              <p className="text-xs mt-1">Visitor data will appear here once users browse the site</p>
             </div>
           )}
         </div>
+
       </div>
     </div>
   );
