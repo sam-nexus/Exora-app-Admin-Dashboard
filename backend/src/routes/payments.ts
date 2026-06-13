@@ -166,73 +166,65 @@ router.get('/', authenticate, adminOnly, async (req: AuthRequest, res: Response)
   }
 });
 
-// Approve a payment
+// Approve a payment — unlocks ALL paid courses for the user
 router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   try {
     const receiptId = req.params.id;
-    const scope: 'department' | 'all' = req.body.scope === 'department' ? 'department' : 'all';
 
+    // Get receipt — only select columns that exist
     const { data: receipt, error: fetchError } = await supabaseAdmin
       .from('payment_receipts')
-      .select('user_id, status, department_id')
+      .select('user_id, status')
       .eq('id', receiptId)
       .single();
 
-    if (fetchError || !receipt) return res.status(404).json({ error: 'Receipt not found' });
-    if (receipt.status !== 'pending') return res.status(400).json({ error: 'Receipt is not pending' });
+    if (fetchError || !receipt) {
+      console.error('Receipt fetch error:', fetchError);
+      return res.status(404).json({ error: 'Receipt not found' });
+    }
 
+    if (receipt.status !== 'pending') {
+      return res.status(400).json({ error: 'Receipt is not pending' });
+    }
+
+    // Update status to approved
     const { error: updateError } = await supabaseAdmin
       .from('payment_receipts')
       .update({ status: 'approved' })
       .eq('id', receiptId);
     if (updateError) throw updateError;
 
-    let unlockedScope = 'all courses';
+    // Unlock all PAID courses for the user (free courses are already unlocked)
+    const { data: paidCourses, error: coursesError } = await supabaseAdmin
+      .from('courses')
+      .select('id')
+      .eq('is_free', false);
 
-    if (scope === 'department' && receipt.department_id) {
-      const { data: deptCourses, error: deptError } = await supabaseAdmin
-        .from('courses')
-        .select('id')
-        .eq('department_id', receipt.department_id);
+    if (coursesError) throw coursesError;
 
-      if (deptError) throw deptError;
+    const paidCourseIds = (paidCourses || []).map(c => c.id);
 
-      const courseIds = (deptCourses || []).map((c) => c.id);
-
-      if (courseIds.length > 0) {
-        const { error: unlockError } = await supabaseAdmin
-          .from('user_courses')
-          .update({ is_locked: false })
-          .eq('user_id', receipt.user_id)
-          .in('course_id', courseIds);
-        if (unlockError) throw unlockError;
-      }
-
-      const { data: dept } = await supabaseAdmin
-        .from('departments')
-        .select('name')
-        .eq('id', receipt.department_id)
-        .single();
-
-      unlockedScope = `courses in ${dept?.name || 'the selected department'}`;
-    } else {
+    if (paidCourseIds.length > 0) {
       const { error: unlockError } = await supabaseAdmin
         .from('user_courses')
         .update({ is_locked: false })
-        .eq('user_id', receipt.user_id);
+        .eq('user_id', receipt.user_id)
+        .in('course_id', paidCourseIds);
       if (unlockError) throw unlockError;
     }
 
+    // Notify user
     await supabaseAdmin.from('notifications').insert({
       recipient_id: receipt.user_id,
       title: 'Payment approved',
-      message: `Your payment was approved and your ${unlockedScope} are now unlocked.`,
+      message: 'Your payment was approved and all courses are now unlocked.',
       link: '/student/payments',
       is_read: false,
     });
 
-    res.json({ message: `Payment approved — ${unlockedScope} unlocked`, scope });
+    res.json({ message: 'Payment approved — all courses unlocked' });
   } catch (err: any) {
+    console.error('Approve error:', err);
     res.status(500).json({ error: err.message });
   }
 });
