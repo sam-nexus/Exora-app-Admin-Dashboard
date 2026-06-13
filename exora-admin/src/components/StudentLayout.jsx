@@ -70,46 +70,51 @@ const StudentLayout = () => {
     registerBrowserToken();
   }, []);
 
-  const handleLogout = () => {
-    clearSession();
-    window.location.href = "/login";
-  };
-
-  
- 
-
-// Inside StudentLayout component:
-const location = useLocation();
-
-useEffect(() => {
-  const trackPage = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      
-      return;
-    }
-
+  const handleLogout = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://exora-app-admin-dashboard.onrender.com/api'}/analytics/track`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          page: location.pathname,
-          referrer: document.referrer || '',
-          userAgent: navigator.userAgent || '',
-        }),
-      });
-      
+      await api.post('/auth/logout');
     } catch (err) {
-      
+      // ignore errors
     }
-  };
+    clearSession();
+    window.location.href = '/login';
+  }; handleLogout
 
-  trackPage();
-}, [location.pathname]);
+
+
+
+  // Inside StudentLayout component:
+  const location = useLocation();
+
+  useEffect(() => {
+    const trackPage = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+
+        return;
+      }
+
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://exora-app-admin-dashboard.onrender.com/api'}/analytics/track`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            page: location.pathname,
+            referrer: document.referrer || '',
+            userAgent: navigator.userAgent || '',
+          }),
+        });
+
+      } catch (err) {
+
+      }
+    };
+
+    trackPage();
+  }, [location.pathname]);
 
   const navItems = [
     { path: "/student", icon: <LayoutDashboard size={18} />, label: "Dashboard" },

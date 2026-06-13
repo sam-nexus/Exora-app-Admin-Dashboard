@@ -1,6 +1,7 @@
 import { error } from 'console';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
+import { supabaseAdmin } from '../supabase';
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -22,13 +23,11 @@ export interface AuthRequest extends Request {
 //   }
 // };
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  console.log('🔐 Auth header present:', !!authHeader);
 
   const token = authHeader?.split(' ')[1];
   if (!token) {
-    console.log('❌ No token found in header');
     return res.status(401).json({ error: 'No token provided' });
   }
 
@@ -36,10 +35,19 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
     req.userId = decoded.sub;
     req.role = decoded.role;
-    console.log('🔐 Token decoded - userId:', req.userId, 'role:', req.role);
+
+    // Update last active timestamp (only on API calls, skip static files)
+    if (!req.path.includes('.')) {
+      await supabaseAdmin
+        .from('profiles')
+        .update({ session_last_active: new Date().toISOString() })
+        .eq('id', decoded.sub)
+        .eq('active_session_token', token); // Only update if session is still valid
+    }
+
     next();
   } catch (error: any) {
-    console.log('❌ Token verification failed:', error.message);
+
     return res.status(401).json({ error: 'Invalid token' });
   }
 };
