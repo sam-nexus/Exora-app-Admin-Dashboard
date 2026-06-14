@@ -210,6 +210,14 @@ router.post('/register', async (req, res) => {
 
 // Logout
 router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    // Mark this specific session as inactive using the JWT token
+    await supabaseAdmin
+      .from('user_sessions')
+      .update({ is_active: false })
+      .eq('user_id', req.userId)
+      .eq('session_token', token);
   const { fcm_token } = req.body;
 
   try {
@@ -338,16 +346,48 @@ router.post('/login', async (req, res) => {
       .eq('id', data.user.id)
       .single();
 
+    const role = profile?.role || 'student';
+    const fullName = profile?.full_name || '';
+
+    // Generate JWT first so we can use it as session key
+    const token = jwt.sign(
+      { sub: data.user.id, role },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    );
+
+    // ─── Device Restriction (JWT-based) ─────────────────────────────────────
+    // Auto-expire sessions older than 7 days (matches JWT expiry)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    await supabaseAdmin
+      .from('user_sessions')
+      .update({ is_active: false })
+      .eq('user_id', data.user.id)
+      .lt('login_time', sevenDaysAgo);
+
+    // Check for active sessions
+    const { data: activeSessions } = await supabaseAdmin
     // ─── Device Restriction ──────────────────────────────────────────────────
     const MAX_DEVICES = 1; // Allow only 1 active session
 
     // Check if there's ANY active session for this user
     const { data: activeSessions, error: sessionError } = await supabaseAdmin
       .from('user_sessions')
-      .select('id, platform, fcm_token, login_time')
+      .select('id, platform, session_token, login_time')
       .eq('user_id', data.user.id)
       .eq('is_active', true);
 
+    if (activeSessions && activeSessions.length > 0) {
+      // Block — already logged in on another device
+      const existingPlatforms = activeSessions.map((s: any) => s.platform).join(', ');
+      return res.status(403).json({
+        error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
+        activeSessions: activeSessions.map((s: any) => ({
+          platform: s.platform,
+          loginTime: s.login_time,
+        })),
+      });
+    }
     if (sessionError) throw sessionError;
 
     // If there's already an active session on a DIFFERENT device, block login
@@ -403,11 +443,24 @@ router.post('/login', async (req, res) => {
     const role = profile?.role || 'user';
     const fullName = profile?.full_name || '';
 
-    const token = jwt.sign(
-      { sub: data.user.id, role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
-    );
+    // No active session — detect platform from User-Agent
+    const userAgent = req.headers['user-agent'] || '';
+    let platform = 'unknown';
+    if (/mobile|android|iphone|ipad/i.test(userAgent)) platform = 'mobile';
+    else if (/postman/i.test(userAgent)) platform = 'postman';
+    else platform = 'web';
+
+    // Save new session
+    await supabaseAdmin.from('user_sessions').insert({
+      user_id: data.user.id,
+      session_token: token,
+      platform,
+      ip_address: req.ip || req.headers['x-forwarded-for'] || null,
+      login_time: new Date().toISOString(),
+      last_active: new Date().toISOString(),
+      is_active: true,
+    });
+    // ────────────────────────────────────────────────────────────────────────
 
     res.json({
       token,
@@ -491,6 +544,41 @@ router.post('/admin/login', async (req, res) => {
       .eq('id', data.user.id)
       .single();
 
+    const role = profile?.role || 'student';
+    const fullName = profile?.full_name || '';
+
+    // Generate JWT first so we can use it as session key
+    const token = jwt.sign(
+      { sub: data.user.id, role },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    );
+
+    // ─── Device Restriction (JWT-based) ─────────────────────────────────────
+    // Admins are allowed on multiple devices — skip restriction for admin role
+    if (role !== 'admin') {
+      // Auto-expire sessions older than 7 days
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      await supabaseAdmin
+        .from('user_sessions')
+        .update({ is_active: false })
+        .eq('user_id', data.user.id)
+        .lt('login_time', sevenDaysAgo);
+
+      const { data: activeSessions } = await supabaseAdmin
+        .from('user_sessions')
+        .select('id, platform, session_token, login_time')
+        .eq('user_id', data.user.id)
+        .eq('is_active', true);
+
+      if (activeSessions && activeSessions.length > 0) {
+        const existingPlatforms = activeSessions.map((s: any) => s.platform).join(', ');
+        return res.status(403).json({
+          error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
+          activeSessions: activeSessions.map((s: any) => ({
+            platform: s.platform,
+            loginTime: s.login_time,
+          })),
     // ─── Device Restriction ──────────────────────────────────────────────────
     const MAX_DEVICES = 1; // Allow only 1 active session
 
@@ -516,6 +604,24 @@ router.post('/admin/login', async (req, res) => {
       }
       // Same device — allow, update last_active below
     }
+
+      const userAgent = req.headers['user-agent'] || '';
+      let platform = 'unknown';
+      if (/mobile|android|iphone|ipad/i.test(userAgent)) platform = 'mobile';
+      else if (/postman/i.test(userAgent)) platform = 'postman';
+      else platform = 'web';
+
+      await supabaseAdmin.from('user_sessions').insert({
+        user_id: data.user.id,
+        session_token: token,
+        platform,
+        ip_address: req.ip || req.headers['x-forwarded-for'] || null,
+        login_time: new Date().toISOString(),
+        last_active: new Date().toISOString(),
+        is_active: true,
+      });
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     // No active session, or same device — create/update session
     if (fcm_token) {
@@ -566,6 +672,7 @@ router.post('/admin/login', async (req, res) => {
       token,
       user: { id: data.user.id, email, role, full_name: fullName },
     });
+    
   } catch (err: any) {
     res.status(401).json({ error: err.message });
   }
