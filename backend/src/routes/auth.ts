@@ -403,7 +403,7 @@ router.post('/login', async (req, res) => {
     }
     // ──────────────────────────────────────────────────────────────────
 
-    const role = profile?.role || 'user';
+    const role = profile?.role || 'student';
     const fullName = profile?.full_name || '';
 
     const token = jwt.sign(
@@ -518,7 +518,7 @@ router.post('/admin/login', async (req, res) => {
       // Only check if session exists, no automatic deletion
       if (activeCount >= 1 && !activeSessions?.some(s => s.platform === platform)) {
         return res.status(403).json({
-          error: `You are already logged in another device. Please log out from that device first.`,
+          error: `You are already logged in on another device. Please log out from that device first.`,
         });
       }
 
@@ -562,7 +562,7 @@ router.post('/admin/login', async (req, res) => {
     });
   } catch (err: any) {
     console.log(err.message)
-    res.status(401).json({ error: err.message});
+    res.status(401).json({ error: err.message });
   }
 });
 
