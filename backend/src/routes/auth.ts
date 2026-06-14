@@ -5,6 +5,7 @@ import admin from '../firebase';
 import { supabaseAdmin, supabaseAnon } from '../supabase';
 import { authenticate, adminOnly, AuthRequest } from '../middleware/auth';
 
+
 const router = Router();
 
 // --------------- Email transporter ---------------
@@ -208,26 +209,125 @@ router.post('/register', async (req, res) => {
 });
 
 // Logout
+// Logout
 router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    await supabaseAdmin
-      .from('profiles')
-      .update({
-        active_session_token: null,
-        session_device: null,
-        session_last_active: null,
-      })
-      .eq('id', req.userId);
+  const { fcm_token } = req.body;
 
-    res.json({ message: 'Logged out successfully' });
+  try {
+    if (fcm_token) {
+      // Deactivate specific session
+      await supabaseAdmin
+        .from('user_sessions')
+        .update({ is_active: false })
+        .eq('user_id', req.userId)
+        .eq('fcm_token', fcm_token);
+    } else {
+      // Deactivate all sessions
+      await supabaseAdmin
+        .from('user_sessions')
+        .update({ is_active: false })
+        .eq('user_id', req.userId);
+    }
+
+    res.json({ message: 'Logged out' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
+
+
+
+// Force logout all other sessions (keep current)
+router.post('/logout-others', authenticate, async (req: AuthRequest, res: Response) => {
+  const { current_fcm_token } = req.body;
+
+  try {
+    await supabaseAdmin
+      .from('user_sessions')
+      .update({ is_active: false })
+      .eq('user_id', req.userId)
+      .neq('fcm_token', current_fcm_token);
+
+    res.json({ message: 'All other devices logged out' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+
+});
+
+
+
+
+// Clean up old sessions (call this periodically or on login)
+router.post('/cleanup-sessions', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    await supabaseAdmin
+      .from('user_sessions')
+      .update({ is_active: false })
+      .lt('last_active', twoDaysAgo)
+      .eq('is_active', true);
+
+    res.json({ message: 'Sessions cleaned up' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // --------------------------------------------------
 // Mobile app login (any role)
 // --------------------------------------------------
+// router.post('/login', async (req, res) => {
+//   const { email, password } = req.body;
+
+//   try {
+//     const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
+//     if (error) throw error;
+
+//     const { data: profile } = await supabaseAdmin
+//       .from('profiles')
+//       .select('role, full_name, active_session_token, session_device, session_last_active')
+//       .eq('id', data.user.id)
+//       .single();
+
+
+//     // Check if user already has an active session on another device
+//     if (profile?.active_session_token) {
+//       const lastActive = profile.session_last_active
+//         ? new Date(profile.session_last_active)
+//         : null;
+//       const now = new Date();
+
+//       // If session is still active (last activity within 5 minutes)
+//       if (lastActive && (now.getTime() - lastActive.getTime()) < 5 * 60 * 1000) {
+//         return res.status(403).json({
+//           error: 'You are already logged in on another device. Please log out from that device first.',
+//           activeDevice: profile.session_device || 'another device'
+//         });
+//       }
+//     }
+
+
+
+//     const role = profile?.role || 'user';
+//     const fullName = profile?.full_name || '';
+
+//     const token = jwt.sign(
+//       { sub: data.user.id, role },
+//       process.env.JWT_SECRET!,
+//       { expiresIn: '7d' }
+//     );
+
+//     res.json({
+//       token,
+//       user: { id: data.user.id, email, role, full_name: fullName },
+//     });
+//   } catch (err: any) {
+//     res.status(401).json({ error: err.message });
+//   }
+// });
+
+// Login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -235,30 +335,64 @@ router.post('/login', async (req, res) => {
     const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
+    // Get the most recent FCM token for this user
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('role, full_name, active_session_token, session_device, session_last_active')
+      .select('role, full_name, device_tokens')
       .eq('id', data.user.id)
       .single();
 
+    // Get the latest token (most recently added)
+    const deviceTokens = profile?.device_tokens || [];
+    const latestToken = deviceTokens.length > 0 
+      ? deviceTokens.sort((a: any, b: any) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime())[0]
+      : null;
 
-    // Check if user already has an active session on another device
-    if (profile?.active_session_token) {
-      const lastActive = profile.session_last_active
-        ? new Date(profile.session_last_active)
-        : null;
-      const now = new Date();
+    const fcmToken = latestToken?.token;
+    const platform = latestToken?.platform || 'unknown';
 
-      // If session is still active (last activity within 5 minutes)
-      if (lastActive && (now.getTime() - lastActive.getTime()) < 5 * 60 * 1000) {
+    // ─── Device Restriction ──────────────────────────────────────────
+    if (fcmToken) {
+      const { data: activeSessions } = await supabaseAdmin
+        .from('user_sessions')
+        .select('id, platform, login_time')
+        .eq('user_id', data.user.id)
+        .eq('is_active', true);
+
+      const activeCount = activeSessions?.length || 0;
+      const existingPlatforms = activeSessions?.map(s => s.platform).join(', ') || '';
+
+      // Only check if session exists, no automatic deletion
+      if (activeCount >= 1 && !activeSessions?.some(s => s.platform === platform)) {
         return res.status(403).json({
-          error: 'You are already logged in on another device. Please log out from that device first.',
-          activeDevice: profile.session_device || 'another device'
+          error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
+        });
+      }
+
+      // Create/update session
+      const { data: existingSession } = await supabaseAdmin
+        .from('user_sessions')
+        .select('id')
+        .eq('user_id', data.user.id)
+        .eq('platform', platform)
+        .eq('is_active', true)
+        .single();
+
+      if (existingSession) {
+        await supabaseAdmin
+          .from('user_sessions')
+          .update({ last_active: new Date().toISOString(), fcm_token: fcmToken, platform: platform })
+          .eq('id', existingSession.id);
+      } else {
+        await supabaseAdmin.from('user_sessions').insert({
+          user_id: data.user.id,
+          fcm_token: fcmToken,
+          platform: platform,
+          ip_address: req.ip,
         });
       }
     }
-
-
+    // ──────────────────────────────────────────────────────────────────
 
     const role = profile?.role || 'user';
     const fullName = profile?.full_name || '';
@@ -278,65 +412,149 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
 // --------------------------------------------------
 // Smart login - auto detects role
 // --------------------------------------------------
-router.post("/admin/login", async (req, res) => {
+// router.post("/admin/login", async (req, res) => {
+//   const { email, password } = req.body;
+
+//   try {
+//     const { data, error } = await supabaseAnon.auth.signInWithPassword({
+//       email,
+//       password,
+//     });
+//     if (error) throw error;
+
+//     const { data: profile } = await supabaseAdmin
+//       .from("profiles")
+//       .select("role, full_name, active_session_token, session_device, session_last_active")
+//       .eq("id", data.user.id)
+//       .single();
+
+//     // Check if user already has an active session on another device
+//     if (profile?.active_session_token) {
+//       const lastActive = profile.session_last_active
+//         ? new Date(profile.session_last_active)
+//         : null;
+//       const now = new Date();
+
+//       // If session is still active (last activity within 5 minutes)
+//       if (lastActive && (now.getTime() - lastActive.getTime()) < 1 * 60 * 1000) {
+//         return res.status(403).json({
+//           error: 'You are already logged in on another device. Please log out from that device first.',
+//           activeDevice: profile.session_device || 'another device'
+//         });
+//       }
+//     }
+
+//     const role = profile?.role || "student";
+//     const fullName = profile?.full_name || "";
+
+//     const token = jwt.sign(
+//       { sub: data.user.id, role },
+//       process.env.JWT_SECRET!,
+//       { expiresIn: "7d" },
+//     );
+
+//     res.json({
+//       success: true,
+//       token,
+//       user: {
+//         id: data.user.id,
+//         email,
+//         role,
+//         full_name: fullName,
+//       },
+//     });
+//   } catch (err: any) {
+//     res.status(401).json({ error: err.message });
+//   }
+// });
+// Login
+router.post('/admin/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const { data, error } = await supabaseAnon.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
+    // Get the most recent FCM token for this user
     const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("role, full_name, active_session_token, session_device, session_last_active")
-      .eq("id", data.user.id)
+      .from('profiles')
+      .select('role, full_name, device_tokens')
+      .eq('id', data.user.id)
       .single();
 
-    // Check if user already has an active session on another device
-    if (profile?.active_session_token) {
-      const lastActive = profile.session_last_active
-        ? new Date(profile.session_last_active)
-        : null;
-      const now = new Date();
+    // Get the latest token (most recently added)
+    const deviceTokens = profile?.device_tokens || [];
+    const latestToken = deviceTokens.length > 0 
+      ? deviceTokens.sort((a: any, b: any) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime())[0]
+      : null;
 
-      // If session is still active (last activity within 5 minutes)
-      if (lastActive && (now.getTime() - lastActive.getTime()) < 1 * 60 * 1000) {
+    const fcmToken = latestToken?.token;
+    const platform = latestToken?.platform || 'unknown';
+
+    // ─── Device Restriction ──────────────────────────────────────────
+    if (fcmToken) {
+      const { data: activeSessions } = await supabaseAdmin
+        .from('user_sessions')
+        .select('id, platform, login_time')
+        .eq('user_id', data.user.id)
+        .eq('is_active', true);
+
+      const activeCount = activeSessions?.length || 0;
+      const existingPlatforms = activeSessions?.map(s => s.platform).join(', ') || '';
+
+      // Only check if session exists, no automatic deletion
+      if (activeCount >= 1 && !activeSessions?.some(s => s.platform === platform)) {
         return res.status(403).json({
-          error: 'You are already logged in on another device. Please log out from that device first.',
-          activeDevice: profile.session_device || 'another device'
+          error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
+        });
+      }
+
+      // Create/update session
+      const { data: existingSession } = await supabaseAdmin
+        .from('user_sessions')
+        .select('id')
+        .eq('user_id', data.user.id)
+        .eq('platform', platform)
+        .eq('is_active', true)
+        .single();
+
+      if (existingSession) {
+        await supabaseAdmin
+          .from('user_sessions')
+          .update({ last_active: new Date().toISOString(), fcm_token: fcmToken, platform: platform })
+          .eq('id', existingSession.id);
+      } else {
+        await supabaseAdmin.from('user_sessions').insert({
+          user_id: data.user.id,
+          fcm_token: fcmToken,
+          platform: platform,
+          ip_address: req.ip,
         });
       }
     }
+    // ──────────────────────────────────────────────────────────────────
 
-    const role = profile?.role || "student";
-    const fullName = profile?.full_name || "";
+    const role = profile?.role || 'user';
+    const fullName = profile?.full_name || '';
 
     const token = jwt.sign(
       { sub: data.user.id, role },
       process.env.JWT_SECRET!,
-      { expiresIn: "7d" },
+      { expiresIn: '7d' }
     );
 
     res.json({
-      success: true,
       token,
-      user: {
-        id: data.user.id,
-        email,
-        role,
-        full_name: fullName,
-      },
+      user: { id: data.user.id, email, role, full_name: fullName },
     });
   } catch (err: any) {
     res.status(401).json({ error: err.message });
   }
 });
+
 // --------------------------------------------------
 
 
