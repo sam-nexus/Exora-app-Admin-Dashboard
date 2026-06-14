@@ -210,31 +210,18 @@ router.post('/register', async (req, res) => {
 
 // Logout
 router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => {
+  const { fcm_token } = req.body;
+
   try {
-    // Get the most recent FCM token for this user from profiles
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('device_tokens')
-      .eq('id', req.userId)
-      .single();
-
-    // Get the latest token (most recently added)
-    const deviceTokens = profile?.device_tokens || [];
-    const latestToken = deviceTokens.length > 0 
-      ? deviceTokens.sort((a: any, b: any) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime())[0]
-      : null;
-
-    const fcmToken = latestToken?.token;
-
-    if (fcmToken) {
-      // Deactivate specific session using the most recent token
+    if (fcm_token) {
+      // Deactivate specific session
       await supabaseAdmin
         .from('user_sessions')
         .update({ is_active: false })
         .eq('user_id', req.userId)
-        .eq('fcm_token', fcmToken);
+        .eq('fcm_token', fcm_token);
     } else {
-      // Deactivate all sessions if no token found
+      // Deactivate all sessions
       await supabaseAdmin
         .from('user_sessions')
         .update({ is_active: false })
@@ -246,7 +233,6 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // Force logout all other sessions (keep current)
 router.post('/logout-others', authenticate, async (req: AuthRequest, res: Response) => {
