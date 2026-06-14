@@ -23,7 +23,7 @@ const Sidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
     try{
       await api.post('/auth/logout');
     }catch(err){
