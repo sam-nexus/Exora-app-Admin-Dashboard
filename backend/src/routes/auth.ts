@@ -374,7 +374,7 @@ router.post('/login', async (req, res) => {
       // Only check if session exists, no automatic deletion
       if (activeCount >= 1 && !activeSessions?.some(s => s.platform === platform)) {
         return res.status(403).json({
-          error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
+          error: `You are already logged in on another device. Please log out from that device first.`,
         });
       }
 
@@ -517,7 +517,7 @@ router.post('/admin/login', async (req, res) => {
       // Only check if session exists, no automatic deletion
       if (activeCount >= 1 && !activeSessions?.some(s => s.platform === platform)) {
         return res.status(403).json({
-          error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
+          error: `You are already logged in another device. Please log out from that device first.`,
         });
       }
 

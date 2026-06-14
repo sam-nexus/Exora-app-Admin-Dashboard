@@ -78,7 +78,7 @@ const StudentLayout = () => {
     }
     clearSession();
     window.location.href = '/login';
-  }; handleLogout
+  };
 
 
 

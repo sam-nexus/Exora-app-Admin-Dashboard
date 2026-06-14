@@ -24,6 +24,11 @@ const Sidebar = () => {
   const location = useLocation();
 
   const handleLogout = () => {
+    try{
+      await api.post('/auth/logout');
+    }catch(err){
+        console.error("Logout failed:", err);
+    }
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
