@@ -114,6 +114,81 @@ router.post('/:courseId/materials', authenticate, adminOnly, async (req: AuthReq
   res.status(201).json({ message: 'Material added' });
 });
 
+// Add a new course
+router.post('/', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { department_id, name, type, is_free } = req.body;
+  const courseType = type || 'regular';
+  const isFree = is_free || false;
+
+  try {
+    // 1. Create the course
+    const { data: course, error: insertError } = await supabaseAdmin
+      .from('courses')
+      .insert({ department_id, name, type: courseType, is_free: isFree })
+      .select('id')
+      .single();
+
+    if (insertError || !course) throw insertError || new Error('Failed to create course');
+
+    // 2. Get ALL users
+    const { data: users, error: usersError } = await supabaseAdmin
+      .from('profiles')
+      .select('id');
+    if (usersError) throw usersError;
+
+    // 3. For each user, determine if their existing paid courses are unlocked or locked
+    if (users && users.length > 0) {
+      const userRows: any[] = [];
+
+      for (const user of users) {
+        // Check if this user has any existing PAID courses and their lock status
+        const { data: existingPaidCourses } = await supabaseAdmin
+          .from('user_courses')
+          .select('is_locked')
+          .eq('user_id', user.id)
+          .in('course_id',
+            (await supabaseAdmin.from('courses').select('id').eq('is_free', false)).data?.map(c => c.id) || []
+          );
+
+        // Determine lock status for the new course:
+        // - If the course is free → unlocked (false)
+        // - If user has NO existing paid courses → lock the new course (default: true)
+        // - If user has any EXISTING paid course that is UNLOCKED → unlock the new course (false)
+        // - If ALL existing paid courses are LOCKED → lock the new course (true)
+        let isLocked = true; // default: locked
+
+        if (isFree) {
+          // Free courses are always unlocked
+          isLocked = false;
+        } else if (existingPaidCourses && existingPaidCourses.length > 0) {
+          // User has existing paid courses — check if any are unlocked
+          const anyUnlocked = existingPaidCourses.some(uc => uc.is_locked === false);
+          if (anyUnlocked) {
+            isLocked = false; // user already has unlocked paid courses, so unlock the new one
+          }
+        }
+        // If user has no existing paid courses, isLocked stays true (default)
+
+        userRows.push({
+          user_id: user.id,
+          course_id: course.id,
+          is_locked: isLocked,
+        });
+      }
+
+      // 4. Insert all user_courses rows
+      const { error: lockError } = await supabaseAdmin
+        .from('user_courses')
+        .insert(userRows);
+      if (lockError) throw lockError;
+    }
+
+    res.status(201).json({ message: 'Course added', courseId: course.id });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Delete course material (admin only)
 router.delete('/materials/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
   const { error } = await supabaseAdmin
