@@ -374,7 +374,7 @@ router.post('/login', async (req, res) => {
       // Only check if session exists, no automatic deletion
       if (activeCount >= 1 && !activeSessions?.some(s => s.platform === platform)) {
         return res.status(403).json({
-          error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
+          error: `You are already logged in on another device. Please log out from that device first.`,
         });
       }
 
@@ -390,7 +390,7 @@ router.post('/login', async (req, res) => {
       if (existingSession) {
         await supabaseAdmin
           .from('user_sessions')
-          .update({ last_active: new Date().toISOString(), fcm_token: fcmToken })
+          .update({ last_active: new Date().toISOString(), fcm_token: fcmToken, platform: platform })
           .eq('id', existingSession.id);
       } else {
         await supabaseAdmin.from('user_sessions').insert({
@@ -417,6 +417,7 @@ router.post('/login', async (req, res) => {
       user: { id: data.user.id, email, role, full_name: fullName },
     });
   } catch (err: any) {
+    console.log(err.message)
     res.status(401).json({ error: err.message });
   }
 });
@@ -560,7 +561,8 @@ router.post('/admin/login', async (req, res) => {
       user: { id: data.user.id, email, role, full_name: fullName },
     });
   } catch (err: any) {
-    res.status(401).json({ error: err.message });
+    console.log(err.message)
+    res.status(401).json({ error: err.message});
   }
 });
 

@@ -26,7 +26,7 @@ const Login = () => {
 
       try {
         const fcmToken = await registerForPushNotifications();
-        if (fcmToken) await api.post('/devices/register', { token: fcmToken, platform: 'web' });
+        if (fcmToken) await api.post('/devices/register', { token: fcmToken, platform: '' });
       } catch {
         // non-fatal
       }
