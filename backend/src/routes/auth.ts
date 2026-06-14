@@ -336,6 +336,9 @@ router.post('/cleanup-sessions', authenticate, async (req: AuthRequest, res: Res
 //   }
 // });
 
+
+
+
 // Login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -344,64 +347,70 @@ router.post('/login', async (req, res) => {
     const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
-    // Get the most recent FCM token for this user
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('role, full_name, device_tokens')
       .eq('id', data.user.id)
       .single();
 
-    // Get the latest token (most recently added)
+       // Get the latest token (most recently added)
     const deviceTokens = profile?.device_tokens || [];
     const latestToken = deviceTokens.length > 0 
       ? deviceTokens.sort((a: any, b: any) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime())[0]
       : null;
 
-    const fcmToken = latestToken?.token;
+    const fcm_token = latestToken?.token;
     const platform = latestToken?.platform || 'unknown';
 
-    // ─── Device Restriction ──────────────────────────────────────────
-    if (fcmToken) {
-      const { data: activeSessions } = await supabaseAdmin
+    // ─── Device Restriction ──────────────────────────────────────────────────
+    const MAX_DEVICES = 1; // Change to 2 if you want to allow 2 devices
+
+    // Get current active sessions for this user
+    const { data: activeSessions, error: sessionError } = await supabaseAdmin
+      .from('user_sessions')
+      .select('id, platform, fcm_token, login_time')
+      .eq('user_id', data.user.id)
+      .eq('is_active', true);
+
+    if (sessionError) throw sessionError;
+
+    // Check if user already has a session on this specific device (by FCM token)
+    const existingSession = activeSessions?.find(s => s.fcm_token === fcm_token);
+
+    if (existingSession) {
+      // Same device — just update last_active
+      await supabaseAdmin
         .from('user_sessions')
-        .select('id, platform, login_time')
-        .eq('user_id', data.user.id)
-        .eq('is_active', true);
+        .update({ last_active: new Date().toISOString() })
+        .eq('id', existingSession.id);
+    } else {
+      // Different device — check if they've reached the limit
+      const currentDeviceCount = activeSessions?.length || 0;
 
-      const activeCount = activeSessions?.length || 0;
-      const existingPlatforms = activeSessions?.map(s => s.platform).join(', ') || '';
-
-      // Only check if session exists, no automatic deletion
-      if (activeCount >= 1 && !activeSessions?.some(s => s.platform === platform)) {
+      if (currentDeviceCount >= MAX_DEVICES) {
+        // Return error with details about existing sessions
+        const existingDevices = activeSessions?.map(s => s.platform).join(', ') || 'another device';
         return res.status(403).json({
-          error: `You are already logged in on another device. Please log out from that device first.`,
+          error: `You are already logged in on ${existingDevices}. Please log out from that device first.`,
+          activeSessions: activeSessions?.map(s => ({
+            platform: s.platform,
+            loginTime: s.login_time,
+          })),
         });
       }
 
-      // Create/update session
-      const { data: existingSession } = await supabaseAdmin
-        .from('user_sessions')
-        .select('id')
-        .eq('user_id', data.user.id)
-        .eq('platform', platform)
-        .eq('is_active', true)
-        .single();
-
-      if (existingSession) {
-        await supabaseAdmin
-          .from('user_sessions')
-          .update({ last_active: new Date().toISOString(), fcm_token: fcmToken, platform: platform })
-          .eq('id', existingSession.id);
-      } else {
+      // New device — create session
+      if (fcm_token) {
         await supabaseAdmin.from('user_sessions').insert({
           user_id: data.user.id,
-          fcm_token: fcmToken,
-          platform: platform,
+          fcm_token: fcm_token,
+          platform: platform || 'unknown',
+          device_info: null,
           ip_address: req.ip,
         });
       }
     }
-    // ──────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
 
     const role = profile?.role || 'student';
     const fullName = profile?.full_name || '';
@@ -417,7 +426,6 @@ router.post('/login', async (req, res) => {
       user: { id: data.user.id, email, role, full_name: fullName },
     });
   } catch (err: any) {
-    console.log(err.message)
     res.status(401).json({ error: err.message });
   }
 });
@@ -488,66 +496,72 @@ router.post('/admin/login', async (req, res) => {
     const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
-    // Get the most recent FCM token for this user
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('role, full_name, device_tokens')
       .eq('id', data.user.id)
       .single();
 
-    // Get the latest token (most recently added)
+       // Get the latest token (most recently added)
     const deviceTokens = profile?.device_tokens || [];
     const latestToken = deviceTokens.length > 0 
       ? deviceTokens.sort((a: any, b: any) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime())[0]
       : null;
 
-    const fcmToken = latestToken?.token;
+    const fcm_token = latestToken?.token;
     const platform = latestToken?.platform || 'unknown';
 
-    // ─── Device Restriction ──────────────────────────────────────────
-    if (fcmToken) {
-      const { data: activeSessions } = await supabaseAdmin
+    // ─── Device Restriction ──────────────────────────────────────────────────
+    const MAX_DEVICES = 1; // Change to 2 if you want to allow 2 devices
+
+    // Get current active sessions for this user
+    const { data: activeSessions, error: sessionError } = await supabaseAdmin
+      .from('user_sessions')
+      .select('id, platform, fcm_token, login_time')
+      .eq('user_id', data.user.id)
+      .eq('is_active', true);
+
+    if (sessionError) throw sessionError;
+
+    // Check if user already has a session on this specific device (by FCM token)
+    const existingSession = activeSessions?.find(s => s.fcm_token === fcm_token);
+
+    if (existingSession) {
+      // Same device — just update last_active
+      await supabaseAdmin
         .from('user_sessions')
-        .select('id, platform, login_time')
-        .eq('user_id', data.user.id)
-        .eq('is_active', true);
+        .update({ last_active: new Date().toISOString() })
+        .eq('id', existingSession.id);
+    } else {
+      // Different device — check if they've reached the limit
+      const currentDeviceCount = activeSessions?.length || 0;
 
-      const activeCount = activeSessions?.length || 0;
-      const existingPlatforms = activeSessions?.map(s => s.platform).join(', ') || '';
-
-      // Only check if session exists, no automatic deletion
-      if (activeCount >= 1 && !activeSessions?.some(s => s.platform === platform)) {
+      if (currentDeviceCount >= MAX_DEVICES) {
+        // Return error with details about existing sessions
+        const existingDevices = activeSessions?.map(s => s.platform).join(', ') || 'another device';
         return res.status(403).json({
-          error: `You are already logged in on another device. Please log out from that device first.`,
+          error: `You are already logged in on ${existingDevices}. Please log out from that device first.`,
+          activeSessions: activeSessions?.map(s => ({
+            platform: s.platform,
+            loginTime: s.login_time,
+          })),
         });
       }
 
-      // Create/update session
-      const { data: existingSession } = await supabaseAdmin
-        .from('user_sessions')
-        .select('id')
-        .eq('user_id', data.user.id)
-        .eq('platform', platform)
-        .eq('is_active', true)
-        .single();
-
-      if (existingSession) {
-        await supabaseAdmin
-          .from('user_sessions')
-          .update({ last_active: new Date().toISOString(), fcm_token: fcmToken, platform: platform })
-          .eq('id', existingSession.id);
-      } else {
+      // New device — create session
+      if (fcm_token) {
         await supabaseAdmin.from('user_sessions').insert({
           user_id: data.user.id,
-          fcm_token: fcmToken,
-          platform: platform,
+          fcm_token: fcm_token,
+          platform: platform || 'unknown',
+          device_info: null,
           ip_address: req.ip,
         });
       }
     }
-    // ──────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
 
-    const role = profile?.role || 'user';
+    const role = profile?.role || 'student';
     const fullName = profile?.full_name || '';
 
     const token = jwt.sign(
@@ -561,7 +575,6 @@ router.post('/admin/login', async (req, res) => {
       user: { id: data.user.id, email, role, full_name: fullName },
     });
   } catch (err: any) {
-    console.log(err.message)
     res.status(401).json({ error: err.message });
   }
 });
