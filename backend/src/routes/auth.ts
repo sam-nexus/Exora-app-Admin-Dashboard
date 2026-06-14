@@ -306,7 +306,7 @@ router.post("/admin/login", async (req, res) => {
       const now = new Date();
 
       // If session is still active (last activity within 5 minutes)
-      if (lastActive && (now.getTime() - lastActive.getTime()) < 5 * 60 * 1000) {
+      if (lastActive && (now.getTime() - lastActive.getTime()) < 1 * 60 * 1000) {
         return res.status(403).json({
           error: 'You are already logged in on another device. Please log out from that device first.',
           activeDevice: profile.session_device || 'another device'
