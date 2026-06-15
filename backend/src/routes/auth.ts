@@ -222,13 +222,41 @@ router.post('/register', async (req, res) => {
 // Logout
 router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    // Deactivate ALL sessions for this user — works for both web and mobile app
-    await supabaseAdmin
+    const token = req.headers.authorization?.split(' ')[1];
+    const { fcm_token } = req.body || {};
+
+    // Prefer targeting the exact session by JWT session_token if provided
+    if (token) {
+      const { error } = await supabaseAdmin
+        .from('user_sessions')
+        .update({ is_active: false, last_active: new Date().toISOString() })
+        .eq('user_id', req.userId)
+        .eq('session_token', token);
+
+      if (error) throw error;
+      return res.json({ message: 'Logged out (session token)' });
+    }
+
+    // Otherwise, if client sent the FCM token, deactivate that session
+    if (fcm_token) {
+      const { error } = await supabaseAdmin
+        .from('user_sessions')
+        .update({ is_active: false, last_active: new Date().toISOString() })
+        .eq('user_id', req.userId)
+        .eq('fcm_token', fcm_token);
+
+      if (error) throw error;
+      return res.json({ message: 'Logged out (fcm token)' });
+    }
+
+    // Fallback: deactivate all sessions for the user
+    const { error } = await supabaseAdmin
       .from('user_sessions')
       .update({ is_active: false })
       .eq('user_id', req.userId);
 
-    res.json({ message: 'Logged out' });
+    if (error) throw error;
+    res.json({ message: 'Logged out (all sessions)' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
