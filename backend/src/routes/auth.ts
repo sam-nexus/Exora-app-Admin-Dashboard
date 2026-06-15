@@ -455,71 +455,81 @@ router.post('/login', async (req, res) => {
 // --------------------------------------------------
 // router.post("/admin/login", async (req, res) => { ... }); // kept as comment
 // Login
-router.post('/admin/login', async (req, res) => {
-  const { email, password } = req.body;
+router.post("/admin/login", async (req, res) => {
+  const { email, password, fcm_token, platform, device_info } = req.body;
 
   try {
-    const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseAnon.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) throw error;
 
     const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('role, full_name')
-      .eq('id', data.user.id)
+      .from("profiles")
+      .select("role, full_name")
+      .eq("id", data.user.id)
       .single();
 
-    const role = profile?.role || 'student';
-    const fullName = profile?.full_name || '';
+    const role = profile?.role || "student";
+    const fullName = profile?.full_name || "";
 
     // Generate JWT first — used as session key
     const token = jwt.sign(
       { sub: data.user.id, role },
       process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
+      { expiresIn: "7d" },
     );
 
-    // Admins are allowed on multiple devices
-    if (role !== 'admin') {
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      await supabaseAdmin
-        .from('user_sessions')
-        .update({ is_active: false })
-        .eq('user_id', data.user.id)
-        .lt('login_time', sevenDaysAgo);
+    // ─── Device Restriction (JWT-based) ─────────────────────────────────────
+    // Auto-expire sessions older than 7 days
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    await supabaseAdmin
+      .from("user_sessions")
+      .update({ is_active: false })
+      .eq("user_id", data.user.id)
+      .lt("login_time", sevenDaysAgo);
 
-      const { data: activeSessions } = await supabaseAdmin
-        .from('user_sessions')
-        .select('id, platform, session_token, login_time')
-        .eq('user_id', data.user.id)
-        .eq('is_active', true);
+    // Check for active sessions
+    const { data: activeSessions } = await supabaseAdmin
+      .from("user_sessions")
+      .select("id, platform, session_token, login_time")
+      .eq("user_id", data.user.id)
+      .eq("is_active", true);
 
-      if (activeSessions && activeSessions.length > 0) {
-        const existingPlatforms = activeSessions.map((s: any) => s.platform).join(', ');
-        return res.status(403).json({
-          error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
-          activeSessions: activeSessions.map((s: any) => ({
-            platform: s.platform,
-            loginTime: s.login_time,
-          })),
-        });
-      }
-
-      const userAgent = req.headers['user-agent'] || '';
-      let platform = 'unknown';
-      if (/mobile|android|iphone|ipad/i.test(userAgent)) platform = 'mobile';
-      else if (/postman/i.test(userAgent)) platform = 'postman';
-      else platform = 'web';
-
-      await supabaseAdmin.from('user_sessions').insert({
-        user_id: data.user.id,
-        session_token: token,
-        platform,
-        ip_address: req.ip || req.headers['x-forwarded-for'] || null,
-        login_time: new Date().toISOString(),
-        last_active: new Date().toISOString(),
-        is_active: true,
+    if (activeSessions && activeSessions.length > 0) {
+      const existingPlatforms = activeSessions
+        .map((s: any) => s.platform)
+        .join(", ");
+      return res.status(403).json({
+        error: `You are already logged in on ${existingPlatforms}. Please log out from that device first.`,
+        activeSessions: activeSessions.map((s: any) => ({
+          platform: s.platform,
+          loginTime: s.login_time,
+        })),
       });
     }
+
+    // No active session — detect platform from User-Agent
+    const userAgent = req.headers["user-agent"] || "";
+    let platform = "unknown";
+    if (/mobile|android|iphone|ipad/i.test(userAgent)) platform = "mobile";
+    else if (/postman/i.test(userAgent)) platform = "postman";
+    else platform = "web";
+
+    // Save new session
+    await supabaseAdmin.from("user_sessions").insert({
+      user_id: data.user.id,
+      session_token: token,
+      platform,
+      ip_address: req.ip || req.headers["x-forwarded-for"] || null,
+      login_time: new Date().toISOString(),
+      last_active: new Date().toISOString(),
+      is_active: true,
+    });
+    // ────────────────────────────────────────────────────────────────────────
 
     res.json({
       token,

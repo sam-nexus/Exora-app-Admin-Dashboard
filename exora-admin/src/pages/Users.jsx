@@ -35,6 +35,7 @@ const Users = () => {
   const [addModal, setAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
+  const [filterLock, setFilterLock] = useState("all"); // "all" | "locked" | "unlocked"
   const [lockAllConfirm, setLockAllConfirm] = useState(false);
   const [userLockStatus, setUserLockStatus] = useState({});
   const [toggling, setToggling] = useState(null);
@@ -204,6 +205,13 @@ const Users = () => {
       filtered = filtered.filter((u) => u.role === filterRole);
     }
 
+    // Filter by lock status (only applies to students)
+    if (filterLock === "locked") {
+      filtered = filtered.filter((u) => u.role !== "admin" && userLockStatus[u.id] === true);
+    } else if (filterLock === "unlocked") {
+      filtered = filtered.filter((u) => u.role !== "admin" && userLockStatus[u.id] === false);
+    }
+
     // Sort
     if (sortBy === "date_desc") {
       filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -220,7 +228,7 @@ const Users = () => {
     }
 
     return filtered;
-  }, [users, searchTerm, filterRole, sortBy]);
+  }, [users, searchTerm, filterRole, filterLock, userLockStatus, sortBy]);
 
   if (loading) {
     return (
@@ -341,6 +349,17 @@ const Users = () => {
           <option value="all">All Roles</option>
           <option value="admin">Admin</option>
           <option value="user">Student</option>
+        </select>
+
+        {/* Lock Status Filter */}
+        <select
+          className="border border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500"
+          value={filterLock}
+          onChange={(e) => setFilterLock(e.target.value)}
+        >
+          <option value="all">All Status</option>
+          <option value="locked">🔒 Locked</option>
+          <option value="unlocked">🔓 Unlocked</option>
         </select>
 
         {/* Sort Dropdown */}
