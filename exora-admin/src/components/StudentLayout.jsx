@@ -72,9 +72,18 @@ const StudentLayout = () => {
 
   const handleLogout = async () => {
     try {
+      // Get stored FCM token instead of requesting a new one
+    const fcmToken = localStorage.getItem('fcmToken');
+    
+    if (fcmToken) {
+      await api.post('/auth/logout', { fcm_token: fcmToken });
+    } else {
+      // Fallback: just call logout without token
       await api.post('/auth/logout');
+    }
     } catch (err) {
       // ignore errors
+      console.error("Logout failed:", err);
     }
     clearSession();
     window.location.href = '/login';
