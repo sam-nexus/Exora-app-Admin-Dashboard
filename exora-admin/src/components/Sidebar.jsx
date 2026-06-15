@@ -23,15 +23,31 @@ const Sidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
 
-  const handleLogout = async() => {
-    try{
+  const handleLogout = async () => {
+  try {
+    // Get stored FCM token instead of requesting a new one
+    const fcmToken = localStorage.getItem('fcmToken');
+    
+    if (fcmToken) {
+      await api.post('/auth/logout', { fcm_token: fcmToken });
+    } else {
+      // Fallback: just call logout without token
       await api.post('/auth/logout');
-    }catch(err){
-        console.error("Logout failed:", err);
     }
+  } catch(err) {
+    console.error("Logout failed:", err);
+  } finally {
+    // Clear all localStorage items
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("email");
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("fcmToken"); // Also clear FCM token
+    
     window.location.href = "/login";
-  };
+  }
+};
 
   const navItems = [
     { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
