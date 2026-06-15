@@ -213,12 +213,13 @@ router.patch('/:id/approve', authenticate, adminOnly, async (req: AuthRequest, r
       if (unlockError) throw unlockError;
     }
 
-    // Notify user
+    // Notify user — payment approved message
     await supabaseAdmin.from('notifications').insert({
       recipient_id: receipt.user_id,
-      title: 'Payment approved',
-      message: 'Your payment was approved and all courses are now unlocked.',
-      link: '/student/payments',
+      title: 'Great news! Your payment has been approved 🎉',
+      message: `Your payment has been approved. You can now access all Exora exit exam preparation resources,  Happy Practice. Start preparing today!\n\n– Exora Team`,
+      link: '/student/departments',
+      notification_type: 'payment_approved',
       is_read: false,
     });
 

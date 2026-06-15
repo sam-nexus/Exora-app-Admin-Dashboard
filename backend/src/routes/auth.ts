@@ -197,6 +197,17 @@ router.post('/register', async (req, res) => {
       }
     }
 
+    // ── Welcome notification to the new student ───────────────────────────
+    await supabaseAdmin.from('notifications').insert({
+      recipient_id: authUser.id,
+      title: `Welcome ${fullName.trim()} to Exora – Exit Exam Preparation!`,
+      message: `Your account has been successfully created. Once your payment is approved, you will get full access to Happy Practice and all exit exam preparation resources. Stay tuned!\n\n– Exora Team`,
+      link: '/student/payments',
+      notification_type: 'welcome',
+      is_read: false,
+    });
+    // ────────────────────────────────────────────────────────────────────────
+
     res.status(201).json({ message: 'User registered' });
   } catch (err: any) {
     // Handle Supabase duplicate error at the catch level too
@@ -211,13 +222,11 @@ router.post('/register', async (req, res) => {
 // Logout
 router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    // Mark this specific session as inactive using the JWT token
+    // Deactivate ALL sessions for this user — works for both web and mobile app
     await supabaseAdmin
       .from('user_sessions')
       .update({ is_active: false })
-      .eq('user_id', req.userId)
-      .eq('session_token', token);
+      .eq('user_id', req.userId);
 
     res.json({ message: 'Logged out' });
   } catch (err: any) {
