@@ -198,12 +198,12 @@ router.post('/register', async (req, res) => {
     }
 
     // ── Welcome notification to the new student ───────────────────────────
-    await supabaseAdmin.from('notifications').insert({
+    await supabaseAdmin.from("notifications").insert({
       recipient_id: authUser.id,
-      title: `Welcome ${fullName.trim()} to Exora – Exit Exam Preparation!`,
-      message: `Your account has been successfully created. Once your payment is approved, you will get full access to Happy Practice and all exit exam preparation resources. Stay tuned!\n\n– Exora Team`,
-      link: '/student/payments',
-      notification_type: 'welcome',
+      title: ` Welcome ${fullName.trim()} to Exora Exit Exam Preparation!`,
+      message: `Your account has been successfully created. Once you make payment and your payment is approved, you will get full access to all exit exam preparation resources. Stay tuned!\n\n– Exora Team`,
+      link: "/student/payments",
+      notification_type: "welcome",
       is_read: false,
     });
     // ────────────────────────────────────────────────────────────────────────
@@ -492,14 +492,14 @@ router.post("/admin/login", async (req, res) => {
       .eq("user_id", data.user.id)
       .lt("login_time", sevenDaysAgo);
 
-    // Check for active sessions
+    // Check for active sessions (only block non-admins)
     const { data: activeSessions } = await supabaseAdmin
       .from("user_sessions")
       .select("id, platform, session_token, login_time")
       .eq("user_id", data.user.id)
       .eq("is_active", true);
 
-    if (activeSessions && activeSessions.length > 0) {
+    if (role !== 'admin' && activeSessions && activeSessions.length > 0) {
       const existingPlatforms = activeSessions
         .map((s: any) => s.platform)
         .join(", ");
@@ -529,6 +529,15 @@ router.post("/admin/login", async (req, res) => {
       last_active: new Date().toISOString(),
       is_active: true,
     });
+    // Keep profile markers in sync so frontend shows correct state
+    try {
+      await supabaseAdmin
+        .from('profiles')
+        .update({ active_session_token: token, session_device: platform, session_last_active: new Date().toISOString() })
+        .eq('id', data.user.id);
+    } catch (e) {
+      console.warn('Failed to update profile active session marker for admin login', e);
+    }
     // ────────────────────────────────────────────────────────────────────────
 
     res.json({
