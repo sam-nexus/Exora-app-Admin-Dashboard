@@ -234,6 +234,13 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
         .eq('session_token', token);
 
       if (error) throw error;
+
+      // Clear profile active session markers so frontend won't show "already logged in"
+      await supabaseAdmin
+        .from('profiles')
+        .update({ active_session_token: null, session_device: null, session_last_active: new Date().toISOString() })
+        .eq('id', req.userId);
+
       return res.json({ message: 'Logged out (session token)' });
     }
 
@@ -246,6 +253,12 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
         .eq('fcm_token', fcm_token);
 
       if (error) throw error;
+
+      await supabaseAdmin
+        .from('profiles')
+        .update({ active_session_token: null, session_device: null, session_last_active: new Date().toISOString() })
+        .eq('id', req.userId);
+
       return res.json({ message: 'Logged out (fcm token)' });
     }
 
@@ -256,6 +269,12 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
       .eq('user_id', req.userId);
 
     if (error) throw error;
+
+    await supabaseAdmin
+      .from('profiles')
+      .update({ active_session_token: null, session_device: null, session_last_active: new Date().toISOString() })
+      .eq('id', req.userId);
+
     res.json({ message: 'Logged out (all sessions)' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
