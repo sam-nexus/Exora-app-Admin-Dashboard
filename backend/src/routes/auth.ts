@@ -219,21 +219,19 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
 router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => {
   console.log('=== LOGOUT ROUTE HIT ===');
   console.log('User ID:', req.userId);
   
   try {
-    // Simply deactivate ALL active sessions for this user
+    // Force deactivate ALL sessions regardless of current state
     const { error, data } = await supabaseAdmin
       .from('user_sessions')
       .update({ is_active: false, last_active: new Date().toISOString() })
-      .eq('user_id', req.userId)
-      .eq('is_active', true)
+      .eq('user_id', req.userId)  // Removed .eq('is_active', true)
       .select();
 
-    console.log('Sessions deactivated:', data?.length || 0);
+   
     
     if (error) {
       console.error('Database error:', error);
@@ -241,7 +239,7 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
     }
 
     // Clear profile active session markers
-    const { error: profileError } = await supabaseAdmin
+    await supabaseAdmin
       .from('profiles')
       .update({ 
         active_session_token: null, 
@@ -250,17 +248,15 @@ router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => 
       })
       .eq('id', req.userId);
 
-    if (profileError) {
-      console.error('Profile update error:', profileError);
-    }
-
-    console.log(`All sessions deactivated for user: ${req.userId}`);
+    
     res.json({ message: 'Logged out successfully' });
   } catch (err: any) {
     console.error('Logout error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 // Force logout all other sessions (keep current)
 router.post('/logout-others', authenticate, async (req: AuthRequest, res: Response) => {

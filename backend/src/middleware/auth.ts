@@ -11,13 +11,13 @@ export interface AuthRequest extends Request {
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   
-  console.log('=== AUTHENTICATE ===');
+  console.log('=== AUTHENTICATE MIDDLEWARE ===');
   console.log('Path:', req.path);
-  console.log('Auth header present:', !!authHeader);
+  console.log('Auth header:', authHeader ? 'PRESENT' : 'MISSING');
 
   const token = authHeader?.split(' ')[1];
   if (!token) {
-    console.log('No token provided');
+    console.log('No token provided - returning 401');
     return res.status(401).json({ error: 'No token provided' });
   }
 
@@ -26,23 +26,10 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     req.userId = decoded.sub;
     req.role = decoded.role;
     
-    console.log('Token verified for user:', decoded.sub, 'Role:', decoded.role);
-
-    // Update last active timestamp - wrap in try/catch to prevent failures
-    try {
-      // Only update if not a logout request to avoid unnecessary DB calls
-      if (req.path !== '/logout') {
-        await supabaseAdmin
-          .from('profiles')
-          .update({ session_last_active: new Date().toISOString() })
-          .eq('id', decoded.sub);
-        // Remove the active_session_token condition - it's causing issues
-      }
-    } catch (dbError) {
-      // Don't fail the request if DB update fails
-      console.error('Failed to update last_active:', dbError);
-    }
-
+    console.log('Token verified successfully');
+    console.log('User ID:', req.userId);
+    console.log('Role:', req.role);
+    
     next();
   } catch (error: any) {
     console.error('Token verification failed:', error.message);

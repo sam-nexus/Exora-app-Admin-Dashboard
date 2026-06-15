@@ -17,37 +17,49 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import api from '../api/axios';
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
 
+
+
+  // In your component
+  const navigate = useNavigate();
+
   const handleLogout = async () => {
-  try {
-    // Get stored FCM token instead of requesting a new one
-    const fcmToken = localStorage.getItem('fcmToken');
-    
-    if (fcmToken) {
-      await api.post('/auth/logout', { fcm_token: fcmToken });
-    } else {
-      // Fallback: just call logout without token
-      await api.post('/auth/logout');
+    console.log('=== FRONTEND LOGOUT ===');
+    const token = localStorage.getItem('token');
+    console.log('Token exists:', !!token);
+
+    try {
+      const fcmToken = localStorage.getItem('fcmToken');
+
+      if (fcmToken) {
+        await api.post('/auth/logout', { fcm_token: fcmToken });
+      } else {
+        await api.post('/auth/logout');
+      }
+      console.log('Logout API call successful');
+    } catch (err) {
+      console.error("Logout failed:", err);
+    } finally {
+      console.log('Clearing localStorage');
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("email");
+      localStorage.removeItem("fullName");
+      localStorage.removeItem("fcmToken");
+
+      // Use navigate instead of window.location
+      navigate('/login');
     }
-  } catch(err) {
-    console.error("Logout failed:", err);
-  } finally {
-    // Clear all localStorage items
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("email");
-    localStorage.removeItem("fullName");
-    localStorage.removeItem("fcmToken"); // Also clear FCM token
-    
-    window.location.href = "/login";
-  }
-};
+  };
+
 
   const navItems = [
     { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
@@ -145,10 +157,9 @@ const Sidebar = () => {
                 to={item.path}
                 className={`
                   flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 group
-                  ${
-                    isActive
-                      ? "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 font-medium border-r-2 border-indigo-600"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-indigo-600"
+                  ${isActive
+                    ? "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 font-medium border-r-2 border-indigo-600"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-indigo-600"
                   }
                   ${isCollapsed ? "lg:justify-center lg:px-0" : ""}
                 `}
