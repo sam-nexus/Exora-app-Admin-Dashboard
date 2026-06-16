@@ -414,11 +414,6 @@ router.post('/cleanup-sessions', authenticate, async (req: AuthRequest, res: Res
 router.post('/login', async (req, res) => {
   const { email, password, fcm_token, platform, device_id, device_info } = req.body;
 
-  console.log('=== 🔐 LOGIN REQUEST ===');
-  console.log('Device ID received:', device_id || '❌ MISSING');
-  console.log('FCM Token:', fcm_token ? '✅ PRESENT' : '❌ MISSING');
-  console.log('Platform:', platform || '❌ MISSING');
-
   try {
     const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
     if (error) throw error;
@@ -442,209 +437,6 @@ router.post('/login', async (req, res) => {
     // ─── Device Restriction ──────────────────────────────────────────────
     const MAX_DEVICES = 2;
     const SESSION_TIMEOUT_MINUTES = 30;
-
-    // 1. Delete expired sessions
-    const thirtyMinsAgo = new Date(Date.now() - SESSION_TIMEOUT_MINUTES * 60 * 1000).toISOString();
-    await supabaseAdmin
-      .from('user_sessions')
-      .delete()
-      .eq('user_id', data.user.id)
-      .lt('last_active', thirtyMinsAgo);
-
-    // 2. Get current active sessions
-    const { data: activeSessions } = await supabaseAdmin
-      .from('user_sessions')
-      .select('id, platform, fcm_token, device_id, ip_address, last_active')
-      .eq('user_id', data.user.id)
-      .eq('is_active', true);
-
-    console.log('Active sessions before login:', activeSessions?.length || 0);
-    console.log('Active sessions details:', JSON.stringify(activeSessions, null, 2));
-
-    const activeCount = activeSessions?.length || 0;
-
-    // 3. Create unique device identifier - PRIORITIZE device_id from frontend
-    let deviceIdentifier = device_id; // Use the device_id sent from frontend
-
-    if (!deviceIdentifier && fcm_token) {
-      deviceIdentifier = fcm_token;
-    }
-    if (!deviceIdentifier) {
-      deviceIdentifier = `${req.ip}_${req.headers['user-agent'] || 'unknown'}`;
-    }
-
-    console.log('🔑 Device identifier to use:', deviceIdentifier);
-
-    // 4. Check if this device already has an active session
-    const existingSession = activeSessions?.find(s => {
-      // Check by device_id (CRITICAL - this is what we need to fix)
-      if (s.device_id && s.device_id === deviceIdentifier) {
-        console.log('✅ Found existing session by device_id');
-        return true;
-      }
-      // Check by fcm_token
-      if (s.fcm_token && s.fcm_token === fcm_token) {
-        console.log('✅ Found existing session by fcm_token');
-        return true;
-      }
-      return false;
-    });
-
-    console.log('Existing session found:', existingSession ? 'YES' : 'NO');
-
-    // 5. Handle the login
-    if (existingSession) {
-      console.log('✅ Same device - updating last_active');
-      await supabaseAdmin
-        .from('user_sessions')
-        .update({
-          last_active: new Date().toISOString(),
-          session_token: token,
-          // Update device_id just in case
-          device_id: deviceIdentifier
-        })
-        .eq('id', existingSession.id);
-
-      console.log('Session updated successfully');
-    }
-    else if (activeCount >= MAX_DEVICES) {
-      console.log(`❌ BLOCKING: ${activeCount} devices already active`);
-      const existingDevices = activeSessions?.map(s => s.platform || 'unknown').join(', ');
-      return res.status(403).json({
-        error: `You are already logged in on ${activeCount} devices (${existingDevices}). Maximum allowed is ${MAX_DEVICES} devices.`,
-        activeSessions: activeSessions?.map(s => ({
-          platform: s.platform || 'unknown',
-          lastActive: s.last_active,
-        })),
-      });
-    }
-    else {
-      console.log('🆕 New device - creating session with device_id:', deviceIdentifier);
-
-      const sessionData: any = {
-        user_id: data.user.id,
-        session_token: token,
-        platform: platform || 'web',
-        ip_address: req.ip || req.headers['x-forwarded-for'] || null,
-        login_time: new Date().toISOString(),
-        last_active: new Date().toISOString(),
-        is_active: true,
-        device_id: deviceIdentifier, // ← CRITICAL: Save device_id to database
-      };
-
-      if (fcm_token) {
-        sessionData.fcm_token = fcm_token;
-      }
-
-      if (device_info) {
-        sessionData.device_info = device_info;
-      }
-
-      console.log('📝 Session data to insert:', JSON.stringify({
-        ...sessionData,
-        session_token: sessionData.session_token?.substring(0, 20) + '...'
-      }, null, 2));
-
-      const { error: insertError } = await supabaseAdmin
-        .from('user_sessions')
-        .insert(sessionData);
-
-      if (insertError) {
-        console.error('❌ Insert error:', insertError);
-        throw insertError;
-      }
-
-      console.log('✅ Session created successfully with device_id:', deviceIdentifier);
-    }
-
-    // 6. Verify device_id was saved
-    const { data: verifySession } = await supabaseAdmin
-      .from('user_sessions')
-      .select('id, device_id, fcm_token, platform, is_active')
-      .eq('user_id', data.user.id)
-      .eq('is_active', true);
-
-    console.log('✅ Verification - Active sessions with device_id:');
-    console.log(JSON.stringify(verifySession, null, 2));
-
-    // 7. Cleanup old sessions
-    const { data: allSessions } = await supabaseAdmin
-      .from('user_sessions')
-      .select('id, last_active')
-      .eq('user_id', data.user.id)
-      .eq('is_active', true)
-      .order('last_active', { ascending: false });
-
-    if (allSessions && allSessions.length > MAX_DEVICES) {
-      const sessionsToDeactivate = allSessions.slice(MAX_DEVICES);
-      const idsToDeactivate = sessionsToDeactivate.map(s => s.id);
-
-      await supabaseAdmin
-        .from('user_sessions')
-        .update({ is_active: false })
-        .in('id', idsToDeactivate);
-
-      console.log(`Deactivated ${idsToDeactivate.length} old sessions`);
-    }
-
-    // Update profile
-    await supabaseAdmin
-      .from('profiles')
-      .update({
-        active_session_token: token,
-        session_device: platform || 'web',
-        session_last_active: new Date().toISOString()
-      })
-      .eq('id', data.user.id);
-
-    const { data: finalSessions } = await supabaseAdmin
-      .from('user_sessions')
-      .select('id')
-      .eq('user_id', data.user.id)
-      .eq('is_active', true);
-
-    res.json({
-      token,
-      user: { id: data.user.id, email, role, full_name: fullName },
-      sessionCount: finalSessions?.length || 0,
-      maxDevices: MAX_DEVICES,
-    });
-  } catch (err: any) {
-    console.error('❌ Login error:', err.message);
-    res.status(401).json({ error: err.message });
-  }
-});
-
-// --------------------------------------------------
-// Smart login - auto detects role
-// --------------------------------------------------
-// router.post("/admin/login", async (req, res) => { ... }); // kept as comment
-router.post('/admin/login', async (req, res) => {
-  const { email, password, fcm_token, platform, device_id, device_info } = req.body;
-
-  try {
-    const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('role, full_name')
-      .eq('id', data.user.id)
-      .single();
-
-    const role = profile?.role || 'student';
-    const fullName = profile?.full_name || '';
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { sub: data.user.id, role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
-    );
-
-    // ─── Device Restriction ──────────────────────────────────────────────
-    const MAX_DEVICES = 3;
-    const SESSION_TIMEOUT_MINUTES = 45;
 
     // 1. Expire sessions older than 30 minutes
     const thirtyMinsAgo = new Date(Date.now() - SESSION_TIMEOUT_MINUTES * 60 * 1000).toISOString();
@@ -701,15 +493,15 @@ router.post('/admin/login', async (req, res) => {
       console.log('Same device - updating last_active');
       await supabaseAdmin
         .from('user_sessions')
-        .update({
+        .update({ 
           last_active: new Date().toISOString(),
           // Update token if needed
-          session_token: token
+          session_token: token 
         })
         .eq('id', existingSession.id);
-
+      
       console.log('Session updated successfully');
-    }
+    } 
     else if (activeCount >= MAX_DEVICES) {
       // Too many DIFFERENT devices - block
       console.log(`Blocking: ${activeCount} devices already active, max is ${MAX_DEVICES}`);
@@ -725,7 +517,7 @@ router.post('/admin/login', async (req, res) => {
     else {
       // New device and under limit - create new session
       console.log('New device - creating session');
-
+      
       const sessionData: any = {
         user_id: data.user.id,
         session_token: token,
@@ -773,12 +565,12 @@ router.post('/admin/login', async (req, res) => {
     if (allSessions && allSessions.length > MAX_DEVICES) {
       const sessionsToDeactivate = allSessions.slice(MAX_DEVICES);
       const idsToDeactivate = sessionsToDeactivate.map(s => s.id);
-
+      
       await supabaseAdmin
         .from('user_sessions')
         .update({ is_active: false })
         .in('id', idsToDeactivate);
-
+      
       console.log(`Deactivated ${idsToDeactivate.length} old sessions`);
     }
 
@@ -795,7 +587,206 @@ router.post('/admin/login', async (req, res) => {
     // Update profile
     await supabaseAdmin
       .from('profiles')
-      .update({
+      .update({ 
+        active_session_token: token,
+        session_device: platform || 'web',
+        session_last_active: new Date().toISOString()
+      })
+      .eq('id', data.user.id);
+
+    res.json({
+      token,
+      user: { id: data.user.id, email, role, full_name: fullName },
+      sessionCount: finalCount,
+      maxDevices: MAX_DEVICES,
+    });
+  } catch (err: any) {
+    console.error('Login error:', err.message);
+    res.status(401).json({ error: err.message });
+  }
+});
+
+// --------------------------------------------------
+// Smart login - auto detects role
+// --------------------------------------------------
+// router.post("/admin/login", async (req, res) => { ... }); // kept as comment
+router.post('/admin/login', async (req, res) => {
+  const { email, password, fcm_token, platform, device_id, device_info } = req.body;
+
+  try {
+    const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('role, full_name')
+      .eq('id', data.user.id)
+      .single();
+
+    const role = profile?.role || 'student';
+    const fullName = profile?.full_name || '';
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { sub: data.user.id, role },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    );
+
+    // ─── Device Restriction ──────────────────────────────────────────────
+    const MAX_DEVICES = 2;
+    const SESSION_TIMEOUT_MINUTES = 30;
+
+    // 1. Expire sessions older than 30 minutes
+    const thirtyMinsAgo = new Date(Date.now() - SESSION_TIMEOUT_MINUTES * 60 * 1000).toISOString();
+    await supabaseAdmin
+      .from('user_sessions')
+      .update({ is_active: false })
+      .eq('user_id', data.user.id)
+      .eq('is_active', true)
+      .lt('last_active', thirtyMinsAgo);
+
+    // 2. Get current active sessions for this user
+    const { data: activeSessions } = await supabaseAdmin
+      .from('user_sessions')
+      .select('id, platform, fcm_token, device_id, ip_address, last_active')
+      .eq('user_id', data.user.id)
+      .eq('is_active', true);
+
+    console.log('Active sessions count:', activeSessions?.length || 0);
+    console.log('Active sessions:', activeSessions);
+
+    const activeCount = activeSessions?.length || 0;
+
+    // 3. Create unique device identifier
+    let deviceIdentifier = device_id;
+    if (!deviceIdentifier && fcm_token) {
+      deviceIdentifier = fcm_token;
+    }
+    if (!deviceIdentifier) {
+      deviceIdentifier = `${req.ip}_${req.headers['user-agent'] || 'unknown'}`;
+    }
+
+    console.log('Device identifier:', deviceIdentifier);
+
+    // 4. Check if this device already has an active session
+    const existingSession = activeSessions?.find(s => {
+      // Check by device_id
+      if (s.device_id && s.device_id === deviceIdentifier) {
+        console.log('Found existing session by device_id');
+        return true;
+      }
+      // Check by fcm_token
+      if (s.fcm_token && s.fcm_token === fcm_token) {
+        console.log('Found existing session by fcm_token');
+        return true;
+      }
+      return false;
+    });
+
+    console.log('Existing session found:', existingSession ? 'YES' : 'NO');
+
+    // 5. Handle the login
+    if (existingSession) {
+      // Same device - just update last_active
+      console.log('Same device - updating last_active');
+      await supabaseAdmin
+        .from('user_sessions')
+        .update({ 
+          last_active: new Date().toISOString(),
+          // Update token if needed
+          session_token: token 
+        })
+        .eq('id', existingSession.id);
+      
+      console.log('Session updated successfully');
+    } 
+    else if (activeCount >= MAX_DEVICES) {
+      // Too many DIFFERENT devices - block
+      console.log(`Blocking: ${activeCount} devices already active, max is ${MAX_DEVICES}`);
+      const existingDevices = activeSessions?.map(s => s.platform || 'unknown').join(', ');
+      return res.status(403).json({
+        error: `You are already logged in on ${activeCount} devices (${existingDevices}). Maximum allowed is ${MAX_DEVICES} devices. Please log out from one device first.`,
+        activeSessions: activeSessions?.map(s => ({
+          platform: s.platform || 'unknown',
+          lastActive: s.last_active,
+        })),
+      });
+    }
+    else {
+      // New device and under limit - create new session
+      console.log('New device - creating session');
+      
+      const sessionData: any = {
+        user_id: data.user.id,
+        session_token: token,
+        platform: platform || 'web',
+        ip_address: req.ip || req.headers['x-forwarded-for'] || null,
+        login_time: new Date().toISOString(),
+        last_active: new Date().toISOString(),
+        is_active: true,
+        device_id: deviceIdentifier, // Always store device_id
+      };
+
+      if (fcm_token) {
+        sessionData.fcm_token = fcm_token;
+      }
+
+      if (device_info) {
+        sessionData.device_info = device_info;
+      }
+
+      console.log('Creating session with data:', {
+        ...sessionData,
+        session_token: sessionData.session_token?.substring(0, 20) + '...'
+      });
+
+      const { error: insertError } = await supabaseAdmin
+        .from('user_sessions')
+        .insert(sessionData);
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
+
+      console.log('Session created successfully');
+    }
+
+    // 6. Clean up: Keep only the latest MAX_DEVICES sessions
+    const { data: allSessions } = await supabaseAdmin
+      .from('user_sessions')
+      .select('id, last_active')
+      .eq('user_id', data.user.id)
+      .eq('is_active', true)
+      .order('last_active', { ascending: false });
+
+    if (allSessions && allSessions.length > MAX_DEVICES) {
+      const sessionsToDeactivate = allSessions.slice(MAX_DEVICES);
+      const idsToDeactivate = sessionsToDeactivate.map(s => s.id);
+      
+      await supabaseAdmin
+        .from('user_sessions')
+        .update({ is_active: false })
+        .in('id', idsToDeactivate);
+      
+      console.log(`Deactivated ${idsToDeactivate.length} old sessions`);
+    }
+
+    // 7. Get final active count
+    const { data: finalSessions } = await supabaseAdmin
+      .from('user_sessions')
+      .select('id')
+      .eq('user_id', data.user.id)
+      .eq('is_active', true);
+
+    const finalCount = finalSessions?.length || 0;
+    console.log(`Final active sessions: ${finalCount}/${MAX_DEVICES}`);
+
+    // Update profile
+    await supabaseAdmin
+      .from('profiles')
+      .update({ 
         active_session_token: token,
         session_device: platform || 'web',
         session_last_active: new Date().toISOString()
