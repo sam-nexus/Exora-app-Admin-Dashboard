@@ -70,24 +70,48 @@ const StudentLayout = () => {
     registerBrowserToken();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      // Get stored FCM token instead of requesting a new one
+const handleLogout = async () => {
+  try {
+    const token = localStorage.getItem('token');
     const fcmToken = localStorage.getItem('fcmToken');
     
+    // Try to logout with both token and fcmToken for better session management
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    };
+    
     if (fcmToken) {
-      await api.post('/auth/logout', { fcm_token: fcmToken });
+      // Send both the authorization header and fcm_token in body
+      await api.post('/auth/logout', { fcm_token: fcmToken }, config);
+      console.log('Logged out with FCM token');
     } else {
-      // Fallback: just call logout without token
-      await api.post('/auth/logout');
+      // Just use the authorization header
+      await api.post('/auth/logout', {}, config);
+      console.log('Logged out with session token');
     }
-    } catch (err) {
-      // ignore errors
-      console.error("Logout failed:", err);
-    }
+  } catch (err) {
+    // Ignore errors - we want to clear local session anyway
+    console.error("Logout API failed:", err);
+  } finally {
+    // Always clear local session regardless of API success
     clearSession();
     window.location.href = '/login';
-  };
+  }
+};
+
+// Helper function to clear all session data
+const clearSession = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("email");
+  localStorage.removeItem("fullName");
+  localStorage.removeItem("fcmToken");
+  // Clear any other session data you might have
+  // sessionStorage.clear(); // if using sessionStorage
+};
 
 
 

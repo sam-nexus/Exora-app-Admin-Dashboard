@@ -31,33 +31,56 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    console.log('=== FRONTEND LOGOUT ===');
-    const token = localStorage.getItem('token');
-    console.log('Token exists:', !!token);
-
     try {
+      const token = localStorage.getItem('token');
       const fcmToken = localStorage.getItem('fcmToken');
+      const deviceId = localStorage.getItem('deviceId');
 
-      if (fcmToken) {
-        await api.post('/auth/logout', { fcm_token: fcmToken });
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      };
+
+      // Send device_id and fcm_token for better session management
+      const body = {};
+      if (fcmToken) body.fcm_token = fcmToken;
+      if (deviceId) body.device_id = deviceId;
+
+      if (Object.keys(body).length > 0) {
+        await api.post('/auth/logout', body, config);
       } else {
-        await api.post('/auth/logout');
+        await api.post('/auth/logout', {}, config);
       }
-      console.log('Logout API call successful');
+
+      console.log('Logout successful');
     } catch (err) {
       console.error("Logout failed:", err);
     } finally {
-      console.log('Clearing localStorage');
+      // Clear all localStorage items
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       localStorage.removeItem("userId");
       localStorage.removeItem("email");
       localStorage.removeItem("fullName");
       localStorage.removeItem("fcmToken");
+      // DO NOT remove deviceId - keep it for future logins
+      // localStorage.removeItem("deviceId");
 
-      // Use navigate instead of window.location
-      navigate('/login');
+      window.location.href = "/login";
     }
+  };
+
+  // Helper function to clear all session data
+  const clearSession = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("email");
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("fcmToken");
+    // Clear any other session data you might have
+    // sessionStorage.clear(); // if using sessionStorage
   };
 
 

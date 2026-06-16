@@ -12,34 +12,95 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Add this helper function at the top of your component or in a utils file
+  const getDeviceId = () => {
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+      // Generate a random device ID
+      deviceId = 'web_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('deviceId', deviceId);
+    }
+    return deviceId;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     try {
-      const { data } = await api.post('/auth/login', { email, password });
+      // Get or generate device ID
+      const deviceId = getDeviceId();
+
+      // Get FCM token if available
+      let fcmToken = localStorage.getItem('fcmToken');
+      if (!fcmToken) {
+        try {
+          fcmToken = await registerForPushNotifications();
+          if (fcmToken) {
+            localStorage.setItem('fcmToken', fcmToken);
+          }
+        } catch (fcmError) {
+          console.warn('FCM registration failed:', fcmError);
+        }
+      }
+
+      console.log('Sending login request with:', {
+        email,
+        password: '***',
+        device_id: localStorage.getItem('deviceId'),
+        fcm_token: localStorage.getItem('fcmToken'),
+        platform: navigator.userAgent.includes('Mobile') ? 'mobile' : 'web',
+      });
+
+      // Detect platform
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const platform = isMobile ? 'mobile' : 'web';
+
+      // // Send login request with device_id
+      // const { data } = await api.post('/auth/login', {
+      //   email,
+      //   password,
+      //   device_id: deviceId,  // ← Send persistent device ID
+      //   fcm_token: fcmToken || undefined,
+      //   platform: platform,
+      //   device_info: navigator.userAgent || 'unknown',
+      // });
+
+      // Store session data
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.user.role);
       localStorage.setItem('userId', data.user.id);
       localStorage.setItem('email', email);
       localStorage.setItem('fullName', data.user.full_name || '');
+      localStorage.setItem('platform', platform);
 
-      try {
-        const fcmToken = await registerForPushNotifications();
-        if (fcmToken){
-          localStorage.setItem('fcmToken', fcmToken);
-          await api.post('/devices/register', { token: fcmToken, platform: '' });
-        }
-        
-      } catch {
-        // non-fatal
+      if (fcmToken) {
+        localStorage.setItem('fcmToken', fcmToken);
       }
 
-      if (data.user.role === 'admin') navigate('/dashboard');
-      else navigate('/student');
+      // Optional: Show active sessions count
+      if (data.sessionCount) {
+        console.log(`🔑 Active sessions: ${data.sessionCount}/2`);
+      }
+
+      // Redirect based on role
+      if (data.user.role === 'admin') {
+        navigate('/dashboard');
+      } else {
+        navigate('/student');
+      }
     } catch (err) {
       if (err.response?.status === 403) {
-        setError(err.response.data.error); // "You are already logged in on another device..."
+        const errorMsg = err.response.data.error;
+        const activeSessions = err.response.data.activeSessions;
+
+        if (activeSessions && activeSessions.length > 0) {
+          const devices = activeSessions.map(s => s.platform).join(', ');
+          setError(`You are already logged in on ${devices}. Maximum 2 devices allowed. Please log out from one device first.`);
+        } else {
+          setError(errorMsg || 'Login failed - too many devices');
+        }
       } else {
         setError(err.response?.data?.error || 'Login failed');
       }
